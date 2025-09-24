@@ -1,8 +1,9 @@
 #include "Cards.h"
 
 int main(){
-
-    BombCard card;
+    // Testing testing for funsies funsies 
+    DiplomacyCard card;
     card.play();
+    cout << card << endl;
 
 }

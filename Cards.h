@@ -1,22 +1,58 @@
 #ifndef Cards_H
 #define Cards_H
 
-// Defines card type
-enum class CardType {Bomb, Reinforcement, Blockade, Airlift, Diplomacy};
+#include <iostream>
 
+using namespace std;
 
+// Abstract Card class 
 class Card {
     public: 
-        virtual void play() = 0; // Virtual enables polymorphism, = 0 makes it abstract 
+        // Virtual enables polymorphism, = 0 makes it abstract 
+        virtual ~Card(){} // Destructor 
+        // virtual Card* copy() const = 0; // Const bcs copy should be read-only 
+        virtual void play() = 0; 
+        virtual void print(ostream& os) const = 0; // For overloading stream operators with polymorphism 
+        // Still need assignment operator 
 };
 
+// Stream insertion operator 
+ostream& operator<<(ostream& os, const Card& c);
 
-class BombCard : Card {
+// Do I need an istream operator overloading? 
+// istream& operator>>(istream& os, const Card& c);
+
+
+class BombCard : public Card {
     public: 
         virtual void play(); // virtual technincally implicit 
+        virtual void print(ostream& os) const override;
 
 };
 
+class ReinforcementCard : public Card {
+    public: 
+        virtual void play(); 
+        virtual void print(ostream& os) const override;
+};
+
+class BlockadeCard : public Card {
+    public: 
+        virtual void play(); 
+        virtual void print(ostream& os) const override;
+};
+
+class AirliftCard : public Card {
+    public: 
+        virtual void play(); 
+        virtual void print(ostream& os) const override;
+};
+
+class DiplomacyCard : public Card {
+    public: 
+        virtual void play(); 
+        virtual void print(ostream& os) const override;
+};
 
 class Deck {
     public: 
