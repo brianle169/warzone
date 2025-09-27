@@ -1,10 +1,8 @@
 #pragma once
 #include <iostream>
 #include <vector>
-//4. All classes must implement a correct copy constructor, assignment operator, and stream insertion operator.
-//1. All data members of user-defined class type must be of pointer type.
 
-
+//Once merging; Delete player and territory class
 class Player {
 public:
     std::string name;
@@ -30,9 +28,13 @@ public:
     Order(const Order& other);
     Order& operator=(const Order& other);
     friend std::ostream& operator<<(std::ostream& os, const Order& order);
-    ~Order();
+    virtual ~Order() = default;
     void setExecutionEffect(const std::string &effect);
-    std::unique_ptr<Order> clone() const;
+    virtual std::unique_ptr<Order> clone() const = 0;
+    virtual std::string getName() const = 0;
+    virtual bool validate() = 0;
+    virtual void execute() = 0;
+    std::string getPlayer() const { return player->name;}
 };
 
 class Deploy : public Order {
@@ -45,10 +47,11 @@ public:
     Deploy(const Deploy& other);               // copy constructor
     Deploy& operator=(const Deploy& other);   // assignment operator
     friend std::ostream& operator<<(std::ostream &strm, const Deploy&);//stream insertion operator
-    ~Deploy();                                 // destructor
+    virtual ~Deploy() = default;                                 // destructor
     bool validate();
     void execute();
-};
+    std::unique_ptr<Order> clone() const override;
+    std::string getName() const override { return "Deploy"; }};
 
 class Advance : public Order {
 private:
@@ -61,9 +64,11 @@ public:
     Advance(const Advance& other);
     Advance& operator=(const Advance& other);
     friend std::ostream& operator<<(std::ostream &strm, const Advance&);
-    ~Advance();
+    virtual ~Advance() = default;
     bool validate();
     void execute();
+    std::unique_ptr<Order> clone() const override;
+    std::string getName() const override { return "Advance"; }
 };
 
 class Bomb : public Order {
@@ -75,9 +80,11 @@ public:
     Bomb(const Bomb& other);
     Bomb& operator=(const Bomb& other);
     friend std::ostream& operator<<(std::ostream &strm, const Bomb&);
-    ~Bomb();
+    virtual ~Bomb() = default;
     bool validate();
     void execute();
+    std::unique_ptr<Order> clone() const override;
+    std::string getName() const override { return "Bomb"; }
 };
 
 class Blockade : public Order {
@@ -89,9 +96,11 @@ public:
     Blockade(const Blockade& other);
     Blockade& operator=(const Blockade& other);
     friend std::ostream& operator<<(std::ostream &strm, const Blockade&);
-    ~Blockade();
+    virtual ~Blockade() = default;
     bool validate();
     void execute();
+    std::unique_ptr<Order> clone() const override;
+    std::string getName() const override { return "Blockade"; }
 };
 
 class Airlift : public Order {
@@ -105,9 +114,11 @@ public:
     Airlift(const Airlift& other);
     Airlift& operator=(const Airlift& other);
     friend std::ostream& operator<<(std::ostream &strm, const Airlift&);
-    ~Airlift();
+    virtual ~Airlift() = default;
     bool validate();
     void execute();
+    std::unique_ptr<Order> clone() const override;
+    std::string getName() const override { return "Airlift"; }
 };
 
 class Negotiate : public Order {
@@ -119,20 +130,22 @@ public:
     Negotiate(const Negotiate& other);
     Negotiate& operator=(const Negotiate& other);
     friend std::ostream& operator<<(std::ostream &strm, const Negotiate&);
-    ~Negotiate();
+    virtual ~Negotiate() = default;
     bool validate();
     void execute();
+    std::unique_ptr<Order> clone() const override;
+    std::string getName() const override { return "Negotiate"; }
 };
 
-class OrdersList : public Order {
+class OrdersList {
 private:
-    std::vector<Order> orders;
+    std::vector<std::unique_ptr<Order>> orders;
 public:
     OrdersList() = default;
     OrdersList(const OrdersList& other);
     OrdersList& operator=(const OrdersList& other);
     friend std::ostream& operator<<(std::ostream &strm, const OrdersList&);
-    ~OrdersList();
+    ~OrdersList() = default;
 
     void addOrder(std::unique_ptr<Order> order);
     bool move(int fromIndex, int toIndex); //or void
@@ -140,6 +153,6 @@ public:
     Order* getOrder(int index) const;
     size_t size() const;
 
-
-
 };
+
+void testOrdersList();
