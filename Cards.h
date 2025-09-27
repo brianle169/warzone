@@ -10,10 +10,10 @@ class Card {
     public: 
         // Virtual enables polymorphism, = 0 makes it abstract 
         virtual ~Card(){} // Destructor 
-        // virtual Card* copy() const = 0; // Const bcs copy should be read-only 
+        Card& operator=(const Card&);
+        virtual Card* clone() const = 0; // Const bcs copy should be read-only 
         virtual void play() = 0; 
         virtual void print(ostream& os) const = 0; // For overloading stream operators with polymorphism 
-        // Still need assignment operator 
 };
 
 // Stream insertion operator 
@@ -25,45 +25,69 @@ ostream& operator<<(ostream& os, const Card& c);
 
 class BombCard : public Card {
     public: 
-        virtual void play(); // virtual technincally implicit 
+        BombCard();
+        BombCard(const BombCard& other);
+        ~BombCard();
+        BombCard& operator=(const BombCard& other);
+        virtual Card* clone() const override; // override avoids function signature mismatch 
+        virtual void play(); // virtual technincally implicit but kept for clarity 
         virtual void print(ostream& os) const override;
-
 };
 
 class ReinforcementCard : public Card {
     public: 
-        virtual void play(); 
+        ReinforcementCard();
+        ReinforcementCard(const ReinforcementCard& other);
+        ~ReinforcementCard();
+        ReinforcementCard& operator=(const ReinforcementCard& other);
+        virtual Card* clone() const override; // override avoids function signature mismatch 
+        virtual void play(); // virtual technincally implicit but kept for clarity 
         virtual void print(ostream& os) const override;
 };
 
 class BlockadeCard : public Card {
     public: 
-        virtual void play(); 
+        BlockadeCard();
+        BlockadeCard(const BlockadeCard& other);
+        ~BlockadeCard();
+        BlockadeCard& operator=(const BlockadeCard& other);
+        virtual Card* clone() const override; // override avoids function signature mismatch 
+        virtual void play(); // virtual technincally implicit but kept for clarity 
         virtual void print(ostream& os) const override;
 };
 
 class AirliftCard : public Card {
     public: 
-        virtual void play(); 
+        AirliftCard();
+        AirliftCard(const AirliftCard& other);
+        ~AirliftCard();
+        AirliftCard& operator=(const AirliftCard& other);
+        virtual Card* clone() const override; // override avoids function signature mismatch 
+        virtual void play(); // virtual technincally implicit but kept for clarity 
         virtual void print(ostream& os) const override;
 };
 
 class DiplomacyCard : public Card {
     public: 
-        virtual void play(); 
+        DiplomacyCard();
+        DiplomacyCard(const DiplomacyCard& other);
+        ~DiplomacyCard();
+        DiplomacyCard& operator=(const DiplomacyCard& other);
+        virtual Card* clone() const override; // override avoids function signature mismatch 
+        virtual void play(); // virtual technincally implicit but kept for clarity 
         virtual void print(ostream& os) const override;
 };
 
-class Deck {
-    public: 
-        void draw();
-        // Draw random card
-        // Place it in the hand 
-};
+// class Deck {
+//     public: 
+//         void draw();
+//         // Draw random card
+//         // Place it in the hand 
+// };
 
-class Hand {
-    public: 
-        // Collection of cards
+// class Hand {
+//     public: 
+//         // Collection of cards
 
-};
+// };
 #endif
