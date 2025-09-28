@@ -1,15 +1,10 @@
 #include "GameEngine.h"
 
-
+/*
+    The following function allows the user to navigate through all the game states by typing
+*/
 void testGameStates() {
-    GameEngine engine;
-    string command;
-
-    cout << "Testing Game States\n";
     
-
-
-
 }
 
 int main() {
