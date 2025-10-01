@@ -1,59 +1,73 @@
 #include <iostream>
 #include "Cards.h"
-
 using namespace std;
 
 int main() {
-    cout << "--- Starting Test ---" << endl;
+    cout << "=== Creating cards on the stack ===" << endl;
+    BombCard bomb;
+    ReinforcementCard reinforce;
+    BlockadeCard blockade;
+    AirliftCard airlift;
+    DiplomacyCard diplomacy;
 
-    // Create deck and hand
+    cout << "\n=== Printing individual cards ===" << endl;
+    cout << bomb << endl;
+    cout << reinforce << endl;
+    cout << blockade << endl;
+    cout << airlift << endl;
+    cout << diplomacy << endl;
+
+    cout << "\n=== Playing individual cards ===" << endl;
+    bomb.play(); cout << endl;
+    reinforce.play(); cout << endl;
+    blockade.play(); cout << endl;
+    airlift.play(); cout << endl;
+    diplomacy.play(); cout << endl;
+
+    cout << "\n=== Creating deck and hand ===" << endl;
     Deck deck;
     Hand hand;
 
-    // Create some cards
-    BombCard* bomb = new BombCard();
-    ReinforcementCard* reinf = new ReinforcementCard();
-    BlockadeCard* block = new BlockadeCard();
-    AirliftCard* air = new AirliftCard();
-    DiplomacyCard* dip = new DiplomacyCard();
+    cout << "\n=== Adding cards to deck ===" << endl;
+    deck.add(make_shared<BombCard>(bomb));
+    deck.add(make_shared<ReinforcementCard>(reinforce));
+    deck.add(make_shared<BlockadeCard>(blockade));
+    deck.add(make_shared<AirliftCard>(airlift));
+    deck.add(make_shared<DiplomacyCard>(diplomacy));
 
-    cout << "\n--- Adding cards to deck ---" << endl;
-    deck.add(bomb);
-    deck.add(reinf);
-    deck.add(block);
-    deck.add(air);
-    deck.add(dip);
+    cout << "\nDeck contents: " << deck << endl;
 
-    cout << deck << endl;
+    cout << "\n=== Drawing cards into hand ===" << endl;
+    drawCard(deck, hand);
+    drawCard(deck, hand);
+    drawCard(deck, hand);
 
-    cout << "\n--- Drawing cards into hand ---" << endl;
-    deck.draw(hand);
-    deck.draw(hand);
-    deck.draw(hand);
+    cout << "\nDeck after draws: " << deck << endl;
+    cout << "Hand after draws: " << hand << endl;
 
-    cout << deck << endl;
-    cout << hand << endl;
+    cout << "\n=== Playing a card from hand ===" << endl;
+    // Instead of asking for user input, just remove index 0 for testing
+    SpCard played = hand.remove(0);
+    if (played) {
+        played->play();
+        cout << endl;
+        deck.add(played);
+    }
 
-    cout << "\n--- Playing cards from hand ---" << endl;
-    // Play one of the cards in hand
-    bomb->play(deck, hand);   // should move bomb from hand back to deck
-    reinf->play(deck, hand);  // same for reinforcement
+    cout << "\nDeck after playing: " << deck << endl;
+    cout << "Hand after playing: " << hand << endl;
 
-    cout << deck << endl;
-    cout << hand << endl;
+    cout << "\n=== Copy construction and assignment tests ===" << endl;
+    Deck deck2 = deck;   // copy constructor
+    Hand hand2 = hand;   // copy constructor
 
-    cout << "\n--- Attempting invalid play ---" << endl;
-    // Play a card that's not in the hand (already moved back)
-    bomb->play(deck, hand);
+    deck2 = deck;        // assignment operator
+    hand2 = hand;        // assignment operator
 
-    cout << "\n--- Test Done ---" << endl;
+    cout << "\nFinal Deck2: " << deck2 << endl;
+    cout << "Final Hand2: " << hand2 << endl;
 
-    // cleanup
-    delete bomb;
-    delete reinf;
-    delete block;
-    delete air;
-    delete dip;
+    cout << "\n=== Destructors will fire at program end ===" << endl;
 
     return 0;
 }

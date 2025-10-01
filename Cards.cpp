@@ -17,6 +17,7 @@ istream& operator>>(istream& is, const Card& c){
     return is;
 }
 
+Card::~Card(){}
 Card& Card::operator=(const Card&) {
     return *this;
 }
@@ -50,9 +51,9 @@ Deck& Deck::operator=(const Deck& other){
  * Output stream operator overload for Deck 
  */
 ostream& operator<< (ostream& out, const Deck& deck) {
-    out << "Deck size: " << deck.pcards.size() << ", contains: ";
-    for (int i = 0; i < deck.pcards.size(); i++){
-        out << *deck.pcards[i] << ", ";
+    out << "Deck size: " << deck.spCards.size() << ", contains: ";
+    for (int i = 0; i < deck.spCards.size(); i++){
+        out << *deck.spCards[i] << ", ";
     }
 	return out; 
 }
@@ -69,29 +70,29 @@ istream& operator>> (istream& in, const Deck& deck) {
 /**
  * Adds a card pointer to the deck if it does not already exist in it
  */
-void Deck::add(Card* card){
-    auto it = find(pcards.begin(), pcards.end(), card); // find card pointer in hand
-    if (it != pcards.end()){ 
+void Deck::add(SpCard card){
+    auto it = find(spCards.begin(), spCards.end(), card); // find card pointer in hand
+    if (it != spCards.end()){ 
         cout << "This " << *card << " object already exists in the deck!" << endl; //if exists, don't add another ref  
         return;
     }
     cout << "Added " << *card << " to the Deck." << endl;
-    pcards.push_back(card);
+    spCards.push_back(card);
 }
 
 /**
  * If it is not empty, draws a card from the top of the deck and adds it to the hand 
  */
-void Deck::draw(Hand& hand){
-    if (pcards.empty()){
+SpCard Deck::draw(){
+    if (spCards.empty()){
         cout << "The deck is empty" << endl;
-        return;
+        return SpCard(); // Return new null instance
     }
-
-    Card* card = pcards.front(); // make a copy of pointer to card (top card)
-    pcards.erase(pcards.begin()); // erase the pointer in the deck (top card)
+    
+    SpCard card = spCards.back(); // make a copy of the card pointer at top of the deck 
+    spCards.pop_back(); // remove card pointer at top of deck 
     cout << "Drew a " << *card << ". ";
-    hand.add(card); // add the copy pointer to the hand
+    return card;
 }
 
 
@@ -126,9 +127,9 @@ Hand& Hand::operator=(const Hand& other){
  * Output stream operator overload for Hand 
  */
 ostream& operator<< (ostream& out, const Hand& hand) {
- out << "Hand size: " << hand.pcards.size() << ", contains: ";
-    for (int i = 0; i < hand.pcards.size(); i++){
-        out << *hand.pcards[i] << ", ";
+ out << "Hand size: " << hand.spCards.size() << ", contains: ";
+    for (int i = 0; i < hand.spCards.size(); i++){
+        out << i << ": " << *hand.spCards[i] << ", ";
     }	
     return out; 
 }
@@ -145,33 +146,29 @@ istream& operator>> (istream& in, const Hand& hand) {
 /**
  * Adds a card pointer to the hand if it does not already exist in it
  */
-void Hand::add(Card* card){
-  auto it = find(pcards.begin(), pcards.end(), card); // find card pointer in hand
-    if (it != pcards.end()){ 
+void Hand::add(SpCard card){
+  auto it = find(spCards.begin(), spCards.end(), card); // find card pointer in hand
+    if (it != spCards.end()){ 
         cout << "This " << *card << " object already exists in the deck!" << endl; //if exists, don't add another ref  
         return;
     }
     cout << "Added " << *card << " to the Hand." << endl;
-    pcards.push_back(card);}
+    spCards.push_back(card);}
 
 /**
  * Remove a card pointer from the hand
  */
-void Hand::remove(Card* card){
-    auto it = find(pcards.begin(), pcards.end(), card); // find card pointer in hand
-    if (it != pcards.end()){ 
-        pcards.erase(it); //if exists, remove pointer 
+SpCard Hand::remove(int index){
+    if (index < spCards.size() && index >= 0){
+        cout << "Invalid entry.";
+        return SpCard();
     }
+
+    SpCard card = spCards[index];
+    spCards.erase(spCards.begin() + index);
+    return card;
+
 }
-
-/**
- * Getter for cards in hand
- */
-const vector<Card*>& Hand:: GetCards() const {
-    return pcards;
-}
-
-
 
 // Definitions for all child Card classes 
 
@@ -207,15 +204,8 @@ Card* BombCard::clone() const {
     return new BombCard(*this);
 }
 
-void BombCard::play(Deck& deck, Hand& hand){
-    auto it = find(hand.GetCards().begin(), hand.GetCards().end(), this); // find card pointer in hand
-    if (it == hand.GetCards().end()){ 
-        cout << "This " << *this << " is not in the Hand, so you can't play it!" << endl; 
-        return;
-    }
+void BombCard::play(){
     cout << "Played BombCard! ";
-    hand.remove(this);
-    deck.add(this);
 }
 
 void BombCard:: print(ostream& os) const {
@@ -254,15 +244,8 @@ Card* ReinforcementCard::clone() const {
     return new ReinforcementCard(*this);
 }
 
-void ReinforcementCard::play(Deck& deck, Hand& hand){
-    auto it = find(hand.GetCards().begin(), hand.GetCards().end(), this); // find card pointer in hand
-    if (it == hand.GetCards().end()){ 
-        cout << "This card is not in the Hand, so you can't play it!" << endl; 
-        return;
-    }
+void ReinforcementCard::play(){
     cout << "Played ReinforcementCard! ";
-    hand.remove(this);
-    deck.add(this);
 }
 
 void ReinforcementCard:: print(ostream& os) const {
@@ -303,15 +286,8 @@ Card* BlockadeCard::clone() const {
     return new BlockadeCard(*this);
 }
 
-void BlockadeCard::play(Deck& deck, Hand& hand){
-    auto it = find(hand.GetCards().begin(), hand.GetCards().end(), this); // find card pointer in hand
-    if (it == hand.GetCards().end()){ 
-        cout << "This card is not in the Hand, so you can't play it!" << endl; 
-        return;
-    }
+void BlockadeCard::play(){
     cout << "Played BlockadeCard! ";
-    hand.remove(this);
-    deck.add(this);
 }
 
 void BlockadeCard:: print(ostream& os) const {
@@ -351,15 +327,8 @@ Card* AirliftCard::clone() const {
     return new AirliftCard(*this);
 }
 
-void AirliftCard::play(Deck& deck, Hand& hand){
-    auto it = find(hand.GetCards().begin(), hand.GetCards().end(), this); // find card pointer in hand
-    if (it == hand.GetCards().end()){ 
-        cout << "This card is not in the Hand, so you can't play it!" << endl; 
-        return;
-    }
+void AirliftCard::play(){
     cout << "Played AirliftCard! ";
-    hand.remove(this);
-    deck.add(this);
 }
 
 void AirliftCard:: print(ostream& os) const {
@@ -398,18 +367,26 @@ Card* DiplomacyCard::clone() const {
     return new DiplomacyCard(*this);
 }
 
-void DiplomacyCard::play(Deck& deck, Hand& hand){
-    auto it = find(hand.GetCards().begin(), hand.GetCards().end(), this); // find card pointer in hand
-    if (it == hand.GetCards().end()){ 
-        cout << "This card is not in the Hand, so you can't play it!" << endl; 
-        return;
-    }
+void DiplomacyCard::play(){
     cout << "Played DiplomacyCard! ";
-    hand.remove(this);
-    deck.add(this);
 }
 
 void DiplomacyCard:: print(ostream& os) const {
     os << "DiplomacyCard";
 }
 
+// Helper functions 
+
+void drawCard(Deck& deck, Hand& hand){
+    SpCard card = deck.draw();
+    hand.add(card);
+}
+
+void playCard(Deck& deck, Hand& hand){
+    cout << "Here are the cards in your hand: " << hand << "\n Choose the number of the card you want to play: " << endl;
+    int cardIndex;
+    cin >> cardIndex; 
+    SpCard card = hand.remove(cardIndex);
+    card->play();
+    deck.add(card);
+}

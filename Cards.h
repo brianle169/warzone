@@ -1,22 +1,23 @@
 #ifndef Cards_H
 #define Cards_H
-
+#include <memory>
 #include <iostream>
 #include <vector>
 
 using namespace std;
-
+class Card;
 class Deck; 
 class Hand; 
+typedef shared_ptr < Card > SpCard; // Type alias 
 
 // Abstract Card class
 class Card {
     public: 
         // Virtual enables polymorphism, = 0 makes it abstract 
-        virtual ~Card(){} // Destructor 
+        virtual ~Card(); // Destructor 
         Card& operator=(const Card&);
         virtual Card* clone() const = 0; // Const bcs copy should be read-only 
-        virtual void play(Deck& deck, Hand& hand) = 0; 
+        virtual void play() = 0; 
         virtual void print(ostream& os) const = 0; // For overloading stream operators with polymorphism 
 };
 
@@ -32,7 +33,7 @@ class BombCard : public Card {
         ~BombCard();
         BombCard& operator=(const BombCard& other);
         virtual Card* clone() const override; // override avoids function signature mismatch 
-        virtual void play(Deck& deck, Hand& hand); // virtual technincally implicit but kept for clarity 
+        virtual void play(); // virtual technincally implicit but kept for clarity 
         virtual void print(ostream& os) const override;
 };
 
@@ -43,7 +44,7 @@ class ReinforcementCard : public Card {
         ~ReinforcementCard();
         ReinforcementCard& operator=(const ReinforcementCard& other);
         virtual Card* clone() const override; // override avoids function signature mismatch 
-        virtual void play(Deck& deck, Hand& hand); // virtual technincally implicit but kept for clarity 
+        virtual void play(); // virtual technincally implicit but kept for clarity 
         virtual void print(ostream& os) const override;
 };
 
@@ -54,7 +55,7 @@ class BlockadeCard : public Card {
         ~BlockadeCard();
         BlockadeCard& operator=(const BlockadeCard& other);
         virtual Card* clone() const override; // override avoids function signature mismatch 
-        virtual void play(Deck& deck, Hand& hand); // virtual technincally implicit but kept for clarity 
+        virtual void play(); // virtual technincally implicit but kept for clarity 
         virtual void print(ostream& os) const override;
 };
 
@@ -65,7 +66,7 @@ class AirliftCard : public Card {
         ~AirliftCard();
         AirliftCard& operator=(const AirliftCard& other);
         virtual Card* clone() const override; // override avoids function signature mismatch 
-        virtual void play(Deck& deck, Hand& hand); // virtual technincally implicit but kept for clarity 
+        virtual void play(); // virtual technincally implicit but kept for clarity 
         virtual void print(ostream& os) const override;
 };
 
@@ -76,13 +77,13 @@ class DiplomacyCard : public Card {
         ~DiplomacyCard();
         DiplomacyCard& operator=(const DiplomacyCard& other);
         virtual Card* clone() const override; // override avoids function signature mismatch 
-        virtual void play(Deck& deck, Hand& hand); // virtual technincally implicit but kept for clarity 
+        virtual void play(); // virtual technincally implicit but kept for clarity 
         virtual void print(ostream& os) const override;
 };
 
 class Deck {
     private:
-        vector<Card*> pcards; // all cards in the deck
+        vector< SpCard > spCards; // all cards in the deck
     public: 
         Deck();
         Deck(const Deck& other);
@@ -92,8 +93,8 @@ class Deck {
         friend istream& operator>> (istream& in, const Deck& deck);
 
 
-        void draw(Hand& hand);
-        void add(Card* card);
+        SpCard draw();
+        void add(SpCard card);
         // Draw random card
         // Place it in the hand (and remove it from deck)
 
@@ -101,7 +102,7 @@ class Deck {
 
 class Hand {
     private:
-        vector<Card*> pcards; // all cards in the deck
+        vector< SpCard > spCards; // all cards in the deck
     public: 
         Hand();
         Hand(const Hand& other);
@@ -109,9 +110,12 @@ class Hand {
         Hand& operator=(const Hand& other);
         friend ostream& operator<< (ostream& out, const Hand& hand);
         friend istream& operator>> (istream& in, const Hand& hand);
-        void add(Card* card);
-        void remove(Card* card);
-        const vector<Card*>& GetCards() const;
-
+        void add(SpCard card);
+        SpCard remove(int index);
 };
+
+// Helper functions 
+void drawCard(Deck& deck, Hand& hand);
+void playCard(Deck& deck, Hand& hand);
+
 #endif
