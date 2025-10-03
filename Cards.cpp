@@ -6,22 +6,54 @@
 
 using namespace std;
 
+
+// After assignment 1, include Player and Order h files 
+// Temp Player and Order classes: 
+
+ostream& operator<<(ostream& os, const Player& player){
+    os << "Player's Order list contains: ";
+    for (int i = 0; i < player.orders.size(); i++){
+        os << *player.orders[i] << ", ";
+    }
+	return os; 
+}
+
+
+ostream& operator<<(ostream& os, const Order& order){
+    os << "Order";
+	return os; 
+}
+
+
+Player::Player(SpHand dealtHand)
+//  : hand (dealtHand)
+{
+    hand = dealtHand;
+}
+
+void Player::addOrder(SpOrder order){
+    cout << "Added order to player's list of orders \n";
+    orders.push_back(order);
+}
+
+Order::Order(){
+    cout << "Order created. \n";
+}
+
 // Implement operator overloading for Cards 
 ostream& operator<<(ostream& os, const Card& c) {
     c.print(os); // Call overridden print function 
     return os;
 }
 
-istream& operator>>(istream& is, const Card& c){
-    // What do i even input?
-    return is;
-}
-
+// Card destructor
 Card::~Card(){}
+/**
+ * Operator overloading 
+ */
 Card& Card::operator=(const Card&) {
     return *this;
 }
-
 
 // ------------Deck -------------
 // Constructors 
@@ -51,20 +83,11 @@ Deck& Deck::operator=(const Deck& other){
  * Output stream operator overload for Deck 
  */
 ostream& operator<< (ostream& out, const Deck& deck) {
-    out << "Deck size: " << deck.spCards.size() << ", contains: ";
+    out << "Deck contains: ";
     for (int i = 0; i < deck.spCards.size(); i++){
         out << *deck.spCards[i] << ", ";
     }
 	return out; 
-}
-
-/**
- * Input stream operator overload for Deck 
- */
-istream& operator>> (istream& in, const Deck& deck) {
-	cout << "Enter ... what?";
-	// in >> *();
-	return in; 
 }
 
 /**
@@ -91,7 +114,7 @@ SpCard Deck::draw(){
     
     SpCard card = spCards.back(); // make a copy of the card pointer at top of the deck 
     spCards.pop_back(); // remove card pointer at top of deck 
-    cout << "Drew a " << *card << ". ";
+    cout << "Drew a " << *card << ". \n";
     return card;
 }
 
@@ -127,20 +150,11 @@ Hand& Hand::operator=(const Hand& other){
  * Output stream operator overload for Hand 
  */
 ostream& operator<< (ostream& out, const Hand& hand) {
- out << "Hand size: " << hand.spCards.size() << ", contains: ";
+ out << "Hand contains: ";
     for (int i = 0; i < hand.spCards.size(); i++){
-        out << i << ": " << *hand.spCards[i] << ", ";
+        out << *hand.spCards[i] << ", ";
     }	
     return out; 
-}
-
-/**
- * Input stream operator overload for Hand 
- */
-istream& operator>> (istream& in, const Hand& hand) {
-	cout << "Enter ... what?";
-	// in >> *();
-	return in; 
 }
 
 /**
@@ -159,13 +173,14 @@ void Hand::add(SpCard card){
  * Remove a card pointer from the hand
  */
 SpCard Hand::remove(int index){
-    if (index < spCards.size() && index >= 0){
+    if (index >= spCards.size() && index < 0){
         cout << "Invalid entry.";
         return SpCard();
     }
 
     SpCard card = spCards[index];
     spCards.erase(spCards.begin() + index);
+    cout << "Removed card from the hand \n";
     return card;
 
 }
@@ -200,12 +215,16 @@ BombCard& BombCard::operator=(const BombCard& other){
     return *this;
 }
 
-Card* BombCard::clone() const {
-    return new BombCard(*this);
-}
 
-void BombCard::play(){
-    cout << "Played BombCard! ";
+void BombCard::play(Deck& deck, Hand& hand, Player& player){
+    SpCard card = hand.remove(0);
+    
+    if (card){ // avoid null ref exceptions 
+        cout << "Playing the top card of the hand, which is a " << *card << endl;
+        SpOrder newOrder = SpOrder(new Order());  
+        player.addOrder(newOrder); 
+        deck.add(card);
+    }
 }
 
 void BombCard:: print(ostream& os) const {
@@ -240,12 +259,15 @@ ReinforcementCard& ReinforcementCard::operator=(const ReinforcementCard& other){
     return *this;
 }
 
-Card* ReinforcementCard::clone() const {
-    return new ReinforcementCard(*this);
-}
-
-void ReinforcementCard::play(){
-    cout << "Played ReinforcementCard! ";
+void ReinforcementCard::play(Deck& deck, Hand& hand, Player& player){
+      SpCard card = hand.remove(0);
+    
+    if (card){ // avoid null ref exceptions 
+        cout << "Playing the top card of the hand, which is a " << *card << endl;
+        SpOrder newOrder = SpOrder(new Order());  
+        player.addOrder(newOrder); 
+        deck.add(card);
+    }
 }
 
 void ReinforcementCard:: print(ostream& os) const {
@@ -282,13 +304,16 @@ BlockadeCard& BlockadeCard::operator=(const BlockadeCard& other){
     return *this;
 }
 
-Card* BlockadeCard::clone() const {
-    return new BlockadeCard(*this);
-}
 
-void BlockadeCard::play(){
-    cout << "Played BlockadeCard! ";
-}
+void BlockadeCard::play(Deck& deck, Hand& hand, Player& player){
+    SpCard card = hand.remove(0);
+    
+    if (card){ // avoid null ref exceptions 
+        cout << "Playing the top card of the hand, which is a " << *card << endl;
+        SpOrder newOrder = SpOrder(new Order());  
+        player.addOrder(newOrder); 
+        deck.add(card);
+    }}
 
 void BlockadeCard:: print(ostream& os) const {
     os << "BlockadeCard";
@@ -323,13 +348,16 @@ AirliftCard& AirliftCard::operator=(const AirliftCard& other){
     return *this;
 }
 
-Card* AirliftCard::clone() const {
-    return new AirliftCard(*this);
-}
 
-void AirliftCard::play(){
-    cout << "Played AirliftCard! ";
-}
+void AirliftCard::play(Deck& deck, Hand& hand, Player& player){
+    SpCard card = hand.remove(0);
+    
+    if (card){ // avoid null ref exceptions 
+        cout << "Playing the top card of the hand, which is a " << *card << endl;
+        SpOrder newOrder = SpOrder(new Order());  
+        player.addOrder(newOrder); 
+        deck.add(card);
+    }}
 
 void AirliftCard:: print(ostream& os) const {
     os << "AirliftCard";
@@ -363,30 +391,16 @@ DiplomacyCard& DiplomacyCard::operator=(const DiplomacyCard& other){
     return *this;
 }
 
-Card* DiplomacyCard::clone() const {
-    return new DiplomacyCard(*this);
-}
-
-void DiplomacyCard::play(){
-    cout << "Played DiplomacyCard! ";
-}
+void DiplomacyCard::play(Deck& deck, Hand& hand, Player& player){
+    SpCard card = hand.remove(0);
+    
+    if (card){ // avoid null ref exceptions 
+        cout << "Playing the top card of the hand, which is a " << *card << endl;
+        SpOrder newOrder = SpOrder(new Order());  
+        player.addOrder(newOrder); 
+        deck.add(card);
+    }}
 
 void DiplomacyCard:: print(ostream& os) const {
     os << "DiplomacyCard";
-}
-
-// Helper functions 
-
-void drawCard(Deck& deck, Hand& hand){
-    SpCard card = deck.draw();
-    hand.add(card);
-}
-
-void playCard(Deck& deck, Hand& hand){
-    cout << "Here are the cards in your hand: " << hand << "\n Choose the number of the card you want to play: " << endl;
-    int cardIndex;
-    cin >> cardIndex; 
-    SpCard card = hand.remove(cardIndex);
-    card->play();
-    deck.add(card);
 }
