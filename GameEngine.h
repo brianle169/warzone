@@ -28,8 +28,9 @@ class GameEngine {
         void executeCommand(const string& command);
         // Current state name getter
         string getCurrentStateName() const;
-    private:
+        // State transition
         void transitionTo(GameState* newState);
+    private:
         GameState* currentState;
         string userCommand;
 };
