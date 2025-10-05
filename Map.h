@@ -9,23 +9,26 @@
 #include <queue>
 #include <set>
 #include <filesystem>
+class Player;
 
 class Continent;
-class Player;
 class Territory {
 public:
-
+	//constructors
 	Territory(const std::string& name, Continent* continent, int armies);
-	Territory(Territory& other);
+	Territory(const Territory& other);
 
 	void addEdge(Territory* edge);
 
+	//getters
 	std::string getName();
 	const std::vector<Territory*>& getEdges() const;
-
 	int getArmies();
 	Continent* getContinent();
+	Player* getPlayer();
 
+	Territory& operator=(const Territory& other);
+	friend std::ostream& operator<<(std::ostream& os, const Territory& t);
 
 private:
 	std::vector<Territory*> edges;
@@ -37,13 +40,20 @@ private:
 class Continent {
 public:
 
-	Continent(Continent& other);
-
+	
+	//constructors
 	Continent(const std::string& name, int bonus);
+	Continent(const Continent& other);
+
 	void addTerritory(Territory*);
 
+	//getters
 	std::string getName();
 	const std::vector<Territory*>& getTerritories() const;
+	int getBonus();
+
+	Continent& operator=(const Continent& other);
+	friend std::ostream& operator<<(std::ostream& os, const Continent& c);
 private:
 	std::vector<Territory*> territories;
 	std::string name;
@@ -52,34 +62,38 @@ private:
 
 class Map {
 public:
+	//constructors
 	Map();
 	Map(Map& other);
 
-
+	
 	void addTerritory(std::string& name, Continent* continent, int armies);
 	void addContinent(std::string const& name, int bonus);
-	Continent* getContinent(std::string& name);
-	Territory* getTerritory(std::string& name);
+
+	//getters
+	Continent* getContinent(const std::string& name);
+	Territory* getTerritory(const std::string& name);
 	const std::unordered_map<std::string, std::unique_ptr<Territory>>& getTerritories() const;
 	const std::unordered_map<std::string, std::unique_ptr<Continent>>& getContinents() const;
 
+
+	friend std::ostream& operator<<(std::ostream& os, const Map& m);
+	Map& operator=(const Map& other);
+	
+	//verification
 	bool isConnected();
 	bool continentsConnected();
 	bool territoryExclusive();
+	bool validate(const std::string& name);
 
-
+	
 private:
 	std::unordered_map<std::string, std::unique_ptr<Territory>> territories;
 	std::unordered_map<std::string, std::unique_ptr<Continent>> continents;
-
-
 };
+
 class MapLoader {
 public:
 	MapLoader();
-
 	std::unique_ptr<Map> load(const std::string&);
-
-private:
-
 };
