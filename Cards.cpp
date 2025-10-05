@@ -24,18 +24,19 @@ ostream& operator<<(ostream& os, const Order& order){
 	return os; 
 }
 
-
+// Create a player with the given hand
 Player::Player(SpHand dealtHand)
-//  : hand (dealtHand)
 {
     hand = dealtHand;
 }
 
+// Add a new order to the player's list
 void Player::addOrder(SpOrder order){
     cout << "Added order to player's list of orders \n";
     orders.push_back(order);
 }
 
+// Creates a default Order 
 Order::Order(){
     cout << "Order created. \n";
 }
@@ -48,40 +49,49 @@ ostream& operator<<(ostream& os, const Card& c) {
 
 // Card destructor
 Card::~Card(){}
-/**
- * Operator overloading 
- */
+
+// Operator overloading 
 Card& Card::operator=(const Card&) {
     return *this;
 }
 
+// Removes a card from the hand, creates a new list of orders and adds it to the player's list of orders, and adds the card back to the deck 
+void Card::play(Deck& deck, Hand& hand, Player& player){
+     SpCard card = hand.remove(0);
+    
+    if (card){ // avoid null ref exceptions 
+        cout << "Playing the top card of the hand, which is a " << *card << endl;
+        SpOrder newOrder = SpOrder(new Order());  
+        player.addOrder(newOrder); 
+        deck.add(card);
+    }
+}
+
 // ------------Deck -------------
-// Constructors 
+
+// Default constructor 
 Deck::Deck(){
     cout << "Deck created." << endl;
 }
 
+// Copy constructor 
 Deck::Deck(const Deck& other){
     cout << "Deck copied." << endl;
 }
 
+// Destructor 
 Deck::~Deck(){
     cout << "Deck destroyed." << endl;
 }
 
 // Operator overloading for Deck
-/**
- * Assignment operator overload for Deck
- */
 Deck& Deck::operator=(const Deck& other){
     if (this == &other) return *this;  // prevents bugs with self-assignment
     // handle any member deletion/reassignment here in the future 
     return *this;
 }
 
-/**
- * Output stream operator overload for Deck 
- */
+// Output stream operator overload for Deck 
 ostream& operator<< (ostream& out, const Deck& deck) {
     out << "Deck contains: ";
     for (int i = 0; i < deck.spCards.size(); i++){
@@ -90,9 +100,7 @@ ostream& operator<< (ostream& out, const Deck& deck) {
 	return out; 
 }
 
-/**
- * Adds a card pointer to the deck if it does not already exist in it
- */
+// Adds a card pointer to the deck if it does not already exist in it
 void Deck::add(SpCard card){
     auto it = find(spCards.begin(), spCards.end(), card); // find card pointer in hand
     if (it != spCards.end()){ 
@@ -103,9 +111,8 @@ void Deck::add(SpCard card){
     spCards.push_back(card);
 }
 
-/**
- * If it is not empty, draws a card from the top of the deck and adds it to the hand 
- */
+
+// If it is not empty, draws a card from the top of the deck and returns it
 SpCard Deck::draw(){
     if (spCards.empty()){
         cout << "The deck is empty" << endl;
@@ -120,24 +127,21 @@ SpCard Deck::draw(){
 
 
 // ------------Hand -------------
-// Constructors 
+// Default constructor
 Hand::Hand(){
     cout << "Hand created." << endl;
 }
-
+// Copy constructor 
 Hand::Hand(const Hand& other){
     cout << "Hand copied." << endl;
 }
-
+//Destructor 
 Hand::~Hand(){
     // initialize future members?
     cout << "Hand destroyed." << endl;
 }
 
 // Operator overloading for Hand
-/**
- * Assignment operator overload for Deck
- */
 Hand& Hand::operator=(const Hand& other){
     if (this == &other){ // prevents bugs with self-assignment
         return *this;
@@ -146,9 +150,7 @@ Hand& Hand::operator=(const Hand& other){
     return *this;
 }
 
-/**
- * Output stream operator overload for Hand 
- */
+// Output stream operator overload for Hand 
 ostream& operator<< (ostream& out, const Hand& hand) {
  out << "Hand contains: ";
     for (int i = 0; i < hand.spCards.size(); i++){
@@ -157,9 +159,7 @@ ostream& operator<< (ostream& out, const Hand& hand) {
     return out; 
 }
 
-/**
- * Adds a card pointer to the hand if it does not already exist in it
- */
+// Adds a card pointer to the hand if it does not already exist in it
 void Hand::add(SpCard card){
   auto it = find(spCards.begin(), spCards.end(), card); // find card pointer in hand
     if (it != spCards.end()){ 
@@ -169,9 +169,7 @@ void Hand::add(SpCard card){
     cout << "Added " << *card << " to the Hand." << endl;
     spCards.push_back(card);}
 
-/**
- * Remove a card pointer from the hand
- */
+// Remove a card pointer from the hand
 SpCard Hand::remove(int index){
     if (index >= spCards.size() && index < 0){
         cout << "Invalid entry.";
@@ -189,44 +187,29 @@ SpCard Hand::remove(int index){
 
 // ------------BombCard-------------
 
+// Default constructor 
 BombCard::BombCard(){
-    // initialize future members?
     cout << "BombCard created." << endl;
-
 }
 
+// Copy constructor 
 BombCard::BombCard(const BombCard& other){
-    // initialize future members?
     cout << "BombCard copied." << endl;
-
 }
-
+// Destructor 
 BombCard::~BombCard(){
-    // initialize future members?
     cout << "BombCard destroyed." << endl;
-
 }
 
+// Assignment operator 
 BombCard& BombCard::operator=(const BombCard& other){
     if (this == &other){ // prevents bugs with self-assignment
         return *this;
     }
-    // Make sure to handle member deletion/copying here in the future
     return *this;
 }
 
-
-void BombCard::play(Deck& deck, Hand& hand, Player& player){
-    SpCard card = hand.remove(0);
-    
-    if (card){ // avoid null ref exceptions 
-        cout << "Playing the top card of the hand, which is a " << *card << endl;
-        SpOrder newOrder = SpOrder(new Order());  
-        player.addOrder(newOrder); 
-        deck.add(card);
-    }
-}
-
+// Override print method to output stream 
 void BombCard:: print(ostream& os) const {
     os << "BombCard";
 }
@@ -234,42 +217,30 @@ void BombCard:: print(ostream& os) const {
 
 //------------ReinforcementCard----------------
 
+// Default constructor 
 ReinforcementCard::ReinforcementCard(){
-    // initialize future members?
     cout << "ReinforcementCard created." << endl;
-
 }
 
+// Copy constructor 
 ReinforcementCard::ReinforcementCard(const ReinforcementCard& other){
-    // initialize future members?
     cout << "ReinforcementCard copied." << endl;
-
 }
 
+// Destructor 
 ReinforcementCard::~ReinforcementCard(){
-    // initialize future members?
     cout << "ReinforcementCard destroyed." << endl;
 }
 
+// Assignment operator 
 ReinforcementCard& ReinforcementCard::operator=(const ReinforcementCard& other){
     if (this == &other){ // prevents bugs with self-assignment
         return *this;
     }
-    // Make sure to handle member deletion/copying here in the future
     return *this;
 }
 
-void ReinforcementCard::play(Deck& deck, Hand& hand, Player& player){
-      SpCard card = hand.remove(0);
-    
-    if (card){ // avoid null ref exceptions 
-        cout << "Playing the top card of the hand, which is a " << *card << endl;
-        SpOrder newOrder = SpOrder(new Order());  
-        player.addOrder(newOrder); 
-        deck.add(card);
-    }
-}
-
+// Override print method to output stream 
 void ReinforcementCard:: print(ostream& os) const {
     os << "ReinforcementCard";
 }
@@ -277,130 +248,91 @@ void ReinforcementCard:: print(ostream& os) const {
 
 //------------BlockadeCard----------------
 
-
+// Default constructor 
 BlockadeCard::BlockadeCard(){
-    // initialize future members?
     cout << "BlockadeCard created." << endl;
-
 }
 
+// Copy constructor 
 BlockadeCard::BlockadeCard(const BlockadeCard& other){
-    // initialize future members?
     cout << "BlockadeCard copied." << endl;
-
 }
 
+// Destructor 
 BlockadeCard::~BlockadeCard(){
-    // initialize future members?
     cout << "BlockadeCard destroyed." << endl;
-
 }
 
+// Assignment operator 
 BlockadeCard& BlockadeCard::operator=(const BlockadeCard& other){
     if (this == &other){ // prevents bugs with self-assignment
         return *this;
     }
-    // Make sure to handle member deletion/copying here in the future
     return *this;
 }
 
-
-void BlockadeCard::play(Deck& deck, Hand& hand, Player& player){
-    SpCard card = hand.remove(0);
-    
-    if (card){ // avoid null ref exceptions 
-        cout << "Playing the top card of the hand, which is a " << *card << endl;
-        SpOrder newOrder = SpOrder(new Order());  
-        player.addOrder(newOrder); 
-        deck.add(card);
-    }}
-
+// Override print method to output stream 
 void BlockadeCard:: print(ostream& os) const {
     os << "BlockadeCard";
 }
 
 //------------AirliftCard----------------
 
-
+// Default constructor 
 AirliftCard::AirliftCard(){
-    // initialize future members?
     cout << "AirliftCard created." << endl;
 
 }
 
+// Copy constructor 
 AirliftCard::AirliftCard(const AirliftCard& other){
-    // initialize future members?
     cout << "AirliftCard copied." << endl;
-
 }
 
+// Destructor 
 AirliftCard::~AirliftCard(){
-    // initialize future members?
     cout << "AirliftCard destroyed." << endl;
-
 }
 
+// Assignment operator 
 AirliftCard& AirliftCard::operator=(const AirliftCard& other){
     if (this == &other){ // prevents bugs with self-assignment
         return *this;
     }
-    // Make sure to handle member deletion/copying here in the future
     return *this;
 }
 
-
-void AirliftCard::play(Deck& deck, Hand& hand, Player& player){
-    SpCard card = hand.remove(0);
-    
-    if (card){ // avoid null ref exceptions 
-        cout << "Playing the top card of the hand, which is a " << *card << endl;
-        SpOrder newOrder = SpOrder(new Order());  
-        player.addOrder(newOrder); 
-        deck.add(card);
-    }}
-
+// Override print method to output stream 
 void AirliftCard:: print(ostream& os) const {
     os << "AirliftCard";
 }
 
 //------------DiplomacyCard----------------
 
+// Default constructor 
 DiplomacyCard::DiplomacyCard(){
-    // initialize future members?
     cout << "DiplomacyCard created." << endl;
-
 }
 
+// Copy constructor 
 DiplomacyCard::DiplomacyCard(const DiplomacyCard& other){
-    // initialize future members?
     cout << "DiplomacyCard copied." << endl;
-
 }
 
+// Destructor 
 DiplomacyCard::~DiplomacyCard(){
-    // initialize future members?
     cout << "DiplomacyCard destroyed." << endl;
-
 }
 
+// Assignment operator 
 DiplomacyCard& DiplomacyCard::operator=(const DiplomacyCard& other){
     if (this == &other){ // prevents bugs with self-assignment
         return *this;
     }
-    // Make sure to handle member deletion/copying here in the future
     return *this;
 }
 
-void DiplomacyCard::play(Deck& deck, Hand& hand, Player& player){
-    SpCard card = hand.remove(0);
-    
-    if (card){ // avoid null ref exceptions 
-        cout << "Playing the top card of the hand, which is a " << *card << endl;
-        SpOrder newOrder = SpOrder(new Order());  
-        player.addOrder(newOrder); 
-        deck.add(card);
-    }}
-
+// Override print method to output stream 
 void DiplomacyCard:: print(ostream& os) const {
     os << "DiplomacyCard";
 }

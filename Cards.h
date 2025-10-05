@@ -15,7 +15,7 @@ typedef shared_ptr < Order > SpOrder; // Type alias
 
 
 // After assignment 1, include Player and Order h files 
-
+// PROFESSOR GAVE THE OK
 // Temp Player and Order classes: 
 
 // Represents an order in the game.
@@ -51,7 +51,7 @@ class Card {
         // Virtual enables polymorphism, = 0 makes it abstract 
         virtual ~Card(); // Destructor 
         Card& operator=(const Card&);
-        virtual void play(Deck& deck, Hand& hand, Player& player) = 0; 
+        virtual void play(Deck& deck, Hand& hand, Player& player); 
         virtual void print(ostream& os) const = 0; // For overloading stream operators with polymorphism 
 };
 
@@ -68,8 +68,6 @@ class BombCard : public Card {
         ~BombCard();
         // Assignment operator
         BombCard& operator=(const BombCard& other);
-        // Plays the BombCard
-        virtual void play(Deck& deck, Hand& hand, Player& player);  
         // Prints the BombCard name
         virtual void print(ostream& os) const override;
 };
@@ -84,8 +82,6 @@ class ReinforcementCard : public Card {
         ~ReinforcementCard();
         // Assignment operator
         ReinforcementCard& operator=(const ReinforcementCard& other);
-        // Plays the ReinforcementCard
-        virtual void play(Deck& deck, Hand& hand, Player& player); 
         // Prints the ReinforcementCard name
         virtual void print(ostream& os) const override;
 };
@@ -100,8 +96,6 @@ class BlockadeCard : public Card {
         ~BlockadeCard();
         // Assignment operator
         BlockadeCard& operator=(const BlockadeCard& other);
-        // Plays the BlockadeCard
-        virtual void play(Deck& deck, Hand& hand, Player& player);
         // Prints the BlockadeCard name
         virtual void print(ostream& os) const override;
 };
@@ -116,8 +110,6 @@ class AirliftCard : public Card {
         ~AirliftCard();
         // Assignment operator
         AirliftCard& operator=(const AirliftCard& other);
-        // Plays the AirlifeCard
-        virtual void play(Deck& deck, Hand& hand, Player& player);
         // Prints the AirliftCard name
         virtual void print(ostream& os) const override;
 };
@@ -132,8 +124,6 @@ class DiplomacyCard : public Card {
         ~DiplomacyCard();
         // Assignment operator
         DiplomacyCard& operator=(const DiplomacyCard& other);
-        // Plays the DiplomacyCard
-        virtual void play(Deck& deck, Hand& hand, Player& player); // virtual technincally implicit but kept for clarity 
         virtual void print(ostream& os) const override;
 };
 
