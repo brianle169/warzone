@@ -19,7 +19,7 @@ static bool getCard() {
     return false;
 }
 
-//ORDER CLASS DEFINITION
+//ORDER CLASS DEFINITION---------------------------------------------------
 
 Order::Order(std::string orderN, Player *p) {
     orderName=orderN;
@@ -49,7 +49,7 @@ void Order::setExecutionEffect(const std::string& effect) {
     executionEffect = effect;
 }
 
-//DEPLOY CLASS DEFINITON
+//DEPLOY CLASS DEFINITON---------------------------------------------------
 
 Deploy::Deploy(Player* p,Territory* targetT, int numA){
     player=p;
@@ -96,7 +96,7 @@ std::unique_ptr<Order> Deploy::clone() const {
     return std::make_unique<Deploy>(*this);
 }
 
-//ADVANCE CLASS DEFINITION
+//ADVANCE CLASS DEFINITION---------------------------------------------------
 
 Advance::Advance(Player* p, int moveNumArmy, Territory *baseTerritory, Territory *wantedTerritory) {
     player=p;
@@ -145,7 +145,7 @@ void Advance::execute() {
                 sourceTerritory->armies -= numArmy;
                 targetTerritory->armies = result;
                 targetTerritory->player = player;
-                //ass a card to the deck since conquered
+                //add a card to the deck since conquered
                 executed = true;
                 setExecutionEffect("Successfully conquered and advanced " + to_string(numArmy) + " troops from " + sourceTerritory->name + " to " + targetTerritory->name+ "; "+ sourceTerritory->name + " has now " + to_string(sourceTerritory->armies) + " troops and "  + targetTerritory->name + " has now " + to_string(targetTerritory->armies) + " troops");
 
@@ -165,7 +165,7 @@ std::unique_ptr<Order> Advance::clone() const {
     return std::make_unique<Advance>(*this);
 }
 
-//BOMB CLASS DEFINITION
+//BOMB CLASS DEFINITION---------------------------------------------------
 
 Bomb::Bomb(Player* p, Territory *wantedTerritory) {
     player=p;
@@ -204,7 +204,7 @@ std::unique_ptr<Order> Bomb::clone() const {
     return std::make_unique<Bomb>(*this);
 }
 
-//BLOCKADE CLASS DEFINTION
+//BLOCKADE CLASS DEFINTION---------------------------------------------------
 
 Blockade::Blockade(Player* p, Territory *wantedTerritory) {
     player=p;
@@ -245,7 +245,7 @@ std::unique_ptr<Order> Blockade::clone() const {
     return std::make_unique<Blockade>(*this);
 }
 
-//AIRLIFT CLASS DEFINITION
+//AIRLIFT CLASS DEFINITION---------------------------------------------------
 
 Airlift::Airlift(Player* p, int nArmy, Territory *sTerritory, Territory *tTerritory) {
     player=p;
@@ -290,7 +290,7 @@ std::unique_ptr<Order> Airlift::clone() const {
     return std::make_unique<Airlift>(*this);
 }
 
-//NEGOTIATE CLASS DEFINITION
+//NEGOTIATE CLASS DEFINITION---------------------------------------------------
 
 Negotiate::Negotiate(Player *p, Player *tPlayer) {
     player=p;
@@ -330,7 +330,7 @@ std::unique_ptr<Order> Negotiate::clone() const {
     return std::make_unique<Negotiate>(*this);
 }
 
-//ORDERSLIST CLASS DEFINITION
+//ORDERSLIST CLASS DEFINITION---------------------------------------------------
 
 OrdersList::OrdersList(const OrdersList& other) {
     for (const auto& order : other.orders) {
@@ -388,7 +388,7 @@ Order* OrdersList::getOrder(int index) const {
     return nullptr;
 }
 
-//ORDERSLIST TEST FUNCTION DEFINITION
+//ORDERSLIST TEST FUNCTION DEFINITION---------------------------------------------------
 
 void testOrdersList() {
     Player* player1 = new Player("Anas");
