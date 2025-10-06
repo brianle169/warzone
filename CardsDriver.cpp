@@ -73,11 +73,3 @@ void testCards(){
 
     cout << "\n========== Cleanup ============ \n";   
 }
-
-
-// Main entry point for the program 
-int main(){
-    // Play test run 
-    testCards();    
-
-}
