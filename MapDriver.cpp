@@ -6,7 +6,7 @@ void testLoadMaps() {
 	R"(_62_small - CASTLE MOONBAT\_62_ small - CASTLE MOONBAT.map)",
 	R"(Flower K.map)",
 	R"(Australia.map)",
-	R"(emptytext.txt)"
+	R"(InvalidMap.txt)"
 	};
 	std::vector<std::unique_ptr<Map>> maps;
 
@@ -33,6 +33,5 @@ void testLoadMaps() {
 }
 int main() {
 	testLoadMaps();
-	std::cin.get();
 	return 0;
 }

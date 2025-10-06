@@ -28,6 +28,9 @@
 	Continent* Territory::getContinent() {
 		return this->continent;
 	}
+	Player* Territory::getPlayer() {
+		return this->player;
+	}
 	//assignment
 	Territory& Territory::operator=(const Territory& other) {
 		//part of the same continent in memory and has the same edges
