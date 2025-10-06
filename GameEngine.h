@@ -252,4 +252,7 @@ class EndState final : public GameState {
 
 };
 
+// Free test function for Game Engine Section
+void testGameStates();
+
 #endif
