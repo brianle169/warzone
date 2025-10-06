@@ -2,7 +2,9 @@
 #include <iostream>
 using namespace std;
 
-//Once merging; Delete player and territory class
+//TEMP CLASSES; Delete player, territory and hand class after assignment1
+//PROF GAVE THE OK
+
 Player::Player(const std::string &n) {
     name=n;
 }
@@ -13,7 +15,11 @@ Territory::Territory(const std::string &n, Player *p, int a) {
     armies=a;
 }
 
-////////////////////////////////////////////////////////////////////////////
+static bool getCard() {
+    return false;
+}
+
+//ORDER CLASS DEFINITION
 
 Order::Order(std::string orderN, Player *p) {
     orderName=orderN;
@@ -34,7 +40,7 @@ Order& Order::operator=(const Order &other) {
 ostream& operator<<(ostream& os, const Order& order) {
     os << order.player->name << ": " << order.getName();
     if (order.executed) {
-        os << " [EXECUTED] - " << order.executionEffect;
+        os << " EXECUTED -> " << order.executionEffect;
     }
     return os;
 }
@@ -43,7 +49,7 @@ void Order::setExecutionEffect(const std::string& effect) {
     executionEffect = effect;
 }
 
-////////////////////////////////////////////////////////////////////////////
+//DEPLOY CLASS DEFINITON
 
 Deploy::Deploy(Player* p,Territory* targetT, int numA){
     player=p;
@@ -86,7 +92,11 @@ void Deploy::execute() {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////
+std::unique_ptr<Order> Deploy::clone() const {
+    return std::make_unique<Deploy>(*this);
+}
+
+//ADVANCE CLASS DEFINITION
 
 Advance::Advance(Player* p, int moveNumArmy, Territory *baseTerritory, Territory *wantedTerritory) {
     player=p;
@@ -114,7 +124,7 @@ ostream& operator<<(ostream& os, const Advance& a) {
 }
 
 bool Advance::validate() {
-    if (player != sourceTerritory->player || sourceTerritory->armies < numArmy || numArmy < 0) { //ADD A CONDITION IF THE NEXT TERRITORY IS NOT ADJACENT
+    if (player != sourceTerritory->player || sourceTerritory->armies < numArmy || numArmy < 0 && targetTerritory->isAdjacent()) { //TEMP FUNCTION UNTIL ASSIGNMENT 2 WHERE WE CAN USE OTHER CLASSES AND FILES
         return false;
     }
     return true;
@@ -122,24 +132,24 @@ bool Advance::validate() {
 
 void Advance::execute() {
     if (validate()) {
-        if (player == targetTerritory->player) { //belongs to the player
+        if (player == targetTerritory->player) { //the player wants to advance troops on hiw own territory
             sourceTerritory->armies -= numArmy;
             targetTerritory->armies += numArmy;
             executed = true;
             setExecutionEffect("Successfully advanced " + to_string(numArmy) + " troops from " + sourceTerritory->name + " to " + targetTerritory->name + "; " + targetTerritory->name + " has now " + to_string(targetTerritory->armies) + " troops");
         }
 
-        if (player != targetTerritory->player) {
-            if (numArmy*0.6 > targetTerritory->armies*0.7) { //attack mechanism
+        if (player != targetTerritory->player) { //the player successfully conquered the territory
+            if (numArmy*0.6 > targetTerritory->armies*0.7) {
                 int result = numArmy*0.6 - targetTerritory->armies*0.7;
                 sourceTerritory->armies -= numArmy;
                 targetTerritory->armies = result;
                 targetTerritory->player = player;
-                //ADD a card to the deck since conquered
+                //ass a card to the deck since conquered
                 executed = true;
                 setExecutionEffect("Successfully conquered and advanced " + to_string(numArmy) + " troops from " + sourceTerritory->name + " to " + targetTerritory->name+ "; "+ sourceTerritory->name + " has now " + to_string(sourceTerritory->armies) + " troops and "  + targetTerritory->name + " has now " + to_string(targetTerritory->armies) + " troops");
 
-            } else { //successfully defended
+            } else { //the player successfully defended his own territory
                 int result = targetTerritory->armies*0.7 - numArmy*0.6;
                 sourceTerritory->armies -= numArmy;
                 targetTerritory->armies = result;
@@ -150,7 +160,12 @@ void Advance::execute() {
         }
     }
 }
-////////////////////////////////////////////////////////////////////////////
+
+std::unique_ptr<Order> Advance::clone() const {
+    return std::make_unique<Advance>(*this);
+}
+
+//BOMB CLASS DEFINITION
 
 Bomb::Bomb(Player* p, Territory *wantedTerritory) {
     player=p;
@@ -172,7 +187,7 @@ ostream &operator<<(ostream &os, const Bomb& b) {
 }
 
 bool Bomb::validate() {
-    if (player == targetTerritory->player ) { //Not bomb your own territory, Not have the bomb card in your hand, ADD A CONDITION IF THE NEXT TERRITORY IS NOT ADJACENT
+    if (player == targetTerritory->player &&  getCard() == false && targetTerritory->isAdjacent() ) { //TEMP FUNCTION UNTIL ASSIGNMENT 2 WHERE WE CAN USE OTHER CLASSES AND FILES
         return false;
     }
     return true;
@@ -185,7 +200,11 @@ void Bomb::execute() {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////
+std::unique_ptr<Order> Bomb::clone() const {
+    return std::make_unique<Bomb>(*this);
+}
+
+//BLOCKADE CLASS DEFINTION
 
 Blockade::Blockade(Player* p, Territory *wantedTerritory) {
     player=p;
@@ -207,7 +226,7 @@ ostream &operator<<(ostream &os, const Blockade& b) {
 }
 
 bool Blockade::validate() {
-    if (player != targetTerritory->player) { //Not your territory, Not have the blockade card
+    if (player != targetTerritory->player && getCard() == false) { //TEMP FUNCTION UNTIL ASSIGNMENT 2 WHERE WE CAN USE OTHER CLASSES AND FILES
         return false;
     }
     return true;
@@ -222,7 +241,11 @@ void Blockade::execute() {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////
+std::unique_ptr<Order> Blockade::clone() const {
+    return std::make_unique<Blockade>(*this);
+}
+
+//AIRLIFT CLASS DEFINITION
 
 Airlift::Airlift(Player* p, int nArmy, Territory *sTerritory, Territory *tTerritory) {
     player=p;
@@ -249,7 +272,7 @@ ostream &operator<<(ostream &os, const Airlift& a) {
 }
 
 bool Airlift::validate() {
-    if (player != targetTerritory->player || sourceTerritory->armies < numArmy || numArmy < 0) { //Not have the airlift card
+    if (player != targetTerritory->player || sourceTerritory->armies < numArmy || numArmy < 0 && getCard() == false) { //TEMP FUNCTION UNTIL ASSIGNMENT 2 WHERE WE CAN USE OTHER CLASSES AND FILES
         return false;
     }
     return true;
@@ -263,7 +286,11 @@ void Airlift::execute() {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////
+std::unique_ptr<Order> Airlift::clone() const {
+    return std::make_unique<Airlift>(*this);
+}
+
+//NEGOTIATE CLASS DEFINITION
 
 Negotiate::Negotiate(Player *p, Player *tPlayer) {
     player=p;
@@ -286,7 +313,7 @@ ostream &operator<<(ostream &os, const Negotiate& n) {
     return os;
 }
 bool Negotiate::validate() {
-    if (player == targetPlayer) { //Not have the negotiate card
+    if (player == targetPlayer && getCard() == false) { //TEMP FUNCTION UNTIL ASSIGNMENT 2 WHERE WE CAN USE OTHER CLASSES AND FILES
         return false;
     }
     return true;
@@ -295,11 +322,15 @@ void Negotiate::execute() {
     if (validate()) {
         //MAKE SURE NO PLAYER CAN CALL THE ADVANCE ORDER ON THE OTHER
         executed = true;
-        setExecutionEffect("Successfully negotiate with " + targetPlayer->name);
+        setExecutionEffect("Successfully negotiate with " + targetPlayer->name + ". You cannot call the advance order for the next round");
     }
 }
 
-////////////////////////////////////////////////////////////////////////////
+std::unique_ptr<Order> Negotiate::clone() const {
+    return std::make_unique<Negotiate>(*this);
+}
+
+//ORDERSLIST CLASS DEFINITION
 
 OrdersList::OrdersList(const OrdersList& other) {
     for (const auto& order : other.orders) {
@@ -319,7 +350,7 @@ OrdersList& OrdersList::operator=(const OrdersList& other) {
 
 ostream &operator<<(ostream &os, const OrdersList& list) {
     for (const auto& order : list.orders) {
-        os << order->getPlayer() << ": orderList : " << order->getName() << endl;
+        os << order->getPlayer() << ": Order -> " << order->getName() << endl;
     }
     return os;
 }
@@ -330,24 +361,20 @@ void OrdersList::addOrder(std::unique_ptr<Order> order) {
     }
 }
 
-bool OrdersList::remove(int index) {
+void OrdersList::remove(int index) {
     if (index >= 0 && index < static_cast<int>(orders.size())) {
         orders.erase(orders.begin() + index);
-        return true;
     }
-    return false;
 }
 
-bool OrdersList::move(int fromIndex, int toIndex) {
+void OrdersList::move(int fromIndex, int toIndex) {
     if (fromIndex >= 0 && fromIndex < static_cast<int>(orders.size()) &&
         toIndex >= 0 && toIndex < static_cast<int>(orders.size())) {
 
         auto order = std::move(orders[fromIndex]);
         orders.erase(orders.begin() + fromIndex);
         orders.insert(orders.begin() + toIndex, std::move(order));
-        return true;
         }
-    return false;
 }
 
 size_t OrdersList::size() const {
@@ -361,26 +388,7 @@ Order* OrdersList::getOrder(int index) const {
     return nullptr;
 }
 
-//All of the clones methods
-std::unique_ptr<Order> Deploy::clone() const {
-    return std::make_unique<Deploy>(*this);
-}
-std::unique_ptr<Order> Advance::clone() const {
-    return std::make_unique<Advance>(*this);
-}
-std::unique_ptr<Order> Bomb::clone() const {
-    return std::make_unique<Bomb>(*this);
-}
-std::unique_ptr<Order> Blockade::clone() const {
-    return std::make_unique<Blockade>(*this);
-}
-std::unique_ptr<Order> Airlift::clone() const {
-    return std::make_unique<Airlift>(*this);
-}
-std::unique_ptr<Order> Negotiate::clone() const {
-    return std::make_unique<Negotiate>(*this);
-}
-////////////////////////////////////////////////////////////////////////////
+//ORDERSLIST TEST FUNCTION DEFINITION
 
 void testOrdersList() {
     Player* player1 = new Player("Anas");
@@ -408,7 +416,7 @@ void testOrdersList() {
     orders_list.addOrder(make_unique<Airlift>(player1,10,territory1,territory2));//invalid,not his territory
     orders_list.addOrder(make_unique<Airlift>(player1,10,territory1,territory3));//valid
     orders_list.addOrder(make_unique<Negotiate>(player1,player1));//invalid, same player
-    orders_list.addOrder(make_unique<Negotiate>(player1,player2));
+    orders_list.addOrder(make_unique<Negotiate>(player1,player2));//valid
 
 
 
@@ -418,9 +426,9 @@ void testOrdersList() {
     for (int i = 0; i < static_cast<int>(orders_list.size()); ++i) {
         Order* order = orders_list.getOrder(i);
         if (order->validate()) {
-            cout << order->getPlayer() << ": " << order->getName() << " [VALIDATION] - " << "Valid" << endl;
+            cout << order->getPlayer() << ": " << order->getName() << " STATE -> " << "Valid" << endl;
         } else {
-            cout << order->getPlayer() << ": " << order->getName() << " [VALIDATION] - " << "Invalid" << endl;
+            cout << order->getPlayer() << ": " << order->getName() << " STATE -> " << "Invalid" << endl;
         }
     }
 
@@ -429,19 +437,23 @@ void testOrdersList() {
         Order* order = orders_list.getOrder(i);
         if (order->validate()) {
             order->execute();
-            //change every execute statement
             cout << *order << endl;
 
         }
     }
 
     cout << "\n4. Testing move operation..." << endl;
-    if (orders_list.move(5,0)) {
-        cout << orders_list << endl;
-    }
+    orders_list.move(5,0);
+    orders_list.move(13,1);
+    cout << orders_list << endl;
+
 
     cout << "\n5. Testing remove operation..." << endl;
-    if (orders_list.remove(1)) {
-        cout << orders_list << endl;
-    }
+    orders_list.remove(0);
+    orders_list.remove(0);
+    orders_list.remove(0);
+    orders_list.remove(0);
+    orders_list.remove(9);
+    cout << orders_list << endl;
+
 };

@@ -2,7 +2,8 @@
 #include <iostream>
 #include <vector>
 
-//Once merging; Delete player and territory class
+//TEMP CLASSES; Delete player, territory and hand class after assignment1
+//PROF GAVE THE OK
 class Player {
 public:
     std::string name;
@@ -14,6 +15,11 @@ public:
     Player* player;
     int armies;
     Territory(const std::string& n, Player* p, int a);
+    bool isAdjacent() {return true;}
+};
+class Hand {
+public:
+    static bool getCard();
 };
 
 class Order {
@@ -42,12 +48,12 @@ private:
     Territory* targetTerritory;
     int numArmies;
 public:
-    Deploy() = default;                                   // default constructor
+    Deploy() = default; // default constructor
     Deploy(Player* p, Territory* targetTerritory, int numArmies); // parameterized constructor
-    Deploy(const Deploy& other);               // copy constructor
-    Deploy& operator=(const Deploy& other);   // assignment operator
-    friend std::ostream& operator<<(std::ostream &strm, const Deploy&);//stream insertion operator
-    virtual ~Deploy() = default;                                 // destructor
+    Deploy(const Deploy& other); // copy constructor
+    Deploy& operator=(const Deploy& other); // assignment operator
+    friend std::ostream& operator<<(std::ostream &strm, const Deploy&); //stream insertion operator
+    virtual ~Deploy() = default; // destructor
     bool validate();
     void execute();
     std::unique_ptr<Order> clone() const override;
@@ -148,8 +154,8 @@ public:
     ~OrdersList() = default;
 
     void addOrder(std::unique_ptr<Order> order);
-    bool move(int fromIndex, int toIndex); //or void
-    bool remove(int fromIndex); //or void
+    void move(int fromIndex, int toIndex);
+    void remove(int fromIndex);
     Order* getOrder(int index) const;
     size_t size() const;
 
