@@ -168,4 +168,7 @@ class Hand {
         SpCard remove(int index);
 };
 
+    void testCards();
+
+
 #endif
