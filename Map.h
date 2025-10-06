@@ -97,3 +97,6 @@ public:
 	MapLoader();
 	std::unique_ptr<Map> load(const std::string&);
 };
+//free func
+void testLoadMaps();
+int main();
