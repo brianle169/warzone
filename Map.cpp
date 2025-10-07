@@ -12,6 +12,7 @@ Territory::Territory(const Territory& other)
 	: name(other.name), continent(other.continent), armies(other.armies), edges(other.edges) {
 	//part of the same continent in memory and has the same edges
 }
+// Add an edge to the adjacency list
 void Territory::addEdge(Territory* edge) {
 	edges.push_back(edge);
 }
@@ -61,6 +62,7 @@ std::ostream& operator<<(std::ostream& os, const Territory& t) {
 	return os;
 }
 
+// Checks adjacency 
 bool Territory::isEdge(Territory* territory) {
 	for(Territory* edge: this->edges) {
 		if(edge == territory) {
@@ -217,36 +219,36 @@ bool Map::isConnected() {//BFS search
 	return true;
 }
 
-	bool Map::continentsConnected() {//BFS search in strictly each continent's terretories 
-		for (auto& c : this->getContinents()) {
-			const auto& terrs = c.second->getTerritories();
-			if (terrs.empty() || !terrs[0]) {
-				return false;
-			}
-
-			std::queue<Territory*> q;
-			q.push(terrs[0]);
-
-			std::set<Territory*> visited;
-			visited.insert(terrs[0]);
-
-			while (!q.empty()) {
-
-				for (Territory* edge : q.front()->getEdges()) {
-					if (edge && edge->getContinent() && edge->getContinent() == c.second.get() 
-						&& visited.insert(edge).second) {
-						//checks if edge is in the continent, and if they each exist
-						q.push(edge);
-					}
-				}
-				q.pop();
-			}
-			if (visited.size() != c.second->getTerritories().size()) {
-				return false;
-			}
+bool Map::continentsConnected() {//BFS search in strictly each continent's terretories 
+	for (auto& c : this->getContinents()) {
+		const auto& terrs = c.second->getTerritories();
+		if (terrs.empty() || !terrs[0]) {
+			return false;
 		}
-		return true;
+
+		std::queue<Territory*> q;
+		q.push(terrs[0]);
+
+		std::set<Territory*> visited;
+		visited.insert(terrs[0]);
+
+		while (!q.empty()) {
+
+			for (Territory* edge : q.front()->getEdges()) {
+				if (edge && edge->getContinent() && edge->getContinent() == c.second.get() 
+					&& visited.insert(edge).second) {
+					//checks if edge is in the continent, and if they each exist
+					q.push(edge);
+				}
+			}
+			q.pop();
+		}
+		if (visited.size() != c.second->getTerritories().size()) {
+			return false;
+		}
 	}
+	return true;
+}
 
 bool Map::territoryExclusive() {//adds every t in every c to a set
 	std::set<Territory*> visited;

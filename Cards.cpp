@@ -149,6 +149,7 @@ SpCard Hand::remove(int index){
 
 }
 
+// Searches hand for card name
 bool Hand::includes(string name) {
     for(SpCard card: spCards) {
         if(card->getName() == name) {
@@ -189,6 +190,7 @@ void BombCard:: print(ostream& os) const {
     os << "BombCard";
 }
 
+// Return card name
 string BombCard::getName() const{
     return "Bomb";
 }
@@ -224,6 +226,7 @@ void ReinforcementCard:: print(ostream& os) const {
     os << "ReinforcementCard";
 }
 
+// Return card name
 string ReinforcementCard::getName() const{
     return "Reinforcement";
 }
@@ -259,6 +262,7 @@ void BlockadeCard:: print(ostream& os) const {
     os << "BlockadeCard";
 }
 
+// Return card name
 string BlockadeCard::getName() const{
     return "Blockade";
 }
@@ -294,6 +298,7 @@ void AirliftCard:: print(ostream& os) const {
     os << "AirliftCard";
 }
 
+// Return card name
 string AirliftCard::getName() const{
     return "Airlift";
 }
@@ -328,6 +333,7 @@ void DiplomacyCard:: print(ostream& os) const {
     os << "DiplomacyCard";
 }
 
+// Return card name
 string DiplomacyCard::getName() const{
     return "Negotiate";
 }

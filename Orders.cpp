@@ -43,6 +43,7 @@ void Order::setExecutionEffect(const std::string& effect) {
     executionEffect = effect;
 }
 
+// Getter
 string Order::getPlayer() const {
     return player ? player->getName() : std::string("<null>");
 }
@@ -92,10 +93,12 @@ void Deploy::execute() {
     }
 }
 
+// Clone method
 Order* Deploy::clone() const {
     return new Deploy(*this);
 }
 
+// Getter
 std::string Deploy::getName() const{
     return "Deploy";
 }
@@ -171,10 +174,12 @@ void Advance::execute() {
     }
 }
 
+// Clone method
 Order* Advance::clone() const {
     return new Advance(*this);
 }
 
+// Getter
 std::string Advance::getName() const{
     return "Advance";
 }
@@ -219,10 +224,12 @@ void Bomb::execute() {
     }
 }
 
+// Clone method
 Order* Bomb::clone() const {
     return new Bomb(*this);
 }
 
+// Getter
 std::string Bomb::getName() const{
     return "Bomb";
 }
@@ -269,10 +276,12 @@ void Blockade::execute() {
     }
 }
 
+// Clone method
 Order* Blockade::clone() const {
     return new Blockade(*this);
 }
 
+// Getter
 std::string Blockade::getName() const{
     return "Blockade";
 }
@@ -324,10 +333,12 @@ void Airlift::execute() {
     }
 }
 
+// Clone method
 Order* Airlift::clone() const {
     return new Airlift(*this);
 }
 
+// Getter
 std::string Airlift::getName() const{
     return "Airlift";
 }
@@ -367,6 +378,7 @@ bool Negotiate::validate() {
     return player != targetPlayer && player->getHand()->includes(this->getName());
 }
 
+// Order execution method
 void Negotiate::execute() {
     if (validate()) {
         //MAKE SURE NO PLAYER CAN CALL THE ADVANCE ORDER ON THE OTHER
@@ -375,10 +387,12 @@ void Negotiate::execute() {
     }
 }
 
+// Clone method
 Order* Negotiate::clone() const {
     return new Negotiate(*this);
 }
 
+// Getter
 std::string Negotiate::getName() const{
     return "Negotiate";
 }
@@ -403,6 +417,7 @@ OrdersList& OrdersList::operator=(const OrdersList& other) {
     return *this;
 }
 
+// Destructor
 OrdersList::~OrdersList() {
     for (auto* order : orders) {
         delete order;
@@ -417,6 +432,7 @@ ostream &operator<<(ostream &os, const OrdersList& list) {
     return os;
 }
 
+// Adding order
 void OrdersList::addOrder(Order* order) {
     if (order) {
         orders.push_back(order); // Deleted std::move

@@ -408,6 +408,7 @@ string EndState::getStateName() const {
     return "end";
 }
 
+// End state = end of game => no more state to go
 void EndState::processCommand(GameEngine& engine, const string& command) {
     cout << "[Invalid] 'end' is a terminal state. No outgoing transitions." << endl;
 }

@@ -4,13 +4,17 @@
 #include "Cards.h"
 
 void testOrdersList() {
+    // Initializing 2 players
     Player* player1 = new Player("Anas");
     Player* player2 = new Player("West");
 
+    // Initializing 4 territories
     Territory* territory1 = new Territory("Canada", nullptr, 100);
     Territory* territory2 = new Territory("USA", nullptr, 50);
     Territory* territory3 = new Territory("Japan", nullptr, 300);
     Territory* territory4 = new Territory("Germany", nullptr, 500);
+
+    // Making some territories adjacent to eachother
     territory4->addEdge(territory1);
     territory1->addEdge(territory4);
     territory3->addEdge(territory2);
@@ -18,6 +22,7 @@ void testOrdersList() {
     territory1->addEdge(territory2);
     territory2->addEdge(territory1);
 
+    // Initializing cards for each players
     SpCard bc1 = SpCard(new BombCard());
     SpCard rc1 = SpCard(new ReinforcementCard());
     SpCard blc1 = SpCard(new BlockadeCard());
@@ -30,6 +35,7 @@ void testOrdersList() {
     SpCard ac2 = SpCard(new AirliftCard());
     SpCard dc2 = SpCard(new DiplomacyCard());
 
+    // Adding cards to each player's hand
     player1->getHand()->add(bc1);
     player1->getHand()->add(rc1);
     player1->getHand()->add(blc1);
@@ -42,6 +48,7 @@ void testOrdersList() {
     player2->getHand()->add(ac2);
     player2->getHand()->add(dc2);
 
+    // Setting a player to territories
     territory1->setPlayer(player1);
     territory2->setPlayer(player2);
     territory3->setPlayer(player1);
@@ -51,6 +58,7 @@ void testOrdersList() {
 
     OrdersList orders_list;
 
+    // Adding orders to the orders list
     orders_list.addOrder( new Deploy(player1,territory1,10)); //working case
     orders_list.addOrder( new Deploy(player1,territory3,300)); //working
     orders_list.addOrder( new Advance(player1,150,territory1, territory3));//invalid not enough army
@@ -104,6 +112,7 @@ void testOrdersList() {
     orders_list.remove(9);
     cout << orders_list << endl;
 
+    // Cleanup
     delete player1; 
     delete player2;
     delete territory1;  

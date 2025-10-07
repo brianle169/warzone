@@ -10,7 +10,7 @@ using namespace std;
 
 // print the territories in the vector
 void printTerritories(const std::vector<Territory*>& territories) {
-    for (Territory* t : territories) {              // <- change here
+    for (Territory* t : territories) {           
         if (t) {
             std::cout << "Name: "   << t->getName()
                       << " - Armies: " << t->getArmies() << '\n';
@@ -18,12 +18,19 @@ void printTerritories(const std::vector<Territory*>& territories) {
     }
 }
 
+// print the orders list
 void printOrdersList(const OrdersList* ordersList) {
     if (!ordersList) {
         cout << "OrdersList size: 0\n";
         return;
-    }
-    cout << "OrdersList size: " << ordersList->size() << "\n";
+    } else {
+		cout << "OrdersList contains: " << endl;
+		for(int i = 0; i < static_cast<int>(ordersList->size()); i++){
+			if(ordersList->getOrder(i)) {
+				cout << " - " << ordersList->getOrder(i)->getName() << endl;
+			}
+		}
+	}
 }
 
 // testPlayers(): function to test the Player class and its methods
