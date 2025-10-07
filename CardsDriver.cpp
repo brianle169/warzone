@@ -4,7 +4,7 @@
 using namespace std;
 
 void testCards(){
-    // Initialize game objects 
+    // Initialize game objects
     Deck deck;
     SpHand hand = SpHand(new Hand());
     Player player(hand);

@@ -2,25 +2,9 @@
 #include <iostream>
 #include <vector>
 
-//TEMP CLASSES; Delete player, territory and hand class after assignment1
-//PROF GAVE THE OK
-class Player {
-public:
-    std::string name;
-    Player(const std::string& n);
-};
-class Territory {
-public:
-    std::string name;
-    Player* player;
-    int armies;
-    Territory(const std::string& n, Player* p, int a);
-    bool isAdjacent() {return true;}
-};
-class Hand {
-public:
-    static bool getCard();
-};
+class Player;
+class Territory;
+class Hand;
 
 class Order {
 protected:
@@ -36,11 +20,11 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Order& order);
     virtual ~Order() = default;
     void setExecutionEffect(const std::string &effect);
-    virtual std::unique_ptr<Order> clone() const = 0;
+    virtual Order* clone() const = 0;
     virtual std::string getName() const = 0;
     virtual bool validate() = 0;
     virtual void execute() = 0;
-    std::string getPlayer() const { return player->name;}
+    std::string getPlayer() const;
 };
 
 class Deploy : public Order {
@@ -54,10 +38,11 @@ public:
     Deploy& operator=(const Deploy& other); // assignment operator
     friend std::ostream& operator<<(std::ostream &strm, const Deploy&); //stream insertion operator
     virtual ~Deploy() = default; // destructor
-    bool validate();
-    void execute();
-    std::unique_ptr<Order> clone() const override;
-    std::string getName() const override { return "Deploy"; }};
+    bool validate() override;
+    void execute() override;
+    Order* clone() const override;
+    std::string getName() const override;
+};
 
 class Advance : public Order {
 private:
@@ -71,26 +56,27 @@ public:
     Advance& operator=(const Advance& other);
     friend std::ostream& operator<<(std::ostream &strm, const Advance&);
     virtual ~Advance() = default;
-    bool validate();
-    void execute();
-    std::unique_ptr<Order> clone() const override;
-    std::string getName() const override { return "Advance"; }
+    bool validate() override;
+    void execute() override;
+    Order* clone() const override;
+    std::string getName() const override;
 };
 
 class Bomb : public Order {
 private:
     Territory* targetTerritory;
+    Territory* sourceTerritory;
 public:
     Bomb() = default;
-    Bomb(Player *p, Territory* wantedTerritory);
+    Bomb(Player *p, Territory* wantedTerritory, Territory* sTerritory);
     Bomb(const Bomb& other);
     Bomb& operator=(const Bomb& other);
     friend std::ostream& operator<<(std::ostream &strm, const Bomb&);
     virtual ~Bomb() = default;
-    bool validate();
-    void execute();
-    std::unique_ptr<Order> clone() const override;
-    std::string getName() const override { return "Bomb"; }
+    bool validate() override;
+    void execute() override;
+    Order* clone() const override;
+    std::string getName() const override;
 };
 
 class Blockade : public Order {
@@ -103,10 +89,10 @@ public:
     Blockade& operator=(const Blockade& other);
     friend std::ostream& operator<<(std::ostream &strm, const Blockade&);
     virtual ~Blockade() = default;
-    bool validate();
-    void execute();
-    std::unique_ptr<Order> clone() const override;
-    std::string getName() const override { return "Blockade"; }
+    bool validate() override;
+    void execute() override;
+    Order* clone() const override;
+    std::string getName() const override;
 };
 
 class Airlift : public Order {
@@ -121,10 +107,10 @@ public:
     Airlift& operator=(const Airlift& other);
     friend std::ostream& operator<<(std::ostream &strm, const Airlift&);
     virtual ~Airlift() = default;
-    bool validate();
-    void execute();
-    std::unique_ptr<Order> clone() const override;
-    std::string getName() const override { return "Airlift"; }
+    bool validate() override;
+    void execute() override;
+    Order* clone() const override;
+    std::string getName() const override;
 };
 
 class Negotiate : public Order {
@@ -137,23 +123,23 @@ public:
     Negotiate& operator=(const Negotiate& other);
     friend std::ostream& operator<<(std::ostream &strm, const Negotiate&);
     virtual ~Negotiate() = default;
-    bool validate();
-    void execute();
-    std::unique_ptr<Order> clone() const override;
-    std::string getName() const override { return "Negotiate"; }
+    bool validate() override;
+    void execute() override;
+    Order* clone() const override;
+    std::string getName() const override;
 };
 
 class OrdersList {
 private:
-    std::vector<std::unique_ptr<Order>> orders;
+    std::vector<Order*> orders;
 public:
     OrdersList() = default;
     OrdersList(const OrdersList& other);
     OrdersList& operator=(const OrdersList& other);
     friend std::ostream& operator<<(std::ostream &strm, const OrdersList&);
-    ~OrdersList() = default;
+    ~OrdersList();
 
-    void addOrder(std::unique_ptr<Order> order);
+    void addOrder(Order* order);
     void move(int fromIndex, int toIndex);
     void remove(int fromIndex);
     Order* getOrder(int index) const;

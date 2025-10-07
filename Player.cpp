@@ -2,98 +2,13 @@
 #include <string>
 #include <vector>
 #include <memory>
+
 #include "Player.h"
+#include "Orders.h"
+#include "Cards.h"
+#include "Map.h"
 
 using namespace std;
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-// Temporary stub classes for testing
-Hand::Hand() {
-	cout << "Hand created." << endl;
-}
-
-Hand::~Hand() {
-	// initialize future members?
-	cout << "Hand destroyed." << endl;
-}
-
-Order::Order(std::string orderN, Player* p) {
-	orderName = orderN;
-	player = p;
-}
-
-void OrdersList::addOrder(Order* order) {
-	if (order) {
-		orders.push_back(order);
-	}
-}
-
-
-size_t OrdersList::size() const {
-	return orders.size();
-}
-
-Order* OrdersList::getOrder(int index) const {
-	if (index >= 0 && index < static_cast<int>(orders.size())) {
-		return orders[index];
-	}
-	return nullptr;
-}
-
-
-Deploy::Deploy(Player* p, Territory* targetT, int numA) {
-	player = p;
-	targetTerritory = targetT;
-	numArmies = numA;
-}
-
-Advance::Advance(Player* p, int moveNumArmy, Territory* baseTerritory, Territory* wantedTerritory) {
-	player = p;
-	numArmy = moveNumArmy;
-	sourceTerritory = baseTerritory;
-	targetTerritory = wantedTerritory;
-}
-
-Bomb::Bomb(Player* p, Territory* wantedTerritory) {
-	player = p;
-	targetTerritory = wantedTerritory;
-}
-
-Blockade::Blockade(Player* p, Territory* wantedTerritory) {
-	player = p;
-	targetTerritory = wantedTerritory;
-}
-
-Airlift::Airlift(Player* p, int nArmy, Territory* sTerritory, Territory* tTerritory) {
-	player = p;
-	numArmy = nArmy;
-	sourceTerritory = sTerritory;
-	targetTerritory = tTerritory;
-}
-
-Negotiate::Negotiate(Player* p, Player* tPlayer) {
-	player = p;
-	targetPlayer = tPlayer;
-}
-
-Territory::Territory(const std::string& name, Continent* continent, int armies)
-	: name(name), continent(continent), armies(armies) {
-	//if (this->continent) {
-	//	this->continent->addTerritory(this);
-	//}
-}
-
-void Territory::addEdge(Territory* edge) {
-	edges.push_back(edge);
-}
-
-std::string Territory::getName() {
-	return this->name;
-}
-int Territory::getArmies() {
-	return armies;
-}
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -117,8 +32,8 @@ Player::Player() {
 
 // Parameterized constructor: This constructor takes a string pointer as a parameter to set the player's name.
 // The other attributes are initialized similarly to the default constructor.
-Player::Player(string* name) {
-	this->name = name; // This is a pointer assignment.
+Player::Player(string name) {
+	this->name = new string(name); // This is a pointer assignment.
 	this->hand = new Hand();
 	this->ordersList = new OrdersList();
 	//this->territories = nullptr; // initially null, because the game engine will assign territories later
@@ -142,7 +57,7 @@ Player::Player(const Player& p) {
 		this->territories = new vector<Territory*>(*(p.territories)); // Deep copy of vector
 	}
 	else {
-		this->territories = nullptr;
+		this->territories = new vector<Territory*>();
 		territories->push_back(new Territory("DefaultTerritory1", nullptr, 0)); // for testing
 		territories->push_back(new Territory("DefaultTerritory2", nullptr, 0)); // for testing
 		territories->push_back(new Territory("DefaultTerritory3", nullptr, 0)); // for testing
@@ -159,9 +74,9 @@ Player::~Player() {
 	delete this->name;
 	delete this->hand;
 	delete this->ordersList;
-	for (Territory* t : *this->territories) {
-		delete t; // Free each Territory pointer
-	}
+	// for (Territory* t : *this->territories) {
+	// 	delete t; // Free each Territory pointer
+	// }
 	delete this->territories;
 }
 
@@ -200,9 +115,9 @@ OrdersList* Player::getOrdersList() const {
 	return this->ordersList;
 }
 
-void Player::setName(string* name) {
+void Player::setName(string name) {
 	delete this->name;
-	this->name = new string(*name);
+	this->name =new string(name);
 }
 
 string Player::getName() const {
@@ -329,7 +244,7 @@ void Player::issueOrder(ORDER_TYPE otype) {
 	case BOMB: {
 		// Create a Bomb order and add to ordersList
 		cout << "Creating Bomb order" << endl;
-		this->ordersList->addOrder(new Bomb(this, nullptr));
+		this->ordersList->addOrder(new Bomb(this, nullptr, nullptr));
 		break;
 	}
 	case BLOCKADE: {
@@ -356,4 +271,68 @@ void Player::issueOrder(ORDER_TYPE otype) {
 	// Memory management note: orders should be deallocated after being executed.
 }
 
+// Test helpers
+void printTerritories(const std::vector<Territory*>& territories) {
+    for (Territory* t : territories) {              // <- change here
+        if (t) {
+            std::cout << "Name: "   << t->getName()
+                      << " - Armies: " << t->getArmies() << '\n';
+        }
+    }
+}
+
+void printOrdersList(const OrdersList* ordersList) {
+    if (!ordersList) {
+        cout << "OrdersList size: 0\n";
+        return;
+    }
+    cout << "OrdersList size: " << ordersList->size() << "\n";
+}
+
+void testPlayers() {
+	cout << "=== Testing Player Class ===" << endl;
+
+	cout << "=== General Information === " << endl;
+	Player* p1 = new Player("Minh");
+	cout << *p1 << endl;
+
+	cout << "=== Copy Constructor ===" << endl;
+	Player p2(*p1);
+	p2.setName("Anas");
+	cout << p2 << endl;
+
+	cout << "=== toAttack() Method ===" << endl;
+	cout << "Player " << p1->getName() << " will attack the following territories: " << endl;
+	vector<Territory*> attackable = p1->toAttack();
+	printTerritories(attackable);
+	cout << endl;
+
+	// free memory allocated in toAttack()
+	for (Territory* t : attackable) {
+		delete t;
+	}
+
+	cout << "=== toDefend() Method ===" << endl;
+	cout << "Player " << p1->getName() << " will defend the following territories: " << endl;
+	vector<Territory*> defending = p1->toDefend();
+	printTerritories(defending);
+	cout << endl;
+
+	// free memory allocated in toDefend()
+	for (Territory* t : defending) {
+		delete t;
+	}
+
+	cout << "=== issueOrder() Method ===" << endl;
+	cout << "Issuing DEPLOY order..." << endl;
+	p1->issueOrder(DEPLOY);
+	p1->issueOrder(AIRLIFT);
+	p1->issueOrder(ADVANCE);
+	p1->issueOrder(BLOCKADE);
+	p1->issueOrder(BOMB);
+	p1->issueOrder(NEGOTIATE);
+	printOrdersList(p1->getOrdersList());
+
+	delete p1;
+}
 

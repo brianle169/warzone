@@ -31,7 +31,3 @@ void testLoadMaps() {
 		maps.push_back(std::move(map));
 	}
 }
-int main() {
-	testLoadMaps();
-	return 0;
-}

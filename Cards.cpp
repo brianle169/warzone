@@ -3,43 +3,9 @@
 #include <vector>
 #include <algorithm>
 #include "Cards.h"
+#include "Player.h"
 
 using namespace std;
-
-
-// After assignment 1, include Player and Order h files 
-// Temp Player and Order classes: 
-
-ostream& operator<<(ostream& os, const Player& player){
-    os << "Player's Order list contains: ";
-    for (int i = 0; i < player.orders.size(); i++){
-        os << *player.orders[i] << ", ";
-    }
-	return os; 
-}
-
-
-ostream& operator<<(ostream& os, const Order& order){
-    os << "Order";
-	return os; 
-}
-
-// Create a player with the given hand
-Player::Player(SpHand dealtHand)
-{
-    hand = dealtHand;
-}
-
-// Add a new order to the player's list
-void Player::addOrder(SpOrder order){
-    cout << "Added order to player's list of orders \n";
-    orders.push_back(order);
-}
-
-// Creates a default Order 
-Order::Order(){
-    cout << "Order created. \n";
-}
 
 // Implement operator overloading for Cards 
 ostream& operator<<(ostream& os, const Card& c) {
@@ -57,14 +23,12 @@ Card& Card::operator=(const Card&) {
 
 // Removes a card from the hand, creates a new list of orders and adds it to the player's list of orders, and adds the card back to the deck 
 void Card::play(Deck& deck, Hand& hand, Player& player){
-     SpCard card = hand.remove(0);
-    
-    if (card){ // avoid null ref exceptions 
-        cout << "Playing the top card of the hand, which is a " << *card << endl;
-        SpOrder newOrder = SpOrder(new Order());  
-        player.addOrder(newOrder); 
-        deck.add(card);
-    }
+    SpCard card = hand.remove(0);
+    if (!card) return;
+
+    // A1 decoupled placeholder
+    cout << "Playing the top card of the hand, which is a " << *card << endl;
+    deck.add(card);
 }
 
 // ------------Deck -------------
@@ -75,7 +39,7 @@ Deck::Deck(){
 }
 
 // Copy constructor 
-Deck::Deck(const Deck& other){
+Deck::Deck(const Deck& other) : spCards(other.spCards) {
     cout << "Deck copied." << endl;
 }
 
@@ -87,6 +51,7 @@ Deck::~Deck(){
 // Operator overloading for Deck
 Deck& Deck::operator=(const Deck& other){
     if (this == &other) return *this;  // prevents bugs with self-assignment
+    spCards = other.spCards;
     // handle any member deletion/reassignment here in the future 
     return *this;
 }
@@ -132,7 +97,7 @@ Hand::Hand(){
     cout << "Hand created." << endl;
 }
 // Copy constructor 
-Hand::Hand(const Hand& other){
+Hand::Hand(const Hand& other) : spCards(other.spCards) {
     cout << "Hand copied." << endl;
 }
 //Destructor 
@@ -146,6 +111,7 @@ Hand& Hand::operator=(const Hand& other){
     if (this == &other){ // prevents bugs with self-assignment
         return *this;
     }
+    spCards = other.spCards;
     // handle any member deletion/reassignment here in the future 
     return *this;
 }
@@ -183,6 +149,15 @@ SpCard Hand::remove(int index){
 
 }
 
+bool Hand::includes(string name) {
+    for(SpCard card: spCards) {
+        if(card->getName() == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // Definitions for all child Card classes 
 
 // ------------BombCard-------------
@@ -212,6 +187,10 @@ BombCard& BombCard::operator=(const BombCard& other){
 // Override print method to output stream 
 void BombCard:: print(ostream& os) const {
     os << "BombCard";
+}
+
+string BombCard::getName() const{
+    return "Bomb";
 }
 
 
@@ -245,6 +224,10 @@ void ReinforcementCard:: print(ostream& os) const {
     os << "ReinforcementCard";
 }
 
+string ReinforcementCard::getName() const{
+    return "Reinforcement";
+}
+
 
 //------------BlockadeCard----------------
 
@@ -274,6 +257,10 @@ BlockadeCard& BlockadeCard::operator=(const BlockadeCard& other){
 // Override print method to output stream 
 void BlockadeCard:: print(ostream& os) const {
     os << "BlockadeCard";
+}
+
+string BlockadeCard::getName() const{
+    return "Blockade";
 }
 
 //------------AirliftCard----------------
@@ -307,6 +294,10 @@ void AirliftCard:: print(ostream& os) const {
     os << "AirliftCard";
 }
 
+string AirliftCard::getName() const{
+    return "Airlift";
+}
+
 //------------DiplomacyCard----------------
 
 // Default constructor 
@@ -335,4 +326,74 @@ DiplomacyCard& DiplomacyCard::operator=(const DiplomacyCard& other){
 // Override print method to output stream 
 void DiplomacyCard:: print(ostream& os) const {
     os << "DiplomacyCard";
+}
+
+string DiplomacyCard::getName() const{
+    return "Negotiate";
+}
+
+void testCards(){
+    // Initialize game objects
+    Deck deck;
+    Player player("Diana");
+
+    // Populate the deck 
+    cout << "\n========== Populate the Deck ============ \n";
+    deck.add(SpCard(new BombCard()));
+    deck.add(SpCard(new ReinforcementCard()));
+    deck.add(SpCard(new BlockadeCard()));
+    deck.add(SpCard(new AirliftCard()));
+    deck.add(SpCard(new DiplomacyCard()));
+
+    // Print deck contents 
+    cout << "\n" << deck << "\n";
+
+    // Draw cards from the deck 
+    cout << "\n========== Draw cards ============ \n";
+    SpCard bc = deck.draw();
+    SpCard rc = deck.draw();
+    SpCard blc = deck.draw();
+    SpCard ac = deck.draw();
+    SpCard dc = deck.draw();
+
+    // Create a test copy
+    SpCard cpy = ac;
+    
+    // Print deck contents 
+    cout << "\n" << deck << "\n";
+    
+    // Add the cards to the hand 
+    cout << "\n========== Add cards to Hand ============ \n";
+    player.getHand()->add(bc);
+    player.getHand()->add(rc);
+    player.getHand()->add(blc);
+    player.getHand()->add(ac);
+    player.getHand()->add(dc);
+
+
+    // Make a copy of a card in the hand and try to add it to the hand
+    cout << "\n========== Trying to add a copied card to the hand ============ \n";
+    player.getHand()->add(cpy);
+    
+    cout << "\n" << *player.getHand() << "\n";
+
+    // Play cards from the hand (creates orders, stores them in player's order list and adds them back to the deck)
+    cout << "\n========== Playing cards from the Hand ============ \n";
+    bc->play(deck, *player.getHand(), player);
+    cout << "\n";
+    rc->play(deck, *player.getHand(), player);
+    cout << "\n";
+    blc->play(deck, *player.getHand(), player);
+    cout << "\n";
+    ac->play(deck, *player.getHand(), player);
+    cout << "\n";
+    dc->play(deck, *player.getHand(), player);
+    
+    // Print hand contents 
+    cout << "\n" << *player.getHand() << "\n";
+    
+    // Print deck contents 
+    cout << "\n" << deck << "\n";
+
+    cout << "\n========== Cleanup ============ \n";   
 }

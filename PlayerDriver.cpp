@@ -77,8 +77,3 @@ void testPlayers() {
 
 	delete p1;
 }
-
-int main() {
-	testPlayers();
-	return 0;
-}
