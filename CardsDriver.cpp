@@ -1,13 +1,13 @@
 #include <iostream>
 #include "Cards.h"
+#include "Player.h"
 
 using namespace std;
 
 void testCards(){
     // Initialize game objects
     Deck deck;
-    SpHand hand = SpHand(new Hand());
-    Player player(hand);
+    Player player("Diana");
 
     // Populate the deck 
     cout << "\n========== Populate the Deck ============ \n";
@@ -36,37 +36,33 @@ void testCards(){
     
     // Add the cards to the hand 
     cout << "\n========== Add cards to Hand ============ \n";
-    hand->add(bc);
-    hand->add(rc);
-    hand->add(blc);
-    hand->add(ac);
-    hand->add(dc);
+    player.getHand()->add(bc);
+    player.getHand()->add(rc);
+    player.getHand()->add(blc);
+    player.getHand()->add(ac);
+    player.getHand()->add(dc);
 
 
     // Make a copy of a card in the hand and try to add it to the hand
     cout << "\n========== Trying to add a copied card to the hand ============ \n";
-    hand->add(cpy);
+    player.getHand()->add(cpy);
     
-    cout << "\n" << *hand << "\n";
+    cout << "\n" << *player.getHand() << "\n";
 
     // Play cards from the hand (creates orders, stores them in player's order list and adds them back to the deck)
     cout << "\n========== Playing cards from the Hand ============ \n";
-    bc->play(deck, *hand, player);
+    bc->play(deck, *player.getHand(), player);
     cout << "\n";
-    rc->play(deck, *hand, player);
+    rc->play(deck, *player.getHand(), player);
     cout << "\n";
-    blc->play(deck, *hand, player);
+    blc->play(deck, *player.getHand(), player);
     cout << "\n";
-    ac->play(deck, *hand, player);
+    ac->play(deck, *player.getHand(), player);
     cout << "\n";
-    dc->play(deck, *hand, player);
-
-
-    // Print player's order list 
-    cout << "\n" << player << "\n";
+    dc->play(deck, *player.getHand(), player);
     
     // Print hand contents 
-    cout << "\n" << *hand << "\n";
+    cout << "\n" << *player.getHand() << "\n";
     
     // Print deck contents 
     cout << "\n" << deck << "\n";

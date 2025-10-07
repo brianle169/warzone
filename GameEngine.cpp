@@ -415,26 +415,3 @@ void EndState::processCommand(GameEngine& engine, const string& command) {
 ostream& operator<<(ostream& os, const EndState& s) {
     return os << s.getStateName();
 }
-
-// ==== Test Function ====
-void testGameStates() {
-    GameEngine engine;
-    cout << "Welcome to Warzone Game Engine version A1!" << endl;
-    cout << engine << endl;
-    string line;
-    while (engine.getCurrentStateName() != "end") {
-        cout << "> ";
-        // EOF or input error check
-        if(!getline(cin, line)) {
-            break;
-        }
-        // Ignore empty user command inputs
-        if (line.empty()) {
-            continue;
-        }
-        // Route the user command to the FSM
-        engine.executeCommand(line);
-        // Show the resulting state after the user command
-        cout << engine << endl;
-    }
-}

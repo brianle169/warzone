@@ -2,32 +2,28 @@
 #include <string>
 #include <vector>
 #include "Player.h"
+#include "Orders.h"
+#include "Cards.h"
+#include "Map.h"
 
 using namespace std;
 
 // print the territories in the vector
-void printTerritories(const vector<Territory*>& territories) {
-	for (Territory* t : territories) {
-		if (t) {
-			cout << " - " << t->getName() << " (Armies: " << t->getArmies() << ")" << endl;
-		}
-	}
+void printTerritories(const std::vector<Territory*>& territories) {
+    for (Territory* t : territories) {              // <- change here
+        if (t) {
+            std::cout << "Name: "   << t->getName()
+                      << " - Armies: " << t->getArmies() << '\n';
+        }
+    }
 }
 
-// Print the orders in the OrdersList
 void printOrdersList(const OrdersList* ordersList) {
-	if (ordersList) {
-		cout << "Orders List contains:" << endl;
-		for (int i = 0; i < static_cast<int>(ordersList->size()); ++i) {
-			;
-			if (ordersList->getOrder(i)) {
-				cout << " - " << ordersList->getOrder(i)->getName() << endl; // Polymorphism triggers on this line for the getName() method
-			}
-		}
-	}
-	else {
-		cout << "Orders List is empty." << endl;
-	}
+    if (!ordersList) {
+        cout << "OrdersList size: 0\n";
+        return;
+    }
+    cout << "OrdersList size: " << ordersList->size() << "\n";
 }
 
 // testPlayers(): function to test the Player class and its methods
@@ -35,12 +31,12 @@ void testPlayers() {
 	cout << "=== Testing Player Class ===" << endl;
 
 	cout << "=== General Information === " << endl;
-	Player* p1 = new Player(new string("Minh"));
+	Player* p1 = new Player("Minh");
 	cout << *p1 << endl;
 
 	cout << "=== Copy Constructor ===" << endl;
 	Player p2(*p1);
-	p2.setName(new string("Anas"));
+	p2.setName("Anas");
 	cout << p2 << endl;
 
 	cout << "=== toAttack() Method ===" << endl;

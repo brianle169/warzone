@@ -152,12 +152,6 @@ public:
     void remove(int fromIndex);
     Order* getOrder(int index) const;
     size_t size() const;
-
-    void addOrder(std::unique_ptr<Order> order); // Add order to list
-    void move(int fromIndex, int toIndex); // Move order within list
-    void remove(int fromIndex); // Remove order from list
-    Order* getOrder(int index) const; // Get order at index
-    size_t size() const; // Get number of orders
 };
 
 void testOrdersList(); // Test function for OrdersList class
