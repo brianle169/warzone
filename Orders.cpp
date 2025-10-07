@@ -5,31 +5,38 @@ using namespace std;
 //TEMP CLASSES; Delete player, territory and hand class after assignment1
 //PROF GAVE THE OK
 
+// Simple Player constructor that sets name
 Player::Player(const std::string &n) {
     name=n;
 }
 
+// Simple Territory constructor assigning name, player, and armies
 Territory::Territory(const std::string &n, Player *p, int a) {
     name=n;
     player=p;
     armies=a;
 }
 
+// Temporary card validation stub
 static bool getCard() {
     return false;
 }
 
 //ORDER CLASS DEFINITION---------------------------------------------------
 
+// Constructor initializing order with name and player
 Order::Order(std::string orderN, Player *p) {
     orderName=orderN;
     player=p;
 }
+
+// Copy constructor for Order
 Order::Order(const Order &other) {
     orderName=other.orderName;
     this->player=other.player;
 }
 
+// Assignment operator for Order
 Order& Order::operator=(const Order &other) {
     if (this != &other) {
         orderName=other.orderName;
@@ -37,6 +44,8 @@ Order& Order::operator=(const Order &other) {
     }
     return *this;
 }
+
+// Output stream for displaying order execution
 ostream& operator<<(ostream& os, const Order& order) {
     os << order.player->name << ": " << order.getName();
     if (order.executed) {
@@ -45,23 +54,27 @@ ostream& operator<<(ostream& os, const Order& order) {
     return os;
 }
 
+// Setter for execution effect description
 void Order::setExecutionEffect(const std::string& effect) {
     executionEffect = effect;
 }
 
 //DEPLOY CLASS DEFINITON---------------------------------------------------
 
+// Constructor for Deploy order
 Deploy::Deploy(Player* p,Territory* targetT, int numA){
     player=p;
     targetTerritory=targetT;
     numArmies=numA;
 }
 
+// Copy constructor for Deploy
 Deploy::Deploy(const Deploy& other) : Order(other) {
     numArmies = other.numArmies;
     targetTerritory = other.targetTerritory;
 }
 
+// Assignment operator for Deploy
 Deploy& Deploy::operator=(const Deploy& other) {
     if (this != &other) {
         Order::operator=(other);
@@ -71,12 +84,13 @@ Deploy& Deploy::operator=(const Deploy& other) {
     return *this;
 }
 
+// Output stream for Deploy info
 ostream& operator<<(ostream& os, const Deploy& d) {
     os << "Deploy " << d.numArmies << " armies to territory " << d.targetTerritory->name;
     return os;
 }
 
-
+// Validates if Deploy order can execute
 bool Deploy::validate() {
     if (targetTerritory == nullptr || player == nullptr || player != targetTerritory->player || numArmies < 0) {
         return false;
@@ -84,6 +98,7 @@ bool Deploy::validate() {
     return true;
 }
 
+// Executes the Deploy order
 void Deploy::execute() {
     if (validate()) {
         targetTerritory->armies += numArmies;
@@ -92,23 +107,29 @@ void Deploy::execute() {
     }
 }
 
+// Clone method
 std::unique_ptr<Order> Deploy::clone() const {
     return std::make_unique<Deploy>(*this);
 }
 
 //ADVANCE CLASS DEFINITION---------------------------------------------------
 
+// Constructor for Advance order
 Advance::Advance(Player* p, int moveNumArmy, Territory *baseTerritory, Territory *wantedTerritory) {
     player=p;
     numArmy = moveNumArmy;
     sourceTerritory = baseTerritory;
     targetTerritory = wantedTerritory;
 }
+
+// Copy constructor
 Advance::Advance(const Advance &other) : Order(other) {
     numArmy = other.numArmy;
     sourceTerritory = other.sourceTerritory;
     targetTerritory = other.targetTerritory;
 }
+
+// Assignment operator
 Advance& Advance::operator=(const Advance &other) {
     if (this != &other) {
         Order::operator=(other);
@@ -118,11 +139,14 @@ Advance& Advance::operator=(const Advance &other) {
     }
     return *this;
 }
+
+// Output stream for Advance
 ostream& operator<<(ostream& os, const Advance& a) {
     os << "Advance " << a.numArmy << " from " << a.sourceTerritory << " to " << a.targetTerritory;
     return os;
 }
 
+// Checks if the move is valid
 bool Advance::validate() {
     if (player != sourceTerritory->player || sourceTerritory->armies < numArmy || numArmy < 0 && targetTerritory->isAdjacent()) { //TEMP FUNCTION UNTIL ASSIGNMENT 2 WHERE WE CAN USE OTHER CLASSES AND FILES
         return false;
@@ -130,6 +154,7 @@ bool Advance::validate() {
     return true;
 }
 
+// Executes troop movement and combat logic
 void Advance::execute() {
     if (validate()) {
         if (player == targetTerritory->player) { //the player wants to advance troops on hiw own territory
@@ -161,19 +186,25 @@ void Advance::execute() {
     }
 }
 
+// Clone for Advance
 std::unique_ptr<Order> Advance::clone() const {
     return std::make_unique<Advance>(*this);
 }
 
 //BOMB CLASS DEFINITION---------------------------------------------------
 
+// Constructor for Bomb
 Bomb::Bomb(Player* p, Territory *wantedTerritory) {
     player=p;
     targetTerritory = wantedTerritory;
 }
+
+// Copy constructor
 Bomb::Bomb(const Bomb &other) : Order(other) {
     targetTerritory = other.targetTerritory;
 }
+
+// Assignment operator
 Bomb &Bomb::operator=(const Bomb &other) {
     if (this != &other) {
         Order::operator=(other);
@@ -181,17 +212,22 @@ Bomb &Bomb::operator=(const Bomb &other) {
     }
     return *this;
 }
+
+// Output for Bomb
 ostream &operator<<(ostream &os, const Bomb& b) {
     os << "Bomb " << b.targetTerritory;
     return os;
 }
 
+// Validate bombing conditions
 bool Bomb::validate() {
     if (player == targetTerritory->player &&  getCard() == false && targetTerritory->isAdjacent() ) { //TEMP FUNCTION UNTIL ASSIGNMENT 2 WHERE WE CAN USE OTHER CLASSES AND FILES
         return false;
     }
     return true;
 }
+
+// Executes Bomb (halves enemy armies)
 void Bomb::execute() {
     if (validate()) {
         targetTerritory->armies = targetTerritory->armies/2;
@@ -200,19 +236,25 @@ void Bomb::execute() {
     }
 }
 
+// Clone for Bomb
 std::unique_ptr<Order> Bomb::clone() const {
     return std::make_unique<Bomb>(*this);
 }
 
 //BLOCKADE CLASS DEFINTION---------------------------------------------------
 
+// Constructor for Blockade
 Blockade::Blockade(Player* p, Territory *wantedTerritory) {
     player=p;
     targetTerritory = wantedTerritory;
 }
+
+// Copy constructor
 Blockade::Blockade(const Blockade &other) : Order(other) {
     targetTerritory = other.targetTerritory;
 }
+
+// Assignment operator
 Blockade &Blockade::operator=(const Blockade &other) {
     if (this != &other) {
         Order::operator=(other);
@@ -220,17 +262,22 @@ Blockade &Blockade::operator=(const Blockade &other) {
     }
     return *this;
 }
+
+// Output for Blockade
 ostream &operator<<(ostream &os, const Blockade& b) {
     os << "Blockade " << b.targetTerritory;
     return os;
 }
 
+// Validate blockade conditions
 bool Blockade::validate() {
     if (player != targetTerritory->player && getCard() == false) { //TEMP FUNCTION UNTIL ASSIGNMENT 2 WHERE WE CAN USE OTHER CLASSES AND FILES
         return false;
     }
     return true;
 }
+
+// Execute blockade (triples armies, neutral territory)
 void Blockade::execute() {
     if (validate()) {
         targetTerritory->armies = targetTerritory->armies*3;
@@ -241,22 +288,28 @@ void Blockade::execute() {
     }
 }
 
+// Clone for Blockade
 std::unique_ptr<Order> Blockade::clone() const {
     return std::make_unique<Blockade>(*this);
 }
 
 //AIRLIFT CLASS DEFINITION---------------------------------------------------
 
+// Constructor for Airlift
 Airlift::Airlift(Player* p, int nArmy, Territory *sTerritory, Territory *tTerritory) {
     player=p;
     numArmy = nArmy;
     sourceTerritory = sTerritory;
     targetTerritory = tTerritory;
 }
+
+// Copy constructor
 Airlift::Airlift(const Airlift &other) : Order(other) {
     numArmy = other.numArmy;
     targetTerritory = other.targetTerritory;
 }
+
+// Assignment operator
 Airlift& Airlift::operator=(const Airlift& other) {
     if (this != &other) {
         Order::operator=(other);
@@ -266,17 +319,22 @@ Airlift& Airlift::operator=(const Airlift& other) {
     }
     return *this;
 }
+
+// Output for Airlift
 ostream &operator<<(ostream &os, const Airlift& a) {
     os << "Airlift " << a.targetTerritory;
     return os;
 }
 
+// Validate airlift conditions
 bool Airlift::validate() {
     if (player != targetTerritory->player || sourceTerritory->armies < numArmy || numArmy < 0 && getCard() == false) { //TEMP FUNCTION UNTIL ASSIGNMENT 2 WHERE WE CAN USE OTHER CLASSES AND FILES
         return false;
     }
     return true;
 }
+
+// Execute airlift (move troops)
 void Airlift::execute() {
     if (validate()) {
         sourceTerritory->armies -= numArmy;
@@ -286,20 +344,26 @@ void Airlift::execute() {
     }
 }
 
+// Clone for Airlift
 std::unique_ptr<Order> Airlift::clone() const {
     return std::make_unique<Airlift>(*this);
 }
 
 //NEGOTIATE CLASS DEFINITION---------------------------------------------------
 
+// Constructor for Negotiate
 Negotiate::Negotiate(Player *p, Player *tPlayer) {
     player=p;
     targetPlayer = tPlayer;
 }
+
+// Copy constructor
 Negotiate::Negotiate(const Negotiate &other) : Order(other) {
     player= other.player;
     targetPlayer = other.targetPlayer;
 }
+
+// Assignment operator
 Negotiate &Negotiate::operator=(const Negotiate &other) {
     if (this != &other) {
         Order::operator=(other);
@@ -308,16 +372,22 @@ Negotiate &Negotiate::operator=(const Negotiate &other) {
     }
     return *this;
 }
+
+// Output for Negotiate
 ostream &operator<<(ostream &os, const Negotiate& n) {
     os << "Negotiate " << n.targetPlayer;
     return os;
 }
+
+// Validate negotiation
 bool Negotiate::validate() {
     if (player == targetPlayer && getCard() == false) { //TEMP FUNCTION UNTIL ASSIGNMENT 2 WHERE WE CAN USE OTHER CLASSES AND FILES
         return false;
     }
     return true;
 }
+
+// Execute negotiation (no attack next round)
 void Negotiate::execute() {
     if (validate()) {
         //MAKE SURE NO PLAYER CAN CALL THE ADVANCE ORDER ON THE OTHER
@@ -326,18 +396,21 @@ void Negotiate::execute() {
     }
 }
 
+// Clone for Negotiate
 std::unique_ptr<Order> Negotiate::clone() const {
     return std::make_unique<Negotiate>(*this);
 }
 
 //ORDERSLIST CLASS DEFINITION---------------------------------------------------
 
+// Copy constructor (deep copy using clone)
 OrdersList::OrdersList(const OrdersList& other) {
     for (const auto& order : other.orders) {
         orders.push_back(order->clone());
     }
 }
 
+// Assignment operator
 OrdersList& OrdersList::operator=(const OrdersList& other) {
     if (this != &other) {
         orders.clear();
@@ -348,6 +421,7 @@ OrdersList& OrdersList::operator=(const OrdersList& other) {
     return *this;
 }
 
+// Output for OrdersList
 ostream &operator<<(ostream &os, const OrdersList& list) {
     for (const auto& order : list.orders) {
         os << order->getPlayer() << ": Order -> " << order->getName() << endl;
@@ -355,18 +429,21 @@ ostream &operator<<(ostream &os, const OrdersList& list) {
     return os;
 }
 
+// Add a new order to the list
 void OrdersList::addOrder(std::unique_ptr<Order> order) {
     if (order) {
         orders.push_back(std::move(order));
     }
 }
 
+// Remove an order by index
 void OrdersList::remove(int index) {
     if (index >= 0 && index < static_cast<int>(orders.size())) {
         orders.erase(orders.begin() + index);
     }
 }
 
+// Move an order from one index to another
 void OrdersList::move(int fromIndex, int toIndex) {
     if (fromIndex >= 0 && fromIndex < static_cast<int>(orders.size()) &&
         toIndex >= 0 && toIndex < static_cast<int>(orders.size())) {
@@ -377,10 +454,12 @@ void OrdersList::move(int fromIndex, int toIndex) {
         }
 }
 
+// Return number of orders in the list
 size_t OrdersList::size() const {
     return orders.size();
 }
 
+// Retrieve a pointer to an order by index
 Order* OrdersList::getOrder(int index) const {
     if (index >= 0 && index < static_cast<int>(orders.size())) {
         return orders[index].get();
@@ -455,5 +534,10 @@ void testOrdersList() {
     orders_list.remove(0);
     orders_list.remove(9);
     cout << orders_list << endl;
+
+    //Display the size
+    cout << orders_list.size() << endl;
+    //Get an order
+    cout << *orders_list.getOrder(0);
 
 };
