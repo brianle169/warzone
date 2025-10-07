@@ -6,12 +6,13 @@ class Player;
 class Territory;
 class Hand;
 
+// Base class for all orders
 class Order {
 protected:
-    std::string orderName;
-    Player* player;
-    bool executed;
-    std::string executionEffect;
+    std::string orderName; // Name of the order
+    Player* player;        // Player issuing the order
+    bool executed;         // Execution status
+    std::string executionEffect; // Description of execution effect
 public:
     Order() = default;
     Order(std::string orderN, Player* player);
@@ -27,10 +28,11 @@ public:
     std::string getPlayer() const;
 };
 
+// Deploy order: deploy armies to a territory
 class Deploy : public Order {
 private:
-    Territory* targetTerritory;
-    int numArmies;
+    Territory* targetTerritory; // Territory to deploy armies
+    int numArmies; // Number of armies to deploy
 public:
     Deploy() = default; // default constructor
     Deploy(Player* p, Territory* targetTerritory, int numArmies); // parameterized constructor
@@ -44,11 +46,12 @@ public:
     std::string getName() const override;
 };
 
+// Advance order: move armies from one territory to another
 class Advance : public Order {
 private:
-    int numArmy;
-    Territory* sourceTerritory;
-    Territory* targetTerritory;
+    int numArmy; // Number of armies to move
+    Territory* sourceTerritory; // Source territory
+    Territory* targetTerritory; // Target territory
 public:
     Advance() = default;
     Advance(Player* p, int moveNumArmy, Territory* baseTerritory, Territory* wantedTerritory);
@@ -62,6 +65,7 @@ public:
     std::string getName() const override;
 };
 
+// Bomb order: bomb a territory to reduce armies
 class Bomb : public Order {
 private:
     Territory* targetTerritory;
@@ -79,9 +83,10 @@ public:
     std::string getName() const override;
 };
 
+// Blockade order: place a blockade on a territory
 class Blockade : public Order {
 private:
-    Territory* targetTerritory;
+    Territory* targetTerritory; // Territory to blockade
 public:
     Blockade() = default;
     Blockade(Player* p, Territory* wantedTerritory);
@@ -95,11 +100,12 @@ public:
     std::string getName() const override;
 };
 
+// Airlift order: move armies between territories regardless of adjacency
 class Airlift : public Order {
 private:
-    int numArmy;
-    Territory* sourceTerritory;
-    Territory* targetTerritory;
+    int numArmy; // Number of armies to airlift
+    Territory* sourceTerritory; // Source territory
+    Territory* targetTerritory; // Target territory
 public:
     Airlift() = default;
     Airlift(Player* p, int nArmy, Territory* sTerritory, Territory* tTerritory);
@@ -113,9 +119,10 @@ public:
     std::string getName() const override;
 };
 
+// Negotiate order: negotiate peace between players
 class Negotiate : public Order {
 private:
-    Player* targetPlayer;
+    Player* targetPlayer; // Player to negotiate with
 public:
     Negotiate() = default;
     Negotiate(Player* p, Player* tPlayer );
@@ -129,6 +136,7 @@ public:
     std::string getName() const override;
 };
 
+// Container class managing a list of orders
 class OrdersList {
 private:
     std::vector<Order*> orders;
@@ -145,6 +153,11 @@ public:
     Order* getOrder(int index) const;
     size_t size() const;
 
+    void addOrder(std::unique_ptr<Order> order); // Add order to list
+    void move(int fromIndex, int toIndex); // Move order within list
+    void remove(int fromIndex); // Remove order from list
+    Order* getOrder(int index) const; // Get order at index
+    size_t size() const; // Get number of orders
 };
 
-void testOrdersList();
+void testOrdersList(); // Test function for OrdersList class

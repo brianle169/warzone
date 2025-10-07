@@ -8,15 +8,19 @@ using namespace std;
 
 //ORDER CLASS DEFINITION---------------------------------------------------
 
+// Constructor initializing order with name and player
 Order::Order(std::string orderN, Player *p) {
     orderName=orderN;
     player=p;
 }
+
+// Copy constructor for Order
 Order::Order(const Order &other) {
     orderName=other.orderName;
     this->player=other.player;
 }
 
+// Assignment operator for Order
 Order& Order::operator=(const Order &other) {
     if (this != &other) {
         orderName=other.orderName;
@@ -24,6 +28,8 @@ Order& Order::operator=(const Order &other) {
     }
     return *this;
 }
+
+// Output stream for displaying order execution
 ostream& operator<<(ostream& os, const Order& order) {
     os << order.getPlayer() << ": " << order.getName();
     if (order.executed) {
@@ -32,6 +38,7 @@ ostream& operator<<(ostream& os, const Order& order) {
     return os;
 }
 
+// Setter for execution effect description
 void Order::setExecutionEffect(const std::string& effect) {
     executionEffect = effect;
 }
@@ -42,17 +49,20 @@ string Order::getPlayer() const {
 
 //DEPLOY CLASS DEFINITON---------------------------------------------------
 
+// Constructor for Deploy order
 Deploy::Deploy(Player* p,Territory* targetT, int numA){
     player=p;
     targetTerritory=targetT;
     numArmies=numA;
 }
 
+// Copy constructor for Deploy
 Deploy::Deploy(const Deploy& other) : Order(other) {
     numArmies = other.numArmies;
     targetTerritory = other.targetTerritory;
 }
 
+// Assignment operator for Deploy
 Deploy& Deploy::operator=(const Deploy& other) {
     if (this != &other) {
         Order::operator=(other);
@@ -62,16 +72,18 @@ Deploy& Deploy::operator=(const Deploy& other) {
     return *this;
 }
 
+// Output stream for Deploy info
 ostream& operator<<(ostream& os, const Deploy& d) {
     os << "Deploy " << d.numArmies << " armies to territory " << d.targetTerritory->getName();
     return os;
 }
 
-
+// Validates if Deploy order can execute
 bool Deploy::validate() {
     return player == targetTerritory->getPlayer() && numArmies > 0;
 }
 
+// Executes the Deploy order
 void Deploy::execute() {
     if (validate()) {
         targetTerritory->setArmies(targetTerritory->getArmies()+numArmies);
@@ -90,17 +102,22 @@ std::string Deploy::getName() const{
 
 //ADVANCE CLASS DEFINITION---------------------------------------------------
 
+// Constructor for Advance order
 Advance::Advance(Player* p, int moveNumArmy, Territory *baseTerritory, Territory *wantedTerritory) {
     player=p;
     numArmy = moveNumArmy;
     sourceTerritory = baseTerritory;
     targetTerritory = wantedTerritory;
 }
+
+// Copy constructor
 Advance::Advance(const Advance &other) : Order(other) {
     numArmy = other.numArmy;
     sourceTerritory = other.sourceTerritory;
     targetTerritory = other.targetTerritory;
 }
+
+// Assignment operator
 Advance& Advance::operator=(const Advance &other) {
     if (this != &other) {
         Order::operator=(other);
@@ -110,15 +127,19 @@ Advance& Advance::operator=(const Advance &other) {
     }
     return *this;
 }
+
+// Output stream for Advance
 ostream& operator<<(ostream& os, const Advance& a) {
     os << "Advance " << a.numArmy << " from " << a.sourceTerritory << " to " << a.targetTerritory;
     return os;
 }
 
+// Checks if the move is valid
 bool Advance::validate() {
     return sourceTerritory->getArmies() > numArmy && numArmy > 0 && targetTerritory->isEdge(sourceTerritory);
 }
 
+// Executes troop movement and combat logic
 void Advance::execute() {
     if (validate()) {
         if (player == targetTerritory->getPlayer()) { //the player wants to advance troops on hiw own territory
@@ -169,6 +190,8 @@ Bomb::Bomb(Player* p, Territory *wantedTerritory, Territory *sTerritory) {
 Bomb::Bomb(const Bomb &other) : Order(other) {
     targetTerritory = other.targetTerritory;
 }
+
+// Assignment operator
 Bomb &Bomb::operator=(const Bomb &other) {
     if (this != &other) {
         Order::operator=(other);
@@ -176,11 +199,14 @@ Bomb &Bomb::operator=(const Bomb &other) {
     }
     return *this;
 }
+
+// Output for Bomb
 ostream &operator<<(ostream &os, const Bomb& b) {
     os << "Bomb " << b.targetTerritory;
     return os;
 }
 
+// Validate bombing conditions
 bool Bomb::validate() {
     return player != targetTerritory->getPlayer() &&  player->getHand()->includes(this->getName()) && targetTerritory->isEdge(sourceTerritory);
 }
@@ -203,13 +229,18 @@ std::string Bomb::getName() const{
 
 //BLOCKADE CLASS DEFINTION---------------------------------------------------
 
+// Constructor for Blockade
 Blockade::Blockade(Player* p, Territory *wantedTerritory) {
     player=p;
     targetTerritory = wantedTerritory;
 }
+
+// Copy constructor
 Blockade::Blockade(const Blockade &other) : Order(other) {
     targetTerritory = other.targetTerritory;
 }
+
+// Assignment operator
 Blockade &Blockade::operator=(const Blockade &other) {
     if (this != &other) {
         Order::operator=(other);
@@ -217,11 +248,14 @@ Blockade &Blockade::operator=(const Blockade &other) {
     }
     return *this;
 }
+
+// Output for Blockade
 ostream &operator<<(ostream &os, const Blockade& b) {
     os << "Blockade " << b.targetTerritory;
     return os;
 }
 
+// Validate blockade conditions
 bool Blockade::validate() {
     return player == targetTerritory->getPlayer() && player->getHand()->includes(this->getName());
 }
@@ -245,16 +279,21 @@ std::string Blockade::getName() const{
 
 //AIRLIFT CLASS DEFINITION---------------------------------------------------
 
+// Constructor for Airlift
 Airlift::Airlift(Player* p, int nArmy, Territory *sTerritory, Territory *tTerritory) {
     player=p;
     numArmy = nArmy;
     sourceTerritory = sTerritory;
     targetTerritory = tTerritory;
 }
+
+// Copy constructor
 Airlift::Airlift(const Airlift &other) : Order(other) {
     numArmy = other.numArmy;
     targetTerritory = other.targetTerritory;
 }
+
+// Assignment operator
 Airlift& Airlift::operator=(const Airlift& other) {
     if (this != &other) {
         Order::operator=(other);
@@ -264,11 +303,14 @@ Airlift& Airlift::operator=(const Airlift& other) {
     }
     return *this;
 }
+
+// Output for Airlift
 ostream &operator<<(ostream &os, const Airlift& a) {
     os << "Airlift " << a.targetTerritory;
     return os;
 }
 
+// Validate airlift conditions
 bool Airlift::validate() {
     return player == targetTerritory->getPlayer() && sourceTerritory->getArmies() > numArmy && numArmy > 0 && player->getHand()->includes(this->getName());
 }
@@ -292,14 +334,19 @@ std::string Airlift::getName() const{
 
 //NEGOTIATE CLASS DEFINITION---------------------------------------------------
 
+// Constructor for Negotiate
 Negotiate::Negotiate(Player *p, Player *tPlayer) {
     player=p;
     targetPlayer = tPlayer;
 }
+
+// Copy constructor
 Negotiate::Negotiate(const Negotiate &other) : Order(other) {
     player= other.player;
     targetPlayer = other.targetPlayer;
 }
+
+// Assignment operator
 Negotiate &Negotiate::operator=(const Negotiate &other) {
     if (this != &other) {
         Order::operator=(other);
@@ -308,10 +355,14 @@ Negotiate &Negotiate::operator=(const Negotiate &other) {
     }
     return *this;
 }
+
+// Output for Negotiate
 ostream &operator<<(ostream &os, const Negotiate& n) {
     os << "Negotiate " << n.targetPlayer;
     return os;
 }
+
+// Validate negotiation
 bool Negotiate::validate() {
     return player != targetPlayer && player->getHand()->includes(this->getName());
 }
@@ -334,12 +385,14 @@ std::string Negotiate::getName() const{
 
 //ORDERSLIST CLASS DEFINITION---------------------------------------------------
 
+// Copy constructor (deep copy using clone)
 OrdersList::OrdersList(const OrdersList& other) {
     for (const auto& order : other.orders) {
         orders.push_back(order->clone());
     }
 }
 
+// Assignment operator
 OrdersList& OrdersList::operator=(const OrdersList& other) {
     if (this != &other) {
         orders.clear();
@@ -370,12 +423,14 @@ void OrdersList::addOrder(Order* order) {
     }
 }
 
+// Remove an order by index
 void OrdersList::remove(int index) {
     if (index >= 0 && index < static_cast<int>(orders.size())) {
         orders.erase(orders.begin() + index);
     }
 }
 
+// Move an order from one index to another
 void OrdersList::move(int fromIndex, int toIndex) {
     if (fromIndex >= 0 && fromIndex < static_cast<int>(orders.size()) &&
         toIndex >= 0 && toIndex < static_cast<int>(orders.size())) {
@@ -386,10 +441,12 @@ void OrdersList::move(int fromIndex, int toIndex) {
         }
 }
 
+// Return number of orders in the list
 size_t OrdersList::size() const {
     return orders.size();
 }
 
+// Retrieve a pointer to an order by index
 Order* OrdersList::getOrder(int index) const {
     if (index >= 0 && index < static_cast<int>(orders.size())) {
         //return orders[index].get();
