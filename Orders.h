@@ -49,7 +49,7 @@ public:
 // Advance order: move armies from one territory to another
 class Advance : public Order {
 private:
-    int numArmy; // Number of armies to move
+    int numArmies; // Number of armies to move
     Territory* sourceTerritory; // Source territory
     Territory* targetTerritory; // Target territory
 public:

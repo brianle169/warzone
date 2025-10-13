@@ -108,14 +108,14 @@ std::string Deploy::getName() const{
 // Constructor for Advance order
 Advance::Advance(Player* p, int moveNumArmy, Territory *baseTerritory, Territory *wantedTerritory) {
     player=p;
-    numArmy = moveNumArmy;
+    numArmies = moveNumArmy;
     sourceTerritory = baseTerritory;
     targetTerritory = wantedTerritory;
 }
 
 // Copy constructor
 Advance::Advance(const Advance &other) : Order(other) {
-    numArmy = other.numArmy;
+    numArmies = other.numArmies;
     sourceTerritory = other.sourceTerritory;
     targetTerritory = other.targetTerritory;
 }
@@ -124,7 +124,7 @@ Advance::Advance(const Advance &other) : Order(other) {
 Advance& Advance::operator=(const Advance &other) {
     if (this != &other) {
         Order::operator=(other);
-        numArmy = other.numArmy;
+        numArmies = other.numArmies;
         sourceTerritory = other.sourceTerritory;
         targetTerritory = other.targetTerritory;
     }
@@ -133,41 +133,42 @@ Advance& Advance::operator=(const Advance &other) {
 
 // Output stream for Advance
 ostream& operator<<(ostream& os, const Advance& a) {
-    os << "Advance " << a.numArmy << " from " << a.sourceTerritory << " to " << a.targetTerritory;
+    os << "Advance " << a.numArmies << " from " << a.sourceTerritory << " to " << a.targetTerritory;
     return os;
 }
 
 // Checks if the move is valid
 bool Advance::validate() {
-    return sourceTerritory->getArmies() > numArmy && numArmy > 0 && targetTerritory->isEdge(sourceTerritory);
+    return player == sourceTerritory->getPlayer() && sourceTerritory->getArmies() > numArmies && numArmies > 0 && targetTerritory->isEdge(sourceTerritory);
 }
 
 // Executes troop movement and combat logic
 void Advance::execute() {
     if (validate()) {
-        if (player == targetTerritory->getPlayer()) { //the player wants to advance troops on hiw own territory
-            sourceTerritory->setArmies(sourceTerritory->getArmies()-numArmy);
-            targetTerritory->setArmies(targetTerritory->getArmies()+numArmy);
+        if (player == targetTerritory->getPlayer()) { //the player owns the target territory and wants to advance troops from source
+            sourceTerritory->setArmies(sourceTerritory->getArmies()-numArmies);
+            targetTerritory->setArmies(targetTerritory->getArmies()+numArmies);
             executed = true;
-            setExecutionEffect("Successfully advanced " + to_string(numArmy) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName() + "; " + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
+            setExecutionEffect("Successfully advanced " + to_string(numArmies) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName() + "; " + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
         }
 
         if (player != targetTerritory->getPlayer()) { //the player successfully conquered the territory
-            if (numArmy*0.6 > targetTerritory->getArmies()*0.7) {
-                int result = numArmy*0.6 - targetTerritory->getArmies()*0.7;
-                sourceTerritory->setArmies(sourceTerritory->getArmies()-numArmy);
+            if (numArmies*0.6 > targetTerritory->getArmies()*0.7) {
+                int result = numArmies*0.6 - targetTerritory->getArmies()*0.7;
+                sourceTerritory->setArmies(sourceTerritory->getArmies()-numArmies);
                 targetTerritory->setArmies(result);
                 targetTerritory->setPlayer(player);
                 //add a card to the deck since conquered
+                //a player cannot get another card, so we need a block function so no other card can be assigned to the player
                 executed = true;
-                setExecutionEffect("Successfully conquered and advanced " + to_string(numArmy) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName() + "; "+ sourceTerritory->getName() + " has now " + to_string(sourceTerritory->getArmies()) + " troops and "  + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
+                setExecutionEffect("Successfully conquered and advanced " + to_string(numArmies) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName() + "; "+ sourceTerritory->getName() + " has now " + to_string(sourceTerritory->getArmies()) + " troops and "  + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
 
             } else { //the player successfully defended his own territory
-                int result = targetTerritory->getArmies()*0.7 - numArmy*0.6;
-                sourceTerritory->setArmies(sourceTerritory->getArmies()-numArmy);
+                int result = targetTerritory->getArmies()*0.7 - numArmies*0.6;
+                sourceTerritory->setArmies(sourceTerritory->getArmies()-numArmies);
                 targetTerritory->setArmies(result);
                 executed = true;
-                setExecutionEffect("Unsuccessfully advanced, you lost " + to_string(numArmy)   + " troops; " + sourceTerritory->getName() + " has now " + to_string(sourceTerritory->getArmies()) + " troops and "  + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops" );
+                setExecutionEffect("Unsuccessfully advanced, you lost " + to_string(numArmies)   + " troops; " + sourceTerritory->getName() + " has now " + to_string(sourceTerritory->getArmies()) + " troops and "  + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops" );
 
             }
         }
@@ -270,7 +271,7 @@ bool Blockade::validate() {
 void Blockade::execute() {
     if (validate()) {
         targetTerritory->setArmies(targetTerritory->getArmies()*3);
-        //make it neutral territory
+        //make it neutral territory ; change has to be made on part 3 in main game loop
         executed = true;
         setExecutionEffect("Successfully blockade " + targetTerritory->getName());
     }

@@ -64,6 +64,7 @@ void testOrdersList() {
     orders_list.addOrder( new Advance(player1,150,territory1, territory3));//invalid not enough army
     orders_list.addOrder( new Advance(player1,150,territory3, territory2)); //conquer
     orders_list.addOrder( new Advance(player1,10,territory1, territory2)); //defense
+    orders_list.addOrder( new Advance(player1,30,territory2, territory3)); //Invalid, since player does not own source territory
     orders_list.addOrder( new Deploy(player2,territory1,200)); //not working case
     orders_list.addOrder( new Blockade(player1, territory4)); //invalid,not his territory
     orders_list.addOrder( new Blockade(player1, territory1));// valid
