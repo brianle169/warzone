@@ -1,9 +1,11 @@
 
 #include <iostream>
 #include <vector>
+#include <limits>
 #include <algorithm>
 #include "Cards.h"
 #include "Player.h"
+
 
 using namespace std;
 
@@ -23,12 +25,26 @@ Card& Card::operator=(const Card&) {
 
 // Removes a card from the hand, creates a new list of orders and adds it to the player's list of orders, and adds the card back to the deck 
 void Card::play(Deck& deck, Hand& hand, Player& player){
-    SpCard card = hand.remove(0);
-    if (!card) return;
+    int index;
+    SpCard card;
+    while (true){
+        cout << "Choose the index of the card you wish to play: " ;
+        cin >> index;
+        // Check if input is an int
+        if (cin.fail()){
+            cin.clear(); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid entry. " ;
+            continue;  
+        } 
+        // Remove card from hand and place in the deck
+        card = hand.remove(index);
+        if (card) {
+            deck.add(card);
+            break;
+        }
+    }
 
-    // A1 decoupled placeholder
-    cout << "Playing the top card of the hand, which is a " << *card << endl;
-    deck.add(card);
 }
 
 // ------------Deck -------------
@@ -120,7 +136,7 @@ Hand& Hand::operator=(const Hand& other){
 ostream& operator<< (ostream& out, const Hand& hand) {
  out << "Hand contains: ";
     for (int i = 0; i < hand.spCards.size(); i++){
-        out << *hand.spCards[i] << ", ";
+        out << "[" << i << "] " << *hand.spCards[i] << ", ";
     }	
     return out; 
 }
@@ -137,14 +153,14 @@ void Hand::add(SpCard card){
 
 // Remove a card pointer from the hand
 SpCard Hand::remove(int index){
-    if (index >= spCards.size() && index < 0){
-        cout << "Invalid entry.";
+    if (index >= spCards.size() || index < 0){
+        cout << "Invalid entry. ";
         return SpCard();
     }
 
     SpCard card = spCards[index];
     spCards.erase(spCards.begin() + index);
-    cout << "Removed card from the hand \n";
+    cout << "Removed " << *card << " from the hand \n";
     return card;
 
 }
