@@ -1,9 +1,11 @@
 
 #include <iostream>
 #include <vector>
+#include <limits>
 #include <algorithm>
 #include "Cards.h"
 #include "Player.h"
+
 
 using namespace std;
 
@@ -28,11 +30,21 @@ void Card::play(Deck& deck, Hand& hand, Player& player){
     while (true){
         cout << "Choose the index of the card you wish to play: " ;
         cin >> index;
+        // Check if input is an int
+        if (cin.fail()){
+            cin.clear(); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid entry. " ;
+            continue;  
+        } 
+        // Remove card from hand and place in the deck
         card = hand.remove(index);
-        if (card) break;
+        if (card) {
+            deck.add(card);
+            break;
+        }
     }
 
-    deck.add(card);
 }
 
 // ------------Deck -------------
