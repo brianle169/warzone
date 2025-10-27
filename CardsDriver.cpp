@@ -47,22 +47,31 @@ void testCards(){
     cout << "\n========== Trying to add a copied card to the hand ============ \n";
     player.getHand()->add(cpy);
     
-    cout << "\n" << *player.getHand() << "\n";
-
+    
     // Play cards from the hand (creates orders, stores them in player's order list and adds them back to the deck)
     cout << "\n========== Playing cards from the Hand ============ \n";
+    cout << *player.getHand() << "\n";
     bc->play(deck, *player.getHand(), player);
     cout << "\n";
+
+    cout << *player.getHand() << "\n";
     rc->play(deck, *player.getHand(), player);
     cout << "\n";
+    
+    cout << *player.getHand() << "\n";
     blc->play(deck, *player.getHand(), player);
     cout << "\n";
+    
+    cout << *player.getHand() << "\n";
     ac->play(deck, *player.getHand(), player);
     cout << "\n";
+    
+    cout << *player.getHand() << "\n";
     dc->play(deck, *player.getHand(), player);
+    cout << "\n";
     
     // Print hand contents 
-    cout << "\n" << *player.getHand() << "\n";
+    cout << *player.getHand() << "\n";
     
     // Print deck contents 
     cout << "\n" << deck << "\n";
