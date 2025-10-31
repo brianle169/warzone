@@ -5,6 +5,7 @@
 #include <vector>
 
 using namespace std;
+class Player;
 class Order;
 class Card;
 class Deck; 
@@ -12,38 +13,6 @@ class Hand;
 typedef shared_ptr < Card > SpCard; // Type alias 
 typedef shared_ptr < Hand > SpHand; // Type alias 
 typedef shared_ptr < Order > SpOrder; // Type alias 
-
-
-// After assignment 1, include Player and Order h files 
-// PROFESSOR GAVE THE OK
-// Temp Player and Order classes: 
-
-// Represents an order in the game.
-class Order {
-    // Print the order
-    friend ostream& operator<< (ostream& os, const Order& order);
-    public: 
-        Order();
-    
-};
-
-
-// Represents a player in the game. 
-// Stores a hand of cards and a list of orders.
-class Player {
-    SpHand hand;
-    vector<SpOrder> orders; // should the vectors themselves be pointers?
-    public: 
-    // Create a player with the given hand
-    Player(SpHand hand);
-    // Add a new order to the player's list
-    void addOrder(SpOrder order);
-
-    // Print the player's orders
-    friend ostream& operator<< (ostream& os, const Player& player);
-    
-};
-
 
 // Abstract Card class
 class Card {
@@ -53,11 +22,11 @@ class Card {
         Card& operator=(const Card&);
         virtual void play(Deck& deck, Hand& hand, Player& player); 
         virtual void print(ostream& os) const = 0; // For overloading stream operators with polymorphism 
+        virtual std::string getName() const = 0;
 };
 
 // Stream insertion operator 
 ostream& operator<<(ostream& os, const Card& c);
-
 
 // A child of Card that can be played by the player
 class BombCard : public Card {
@@ -70,6 +39,7 @@ class BombCard : public Card {
         BombCard& operator=(const BombCard& other);
         // Prints the BombCard name
         virtual void print(ostream& os) const override;
+        std::string getName() const override;
 };
 
 
@@ -84,6 +54,8 @@ class ReinforcementCard : public Card {
         ReinforcementCard& operator=(const ReinforcementCard& other);
         // Prints the ReinforcementCard name
         virtual void print(ostream& os) const override;
+        std::string getName() const override;
+
 };
 
 
@@ -98,6 +70,7 @@ class BlockadeCard : public Card {
         BlockadeCard& operator=(const BlockadeCard& other);
         // Prints the BlockadeCard name
         virtual void print(ostream& os) const override;
+        std::string getName() const override;
 };
 
 
@@ -112,6 +85,7 @@ class AirliftCard : public Card {
         AirliftCard& operator=(const AirliftCard& other);
         // Prints the AirliftCard name
         virtual void print(ostream& os) const override;
+        std::string getName() const override;
 };
 
 
@@ -125,6 +99,7 @@ class DiplomacyCard : public Card {
         // Assignment operator
         DiplomacyCard& operator=(const DiplomacyCard& other);
         virtual void print(ostream& os) const override;
+        std::string getName() const override;
 };
 
 // Represents a deck of cards in the game.
@@ -166,6 +141,10 @@ class Hand {
         void add(SpCard card);
         // Removes the card pointer from the hand and returns the pointer 
         SpCard remove(int index);
+        bool includes(string name);
 };
+
+    void testCards();
+
 
 #endif

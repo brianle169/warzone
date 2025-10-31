@@ -1,45 +1,13 @@
 
 #include <iostream>
 #include <vector>
+#include <limits>
 #include <algorithm>
 #include "Cards.h"
+#include "Player.h"
+
 
 using namespace std;
-
-
-// After assignment 1, include Player and Order h files 
-// Temp Player and Order classes: 
-
-ostream& operator<<(ostream& os, const Player& player){
-    os << "Player's Order list contains: ";
-    for (int i = 0; i < player.orders.size(); i++){
-        os << *player.orders[i] << ", ";
-    }
-	return os; 
-}
-
-
-ostream& operator<<(ostream& os, const Order& order){
-    os << "Order";
-	return os; 
-}
-
-// Create a player with the given hand
-Player::Player(SpHand dealtHand)
-{
-    hand = dealtHand;
-}
-
-// Add a new order to the player's list
-void Player::addOrder(SpOrder order){
-    cout << "Added order to player's list of orders \n";
-    orders.push_back(order);
-}
-
-// Creates a default Order 
-Order::Order(){
-    cout << "Order created. \n";
-}
 
 // Implement operator overloading for Cards 
 ostream& operator<<(ostream& os, const Card& c) {
@@ -57,14 +25,26 @@ Card& Card::operator=(const Card&) {
 
 // Removes a card from the hand, creates a new list of orders and adds it to the player's list of orders, and adds the card back to the deck 
 void Card::play(Deck& deck, Hand& hand, Player& player){
-     SpCard card = hand.remove(0);
-    
-    if (card){ // avoid null ref exceptions 
-        cout << "Playing the top card of the hand, which is a " << *card << endl;
-        SpOrder newOrder = SpOrder(new Order());  
-        player.addOrder(newOrder); 
-        deck.add(card);
+    int index;
+    SpCard card;
+    while (true){
+        cout << "Choose the index of the card you wish to play: " ;
+        cin >> index;
+        // Check if input is an int
+        if (cin.fail()){
+            cin.clear(); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid entry. " ;
+            continue;  
+        } 
+        // Remove card from hand and place in the deck
+        card = hand.remove(index);
+        if (card) {
+            deck.add(card);
+            break;
+        }
     }
+
 }
 
 // ------------Deck -------------
@@ -75,7 +55,7 @@ Deck::Deck(){
 }
 
 // Copy constructor 
-Deck::Deck(const Deck& other){
+Deck::Deck(const Deck& other) : spCards(other.spCards) {
     cout << "Deck copied." << endl;
 }
 
@@ -87,6 +67,7 @@ Deck::~Deck(){
 // Operator overloading for Deck
 Deck& Deck::operator=(const Deck& other){
     if (this == &other) return *this;  // prevents bugs with self-assignment
+    spCards = other.spCards;
     // handle any member deletion/reassignment here in the future 
     return *this;
 }
@@ -132,7 +113,7 @@ Hand::Hand(){
     cout << "Hand created." << endl;
 }
 // Copy constructor 
-Hand::Hand(const Hand& other){
+Hand::Hand(const Hand& other) : spCards(other.spCards) {
     cout << "Hand copied." << endl;
 }
 //Destructor 
@@ -146,6 +127,7 @@ Hand& Hand::operator=(const Hand& other){
     if (this == &other){ // prevents bugs with self-assignment
         return *this;
     }
+    spCards = other.spCards;
     // handle any member deletion/reassignment here in the future 
     return *this;
 }
@@ -154,7 +136,7 @@ Hand& Hand::operator=(const Hand& other){
 ostream& operator<< (ostream& out, const Hand& hand) {
  out << "Hand contains: ";
     for (int i = 0; i < hand.spCards.size(); i++){
-        out << *hand.spCards[i] << ", ";
+        out << "[" << i << "] " << *hand.spCards[i] << ", ";
     }	
     return out; 
 }
@@ -171,16 +153,26 @@ void Hand::add(SpCard card){
 
 // Remove a card pointer from the hand
 SpCard Hand::remove(int index){
-    if (index >= spCards.size() && index < 0){
-        cout << "Invalid entry.";
+    if (index >= spCards.size() || index < 0){
+        cout << "Invalid entry. ";
         return SpCard();
     }
 
     SpCard card = spCards[index];
     spCards.erase(spCards.begin() + index);
-    cout << "Removed card from the hand \n";
+    cout << "Removed " << *card << " from the hand \n";
     return card;
 
+}
+
+// Searches hand for card name
+bool Hand::includes(string name) {
+    for(SpCard card: spCards) {
+        if(card->getName() == name) {
+            return true;
+        }
+    }
+    return false;
 }
 
 // Definitions for all child Card classes 
@@ -214,6 +206,11 @@ void BombCard:: print(ostream& os) const {
     os << "BombCard";
 }
 
+// Return card name
+string BombCard::getName() const{
+    return "Bomb";
+}
+
 
 //------------ReinforcementCard----------------
 
@@ -243,6 +240,11 @@ ReinforcementCard& ReinforcementCard::operator=(const ReinforcementCard& other){
 // Override print method to output stream 
 void ReinforcementCard:: print(ostream& os) const {
     os << "ReinforcementCard";
+}
+
+// Return card name
+string ReinforcementCard::getName() const{
+    return "Reinforcement";
 }
 
 
@@ -276,6 +278,11 @@ void BlockadeCard:: print(ostream& os) const {
     os << "BlockadeCard";
 }
 
+// Return card name
+string BlockadeCard::getName() const{
+    return "Blockade";
+}
+
 //------------AirliftCard----------------
 
 // Default constructor 
@@ -307,6 +314,11 @@ void AirliftCard:: print(ostream& os) const {
     os << "AirliftCard";
 }
 
+// Return card name
+string AirliftCard::getName() const{
+    return "Airlift";
+}
+
 //------------DiplomacyCard----------------
 
 // Default constructor 
@@ -335,4 +347,9 @@ DiplomacyCard& DiplomacyCard::operator=(const DiplomacyCard& other){
 // Override print method to output stream 
 void DiplomacyCard:: print(ostream& os) const {
     os << "DiplomacyCard";
+}
+
+// Return card name
+string DiplomacyCard::getName() const{
+    return "Negotiate";
 }
