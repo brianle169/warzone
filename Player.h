@@ -73,6 +73,7 @@ private:
 	Hand* hand; // Player's hand of cards
 	OrdersList* ordersList; // List of orders of the player
 	vector<Territory*>* territories; // Collection of pointers to territories owned by the player
+	int* reinforcementPool; // Number of armies available to the player for deployment
 };
 
 void testPlayers();

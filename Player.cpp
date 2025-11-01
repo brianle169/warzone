@@ -22,6 +22,9 @@ Player::Player() {
 	this->name = new string("");
 	this->hand = new Hand();
 	this->ordersList = new OrdersList();
+
+	this->reinforcementPool = new int(50);
+
 	this->territories = new vector<Territory*>();
 	territories->push_back(new Territory("DefaultTerritory1", nullptr, 0)); // for testing
 	territories->push_back(new Territory("DefaultTerritory2", nullptr, 0)); // for testing
@@ -37,6 +40,9 @@ Player::Player(string name) {
 	this->hand = new Hand();
 	this->ordersList = new OrdersList();
 	//this->territories = nullptr; // initially null, because the game engine will assign territories later
+
+	this->reinforcementPool = new int(50);
+
 	this->territories = new vector<Territory*>();
 	territories->push_back(new Territory("DefaultTerritory1", nullptr, 0)); // for testing
 	territories->push_back(new Territory("DefaultTerritory2", nullptr, 0)); // for testing
@@ -53,6 +59,7 @@ Player::Player(const Player& p) {
 	this->name = new string(*(p.name)); // Deep copy
 	this->hand = new Hand(*(p.hand)); // use Hand's copy constructor
 	this->ordersList = new OrdersList(*(p.ordersList)); // use OrdersList's copy constructor
+	this->reinforcementPool = new int(*(p.reinforcementPool)); // Deep copy
 	if (p.territories != nullptr) {
 		this->territories = new vector<Territory*>(*(p.territories)); // Deep copy of vector
 	}
@@ -77,6 +84,7 @@ Player::~Player() {
 	// for (Territory* t : *this->territories) {
 	// 	delete t; // Free each Territory pointer
 	// }
+	delete this->reinforcementPool;
 	delete this->territories;
 }
 
@@ -219,6 +227,13 @@ vector<Territory*> Player::toDefend() {
 	// memory will be deallocated in PlayerDriver.cpp after testing
 	return defendingTerritories;
 }
+
+/* TODO: Implement the issueOrder() method based on the following requirements:
+• The player decides which neighboring territories are to be attacked in priority (as a list return by the toAttack() method), and which of their own territories are to be defended in priority (as a list returned by the toDefend() method).
+• The player issues deploy orders on its own territories that are in the list returned by toDefend(). As long as the player has army units in their reinforcement pool (see startup phase and reinforcement phase), it will issue a deploy order and no other order. Once it has deployed all its available army units, it can proceed with other kinds of orders.
+• The player issues advance orders to either (1) move army units from one of its own territory to another of its own territories in order to defend it (using toDefend() to make the decision), and/or (2) move army units from one of its own territories to a neighboring enemy territory to attack them (using toAttack() to make the decision).
+• The player uses one of the cards in their hand to issue an order that corresponds to the card in question.
+*/
 
 // issueOrder() method: this method takes an ORDER_TYPE enum as a parameter, which indicates
 // the type of order that the player wants to issue. Based on the order type, the method creates
