@@ -67,6 +67,9 @@ public:
 	void setName(string name);
 	string getName() const;
 
+	void setReinforcementPool(int num);
+	int* getReinforcementPool() const;
+
 
 private:
 	string* name; // Player's name

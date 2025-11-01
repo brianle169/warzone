@@ -132,6 +132,14 @@ string Player::getName() const {
 	return *(this->name);
 }
 
+void Player::setReinforcementPool(int num){
+	*(this->reinforcementPool) = num;
+}
+
+int* Player::getReinforcementPool() const {
+	return this->reinforcementPool;
+}
+
 // Stream insertion operator overloading: This operator prints out general information about the Player object.
 // Currently for testing, the Player's Hand object is empty, and OrdersList is also initially empty, so to check
 // if they exist, we only check whether the pointers are pointing to nullptr or not.
