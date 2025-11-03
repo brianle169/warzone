@@ -27,6 +27,12 @@ public:
 	Continent* getContinent();
 	Player* getPlayer();
 
+	//setters
+	void setPlayer(Player* player);
+	void setArmies(int armies);
+
+	bool isEdge(Territory* territory);
+
 	Territory& operator=(const Territory& other);
 	friend std::ostream& operator<<(std::ostream& os, const Territory& t);
 

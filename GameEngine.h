@@ -1,6 +1,9 @@
 #include <iostream>
 #include <string>
+<<<<<<< HEAD
 #include "Map.h"
+=======
+>>>>>>> origin
 using namespace std;
 
 #ifndef GameEngine_H
@@ -31,7 +34,10 @@ class GameEngine {
         string getCurrentStateName() const;
         // State transition
         void transitionTo(GameState* newState);
+<<<<<<< HEAD
         void startupPhase();
+=======
+>>>>>>> origin
     private:
         GameState* currentState;
         string userCommand;

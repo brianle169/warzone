@@ -3,7 +3,7 @@
 
 void testLoadMaps() {
 	std::vector<std::string> fileNames = {// MAP FILE NAMES TO LOAD
-	R"(_62_small - CASTLE MOONBAT\_62_ small - CASTLE MOONBAT.map)",
+	R"(_62_ small - CASTLE MOONBAT.map)",
 	R"(Flower K.map)",
 	R"(Australia.map)",
 	R"(InvalidMap.txt)"
@@ -30,8 +30,4 @@ void testLoadMaps() {
 		std::cout << *map << std::endl;
 		maps.push_back(std::move(map));
 	}
-}
-int main() {
-	testLoadMaps();
-	return 0;
 }
