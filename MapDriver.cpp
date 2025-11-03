@@ -22,7 +22,7 @@ void testLoadMaps() {
 		}
 
 
-		if (!map->validate(file)) {
+		if (!map->validate()) {
 			continue;
 		}
 

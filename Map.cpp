@@ -246,25 +246,25 @@
 		return true;
 	}
 	//calls all three validation functions
-	bool Map::validate(const std::string& name) {
+	bool Map::validate() {
 		if (!this->isConnected()) {
-			std::cout << "Map " << name << " is not connected\n";
+			std::cout << "Map is not connected\n";
 			return false;
 		}
-		std::cout << "Map " << name << " is connected\n";
+		std::cout << "Map is connected\n";
 
 		if (!this->continentsConnected()) {
-			std::cout << "Map " << name << "'s continents not are not connected\n";
+			std::cout << "Map's continents not are not connected\n";
 			return false;
 		}
-		std::cout << "Map " << name << "'s continents are connected\n";
+		std::cout << "Map's continents are connected\n";
 	
 
 		if (!this->territoryExclusive()) {
-			std::cout << "Map " << name << "'s territories are not exclusive\n";
+			std::cout << "Map's territories are not exclusive\n";
 			return false;
 		}
-		std::cout << "Map " << name << "'s territories are exclusive\n";
+		std::cout << "Map's territories are exclusive\n";
 
 		return true;
 	}
@@ -332,7 +332,7 @@
 			if (!map->getContinent(line[1])) {
 				return nullptr;
 			}
-			map->addTerritory(line[0], map->getContinent(line[1]), rand() % 7 + 2);
+			map->addTerritory(line[0], map->getContinent(line[1]), 0);
 		}
 		for (std::vector<std::string> line : territoryLines) {//create territory edges 
 			for (int i = 2; i < line.size(); i++) {

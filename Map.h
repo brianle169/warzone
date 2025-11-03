@@ -84,7 +84,7 @@ public:
 	bool isConnected();
 	bool continentsConnected();
 	bool territoryExclusive();
-	bool validate(const std::string& name);
+	bool validate();
 
 	
 private:
