@@ -65,7 +65,7 @@ void GameEngine::transitionTo(GameState* newState) {
     // Take ownership of the new state
     currentState = newState;
 }
-<<<<<<< HEAD
+
 void GameEngine::startupPhase() {
     std::cout"//Startup Phase//";
     processor = std::make_unique<CommandProcessor>();
@@ -132,8 +132,6 @@ void GameEngine::startupPhase() {
     if (commandStr == 
 
 }
-=======
->>>>>>> origin
 
 /*
     The following function execute a player command by delegating to the current state.
@@ -191,10 +189,6 @@ string StartState::getStateName() const {
 // The other commands are rejected whitout changing state.
 void StartState::processCommand(GameEngine& engine, const string& command) {
     if (command == "loadmap") {
-<<<<<<< HEAD
-
-=======
->>>>>>> origin
         engine.transitionTo(new MapLoadedState());
     } else {
         cout << "[Invalid] From 'start' you may only enter: loadmap" << endl;
