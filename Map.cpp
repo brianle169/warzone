@@ -318,12 +318,8 @@ std::unique_ptr<Map> MapLoader::load(const std::string& filename) {
 			if (currentSection != 'c') {
 				return nullptr;
 			}
-<<<<<<< HEAD
-			map->addTerritory(line[0], map->getContinent(line[1]), 0);
-=======
 			currentSection = 't';
 			continue;
->>>>>>> origin
 		}
 
 		if (currentSection == 'c') {//parse continents 
@@ -354,11 +350,11 @@ std::unique_ptr<Map> MapLoader::load(const std::string& filename) {
 		continue;
 	}
 	for (std::vector<std::string> line : territoryLines) { //create territories from parsed lines
-		//army amount is random from 2-7
+		//army amount is 0
 		if (!map->getContinent(line[1])) {
 			return nullptr;
 		}
-		map->addTerritory(line[0], map->getContinent(line[1]), rand() % 7 + 2);
+		map->addTerritory(line[0], map->getContinent(line[1]), 0);
 	}
 	for (std::vector<std::string> line : territoryLines) {//create territory edges 
 		for (int i = 2; i < line.size(); i++) {
