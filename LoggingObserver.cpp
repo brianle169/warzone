@@ -15,23 +15,19 @@ Observer::~Observer(){}
 
 // ============= Subject class ===============
 
-Subject::Subject(){
-    observers = new std::list<Observer*>;
-}
-Subject::~Subject(){
-    delete observers;
+Subject::Subject(){}
+Subject::~Subject(){}
+
+void Subject::Attach(std::shared_ptr<Observer> obs){
+    observers.push_back(obs);
 }
 
-void Subject::Attach(Observer* obs){
-    observers->push_back(obs);
-}
-
-void Subject::Detach(Observer* obs){
-    observers->remove(obs);
+void Subject::Detach(std::shared_ptr<Observer> obs){
+    observers.remove(obs); // might not find?
 }
 
 void Subject::Notify(ILoggable* loggable){
-    for (Observer* obs : *observers){
+    for (std::shared_ptr<Observer> obs : observers){
             obs->Update(loggable);
         }
 }
@@ -52,5 +48,5 @@ void LogObserver::Update(ILoggable* loggable){
 }
 
 int main(){
-    
+
 }

@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <list>
+#include <memory>
 
 // Acts as an interface for any class whose state or actions should be recorded in the game log
 class ILoggable {
@@ -26,12 +27,12 @@ class Observer {
 // Maintains a list of Observers and notifies them whenever an event occurs.
 class Subject {
     private:
-        std::list<Observer*> *observers;
+        std::list<std::shared_ptr<Observer>> observers;
     public:
         Subject();
         virtual ~Subject();
-        virtual void Attach(Observer* obs);
-        virtual void Detach(Observer* obs);
+        virtual void Attach(std::shared_ptr<Observer> obs);
+        virtual void Detach(std::shared_ptr<Observer> obs);
         virtual void Notify(ILoggable* loggable);
 };
 
