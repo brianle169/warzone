@@ -8,6 +8,7 @@
 
 using namespace std;
 
+// Forward declarations to avoid circular dependencies
 class Territory;
 class Hand;
 class Order;
@@ -15,6 +16,7 @@ class OrdersList;
 class Card;
 class Deck;
 class Continent;
+class Deploy;
 
 typedef shared_ptr < Card > SpCard; // Type alias 
 typedef shared_ptr < Hand > SpHand; // Type alias 
@@ -68,7 +70,7 @@ public:
 	string getName() const;
 
 	void setReinforcementPool(int num);
-	int* getReinforcementPool() const;
+	int getReinforcementPool() const;
 
 	void displayTerritories(const std::vector<Territory*>& territories);
 	void displayOrdersList(const OrdersList* ordersList);
@@ -86,6 +88,7 @@ private:
 	// Helper methods to get attackable and defendable territories
 	unordered_map<string, Territory*> getAttackableTerritories();
 	unordered_map<string, Territory*> getDefendableTerritories();
+	Deploy* deploy(vector<Territory*>& defendingTerritories);
 };
 
 void testPlayers();
