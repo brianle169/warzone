@@ -43,13 +43,9 @@ Player::Player(const Player &p)
 	this->ordersList = new OrdersList(*(p.ordersList));		   // use OrdersList's copy constructor
 	this->reinforcementPool = new int(*(p.reinforcementPool)); // Deep copy
 	if (p.territories != nullptr)
-	{
 		this->territories = new vector<Territory *>(*(p.territories)); // Deep copy of vector
-	}
 	else
-	{
 		this->territories = new vector<Territory *>();
-	}
 	this->attacking = new vector<Territory *>();
 	this->defending = new vector<Territory *>();
 }
@@ -63,9 +59,6 @@ Player::~Player()
 	delete this->name;
 	delete this->hand;
 	delete this->ordersList;
-	// for (Territory* t : *this->territories) {
-	// 	delete t; // Free each Territory pointer
-	// }
 	delete this->reinforcementPool;
 	delete this->territories;
 }
@@ -75,9 +68,7 @@ Player::~Player()
 void Player::setTerritories(vector<Territory *> *terrs)
 {
 	for (Territory *t : *this->territories)
-	{
 		delete t; // Free each Territory pointer
-	}
 	this->territories = terrs;
 }
 
@@ -146,9 +137,7 @@ ostream &operator<<(ostream &out, const Player &player)
 	out << "Player's OrdersList exists? " << (player.ordersList != nullptr ? "Yes" : "No") << endl;
 	out << "Player's Territories exists? " << (player.territories != nullptr ? "Yes" : "No") << endl;
 	for (Territory *t : *player.territories)
-	{
 		out << "Name: " << t->getName() << " - Armies: " << t->getArmies() << endl;
-	}
 	return out; // out = output stream
 }
 
@@ -164,10 +153,7 @@ Player &Player::operator=(const Player &p)
 		delete this->hand;
 		delete this->ordersList;
 		for (Territory *t : *this->territories)
-		{
-			delete t; // Free each Territory pointer
-		}
-
+			delete t;										// Free each Territory pointer
 		this->name = new string(*(p.name));					// Deep copy
 		this->hand = new Hand(*(p.hand));					// use Hand's copy constructor
 		this->ordersList = new OrdersList(*(p.ordersList)); // use OrdersList's copy constructor
@@ -188,9 +174,7 @@ unordered_map<string, Territory *> Player::getAttackableTerritories()
 		{
 			string adjacentPName = adjacentTerritory->getPlayer() ? adjacentTerritory->getPlayer()->getName() : "";
 			if (adjacentPName != *this->name && attackableTerritories.find(adjacentPName) == attackableTerritories.end())
-			{
 				attackableTerritories[adjacentPName] = adjacentTerritory;
-			}
 		}
 	}
 	return attackableTerritories;
@@ -200,9 +184,7 @@ unordered_map<string, Territory *> Player::getDefendableTerritories()
 {
 	unordered_map<string, Territory *> defendableTerritories;
 	for (Territory *ownedTerritory : *this->territories)
-	{
 		defendableTerritories[ownedTerritory->getName()] = ownedTerritory;
-	}
 	return defendableTerritories;
 }
 
@@ -214,9 +196,7 @@ vector<Territory *> Player::toAttack()
 	// Display current list of attacking territories
 	cout << "Attacking List: ";
 	for (Territory *t : *this->attacking)
-	{
 		cout << t->getName() << ", ";
-	}
 	cout << endl;
 
 	cout << "Available territories to attack (*: already chosen): ";
@@ -224,17 +204,11 @@ vector<Territory *> Player::toAttack()
 	for (const auto &pair : attackableTerritories)
 	{
 		if (std::find(this->attacking->begin(), this->attacking->end(), pair.second) != this->attacking->end())
-		{
 			cout << pair.first << "*" << " (" << pair.second->getArmies() << ")";
-		}
 		else
-		{
 			cout << pair.first << " (" << pair.second->getArmies() << ")";
-		}
 		if (pair.second != this->attacking->back())
-		{
 			cout << ", ";
-		}
 	}
 	cout << endl;
 
@@ -247,9 +221,7 @@ vector<Territory *> Player::toAttack()
 	while (iss >> territoryName)
 	{
 		if (territoryName == "x")
-		{
 			break;
-		}
 		auto entry = attackableTerritories.find(territoryName);
 		if (entry != attackableTerritories.end() &&
 			std::find(this->attacking->begin(), this->attacking->end(), entry->second) == this->attacking->end())
@@ -267,9 +239,7 @@ vector<Territory *> Player::toDefend()
 	// Implementation
 	cout << "Defending List: ";
 	for (Territory *t : *this->defending)
-	{
 		cout << t->getName() << ", ";
-	}
 	cout << endl;
 
 	cout << "Available territories to defend (*: already chosen): ";
@@ -277,17 +247,11 @@ vector<Territory *> Player::toDefend()
 	for (const auto &pair : defendableTerritories)
 	{
 		if (std::find(this->defending->begin(), this->defending->end(), pair.second) != this->defending->end())
-		{
 			cout << pair.first << "*" << " (" << pair.second->getArmies() << ")";
-		}
 		else
-		{
 			cout << pair.first << " (" << pair.second->getArmies() << ")";
-		}
 		if (pair.second != this->defending->back())
-		{
 			cout << ", ";
-		}
 	}
 	cout << endl;
 
@@ -301,9 +265,7 @@ vector<Territory *> Player::toDefend()
 	while (iss >> territoryName)
 	{
 		if (territoryName == "x")
-		{
 			break;
-		}
 		auto entry = defendableTerritories.find(territoryName);
 		if (entry != defendableTerritories.end() &&
 			std::find(this->defending->begin(), this->defending->end(), entry->second) == this->defending->end())
@@ -320,10 +282,7 @@ void Player::displayTerritories(const std::vector<Territory *> &territories)
 	for (Territory *t : territories)
 	{
 		if (t)
-		{
-			std::cout << t->getName()
-					  << " - " << t->getArmies() << '\n';
-		}
+			std::cout << t->getName() << " - " << t->getArmies() << '\n';
 	}
 }
 
