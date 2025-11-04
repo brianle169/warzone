@@ -4,6 +4,7 @@
 #include <memory>
 #include <unordered_map>
 #include <algorithm>
+#include <limits>
 
 #include "Player.h"
 #include "Orders.h"
@@ -20,15 +21,26 @@ using namespace std;
 // -  hand is a new empty Hand object
 // -  ordersList is a new empty OrdersList object
 // -  territories is an empty vector of Territory pointers, which will be assigned later by the game engine
-Player::Player() : name(new string("")), hand(new Hand()), ordersList(new OrdersList()), reinforcementPool(new int(50)),
-				   territories(new vector<Territory *>()), attacking(new vector<Territory *>()), defending(new vector<Territory *>())
+Player::Player() : name(new string("")),
+				   hand(new Hand()),
+				   ordersList(new OrdersList()),
+				   reinforcementPool(new int(50)),
+				   territories(new vector<Territory *>()),
+				   attacking(new vector<Territory *>()),
+				   defending(new vector<Territory *>()),
+				   issueOrderStatus(new array<bool, 4>())
 {
 }
 
 // Parameterized constructor: This constructor takes a string pointer as a parameter to set the player's name.
 // The other attributes are initialized similarly to the default constructor.
-Player::Player(string name) : hand(new Hand()), ordersList(new OrdersList()), reinforcementPool(new int(50)),
-							  territories(new vector<Territory *>()), attacking(new vector<Territory *>()), defending(new vector<Territory *>())
+Player::Player(string name) : hand(new Hand()),
+							  ordersList(new OrdersList()),
+							  reinforcementPool(new int(50)),
+							  territories(new vector<Territory *>()),
+							  attacking(new vector<Territory *>()),
+							  defending(new vector<Territory *>()),
+							  issueOrderStatus(new array<bool, 4>())
 {
 	this->name = new string(name); // This is a pointer assignment.
 }
@@ -46,8 +58,17 @@ Player::Player(const Player &p)
 		this->territories = new vector<Territory *>(*(p.territories)); // Deep copy of vector
 	else
 		this->territories = new vector<Territory *>();
-	this->attacking = new vector<Territory *>();
-	this->defending = new vector<Territory *>();
+
+	if (p.attacking != nullptr)
+		this->attacking = new vector<Territory *>(*(p.attacking)); // Deep copy of vector
+	else
+		this->attacking = new vector<Territory *>();
+
+	if (p.defending != nullptr)
+		this->defending = new vector<Territory *>(*(p.defending)); // Deep copy of vector
+	else
+		this->defending = new vector<Territory *>();
+	this->issueOrderStatus = new array<bool, 4>(*(p.issueOrderStatus)); // Deep copy of array
 }
 
 // Destructor: This destructor releases the memory allocated for the name, hand, ordersList, and territories.
@@ -61,6 +82,8 @@ Player::~Player()
 	delete this->ordersList;
 	delete this->reinforcementPool;
 	delete this->territories;
+	delete this->attacking;
+	delete this->defending;
 }
 
 // Below are the getters and setters for each attribute of the Player class.
@@ -220,12 +243,13 @@ vector<Territory *> Player::toAttack()
 
 	while (iss >> territoryName)
 	{
-		if (territoryName == "x")
+		if (territoryName == "x" || territoryName == "X")
 			break;
 		auto entry = attackableTerritories.find(territoryName);
 		if (entry != attackableTerritories.end() &&
 			std::find(this->attacking->begin(), this->attacking->end(), entry->second) == this->attacking->end())
 		{
+			// if the territory is found and not already in the attacking list
 			this->attacking->push_back(entry->second); // insert the territory pointer into attacking vector
 		}
 	}
@@ -264,12 +288,13 @@ vector<Territory *> Player::toDefend()
 
 	while (iss >> territoryName)
 	{
-		if (territoryName == "x")
+		if (territoryName == "x" || territoryName == "X")
 			break;
 		auto entry = defendableTerritories.find(territoryName);
 		if (entry != defendableTerritories.end() &&
 			std::find(this->defending->begin(), this->defending->end(), entry->second) == this->defending->end())
 		{
+			// if the territory is found and not already in the defending list
 			this->defending->push_back(entry->second); // insert the territory pointer into defending vector
 		}
 	}
@@ -358,8 +383,15 @@ Deploy *Player::deploy(vector<Territory *> &defendingTerritories)
 	return new Deploy(this, defendingTerritories[territoryIndex], numArmies);
 }
 
-// clear input stream
+bool Player::isDoneIssuingOrder()
+{
+	return this->issueOrderStatus->at(static_cast<int>(IssuePhase::DeployPhase)) &&
+		   this->issueOrderStatus->at(static_cast<int>(IssuePhase::AttackDefendPhase)) &&
+		   this->issueOrderStatus->at(static_cast<int>(IssuePhase::AdvancePhase)) &&
+		   this->issueOrderStatus->at(static_cast<int>(IssuePhase::OtherPhase));
+}
 
+// Note that the issueOrder() will be called repeatedly in each round robin turn of the players until all players are done issuing orders.
 void Player::issueOrder()
 {
 	// 1. Print the essential info: name, reinforcement pool, territories, hand, orders list
@@ -373,10 +405,21 @@ void Player::issueOrder()
 	this->displayOrdersList(this->ordersList);
 	cout << "==========================" << endl;
 
+	vector<Territory *> attackingTerritories;
+	vector<Territory *> defendingTerritories;
 	// 2. Decide territories to attack and defend.
-	vector<Territory *> attackingTerritories = this->toAttack();
-	vector<Territory *> defendingTerritories = this->toDefend();
-
+	if (!this->issueOrderStatus->at(static_cast<int>(IssuePhase::AttackDefendPhase)))
+	{
+		attackingTerritories = this->toAttack();
+		defendingTerritories = this->toDefend();
+		this->issueOrderStatus->at(static_cast<int>(IssuePhase::AttackDefendPhase)) = true;
+	}
+	else
+	{
+		cout << "Choosing territories to attack and defend has been completed." << endl;
+		attackingTerritories = *(this->attacking);
+		defendingTerritories = *(this->defending);
+	}
 	// 3. After choosing the territories to attack and defend, we will issue
 	// deploy orders on the defending territories until the reinforcement pool is empty.
 	if (*(this->reinforcementPool) > 0)
@@ -385,10 +428,11 @@ void Player::issueOrder()
 		Order *deployOrder = this->deploy(defendingTerritories);
 		this->ordersList->addOrder(deployOrder);
 	}
+	else
+	{
+		this->issueOrderStatus->at(static_cast<int>(IssuePhase::DeployPhase)) = true;
+	}
 	// 4. After deploying all reinforcements, we can issue other types of orders.
 	// *Note: the following orders are optional depending on what the player wants to do.
 	// That means they can skip issuing these orders if they want to
-	else
-	{
-	}
 }
