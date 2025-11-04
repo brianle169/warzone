@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
-#include <vector> 
+#include <vector>
+#include <sstream>
+#include <fstream>
 
 using namespace std;
 
@@ -66,7 +68,7 @@ class FileLineReader {
     public:
         // Default Constructor
         FileLineReader();
-        // Cosntructor with parameter
+        // Constructor with parameter
         FileLineReader(const string& file);
         // Copy Constructor
         FileLineReader(const FileLineReader& other);
