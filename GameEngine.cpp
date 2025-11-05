@@ -1,4 +1,5 @@
 #include "GameEngine.h"
+#include "GameProcessor.h"
 
 /*
     ==== Game Engine Class Section ====
@@ -120,6 +121,7 @@ void GameEngine::startupPhase() {
                 cout << "No player specified." << endl;
                 continue;
             }
+            players.push_back(player(arg));
 
         }
         if (cmd == "gamestart") {
