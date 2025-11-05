@@ -57,7 +57,7 @@ void Command::saveEffect(const string& eff) {
 
 // === CommandProcessor Class Implementation ===
 
-// Default Cosntructor
+// Default Constructor
 CommandProcessor::CommandProcessor() {
     commands = new vector<Command*>();
 }
@@ -152,7 +152,7 @@ bool CommandProcessor::validate(const string& command, GameEngine* engine)  {
     } else if (currentState == "execute orders") {
         return (cmd == "execorder" || cmd == "endexecorders" || cmd == "win");
     } else if (currentState == "win") {
-        return (cmd == "replay" || cmd == "quit");
+        return (cmd == "play" || cmd == "end");
     }
     return false;
 }
@@ -176,6 +176,16 @@ FileLineReader::FileLineReader(const string& file) {
     filename = new string(file);
     fileStream = new ifstream(*filename);
     if (!fileStream->is_open()) {
+        cerr << "Error: Could not open the wanted file " << *filename << endl;
+        delete fileStream;
+        fileStream = nullptr;
+    }
+}
+
+// Copy Constructor
+FileLineReader::FileLineReader(const FileLineReader& other) {
+    filename = new string(*other.filename);
+    if (!filename->empty()) {
         fileStream = new ifstream(*filename);
     } else {
         fileStream = nullptr;
@@ -202,9 +212,10 @@ FileLineReader& FileLineReader::operator=(const FileLineReader& other) {
             }
             delete fileStream;
         }
+        delete filename;
 
         filename = new string(*other.filename);
-        if(filename->empty()) {
+        if(!filename->empty()) {
             fileStream = new ifstream(*filename);
         } else {
             fileStream = nullptr;
@@ -240,7 +251,7 @@ FileCommandProcessorAdapter::FileCommandProcessorAdapter(const string& filename)
 }
 
 // Copy Constructor
-FileCommandProcessorAdapter::FileCommandProcessorAdapter(const FileCommandProcessorAdapter& other) : CommandProcessor() {
+FileCommandProcessorAdapter::FileCommandProcessorAdapter(const FileCommandProcessorAdapter& other) : CommandProcessor(other) {
     if (other.flr) {
         flr = new FileLineReader(*other.flr);
     } else {

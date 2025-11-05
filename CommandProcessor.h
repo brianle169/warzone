@@ -102,8 +102,4 @@ class FileCommandProcessorAdapter : public CommandProcessor {
         // We override readCommand method but this time to read from file instead of from the console
         string readCommand() override;
 };
-
-// Test function - Free Function
-void testCommandProcessor();
-
 #endif
