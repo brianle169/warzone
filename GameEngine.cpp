@@ -300,6 +300,7 @@ void PlayersAddedState::processCommand(GameEngine& engine, const string& command
         cout << "Adding another player... (state unchanged)" << endl;
         return;
     } else if (command == "assigncountries") {
+        // (Minh) For assignment 2, we will modify this to trigger the main game loop.
         engine.transitionTo(new AssignReinforcementState());
     } else {
         cout << "[Invalid] From 'players added' you may only enter: addplayer or assigncountries" << endl;
@@ -309,6 +310,8 @@ ostream& operator<<(ostream& os, const PlayersAddedState& s) {
     return os << s.getStateName();
 }
 
+
+// Main game loop starts from AssignReinforcementState after countries have been assigned
 
 // ==== AssignReinforcementState ====
 
@@ -421,6 +424,8 @@ ostream& operator<<(ostream& os, const ExecuteOrderState& s) {
     return os << s.getStateName();
 }
 
+
+// Main game loop ends before WinState
 
 // ==== WinState ====
 
