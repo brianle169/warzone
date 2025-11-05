@@ -334,7 +334,10 @@ void Player::displayOrdersList(const OrdersList *ordersList)
 
 Deploy *Player::deploy(vector<Territory *> &defendingTerritories)
 {
-	cout << "Defending List: ";
+	cout << "===========================================" << endl;
+	cout << "============Deployment Phase===============" << endl;
+	cout << "===========================================" << endl;
+	cout << "\nDefending List: ";
 	int count = 0;
 	for (Territory *t : defendingTerritories)
 	{
@@ -383,6 +386,123 @@ Deploy *Player::deploy(vector<Territory *> &defendingTerritories)
 	return new Deploy(this, defendingTerritories[territoryIndex], numArmies);
 }
 
+Advance *Player::advance(vector<Territory *> &attackingTerritories, vector<Territory *> &defendingTerritories)
+{
+	cout << "===========================================" << endl;
+	cout << "============Advancement Phase==============" << endl;
+	cout << "===========================================" << endl;
+
+	cout << "\nAdvance orders are optional. Do you want to issue an Advance order?\nYes (y) to issue an Advance order. No (n) to move on to other orders (y/n) >> ";
+	string choice;
+	cin >> choice;
+	if (choice != "y" && choice != "Y")
+	{
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		this->issueOrderStatus->at(static_cast<int>(IssuePhase::AdvancePhase)) = true;
+		return nullptr; // No advance order issued
+	}
+
+	// Setup source and target territories
+	Territory *sourceTerritory = nullptr, *targetTerritory = nullptr;
+	vector<Territory *> possibleTargets;
+	possibleTargets.insert(possibleTargets.end(), attackingTerritories.begin(), attackingTerritories.end());
+	possibleTargets.insert(possibleTargets.end(), defendingTerritories.begin(), defendingTerritories.end());
+
+	// Choose a source territory from the user's own territories
+	cout << "\nCurrent territories you own: ";
+	int count = 0;
+	for (Territory *t : *this->territories)
+	{
+		if (count == this->territories->size() - 1)
+			cout << "(" << count << ") " << t->getName() << " - Armies:" << t->getArmies() << endl;
+		else
+			cout << "(" << count << ") " << t->getName() << " - Armies:" << t->getArmies() << ", ";
+		count++;
+	}
+
+	int sourceIndex = -1;
+	bool validInput = false;
+	while (!validInput)
+	{
+		cout << "\nChoose a source territory to advance from (using the index provided in the parentheses) >> ";
+		cin >> sourceIndex;
+		if (cin.fail())
+		{
+			cin.clear();										 // clear the fail state
+			cin.ignore(numeric_limits<streamsize>::max(), '\n'); // discard invalid input
+			cout << "Invalid input. Please enter a number." << endl;
+			continue;
+		}
+		if (sourceIndex >= 0 && sourceIndex < this->territories->size())
+			validInput = true;
+		else
+			cout << "Invalid territory index. Please try again." << endl;
+	}
+	sourceTerritory = this->territories->at(sourceIndex);
+
+	int numArmies = 0;
+	validInput = false;
+	while (!validInput)
+	{
+		cout << "\nNumber of armies to advance >> ";
+		cin >> numArmies;
+		if (cin.fail())
+		{
+			cin.clear();										 // clear the fail state
+			cin.ignore(numeric_limits<streamsize>::max(), '\n'); // discard invalid input
+			cout << "Invalid input. Please enter a number." << endl;
+			continue;
+		}
+		else
+			validInput = true;
+	}
+
+	cout << "\nChoose a target territory to advance to from the two lists below." << endl;
+	count = 0;
+	validInput = false;
+
+	cout << "Attacking territories: ";
+	for (Territory *t : attackingTerritories)
+	{
+		if (count == attackingTerritories.size() - 1)
+			cout << "(" << count << ") " << t->getName() << endl;
+		else
+			cout << "(" << count << ") " << t->getName() << " - ";
+		count++;
+	}
+
+	cout << "Defending territories: ";
+	for (Territory *t : defendingTerritories)
+	{
+		if (count == defendingTerritories.size() - 1)
+			cout << "(" << count << ") " << t->getName() << endl;
+		else
+			cout << "(" << count << ") " << t->getName() << " - ";
+		count++;
+	}
+
+	int targetIndex = -1;
+	while (!validInput)
+	{
+		cout << "\nSelect target territory to advance to (using the index provided in the parentheses) >> ";
+		cin >> targetIndex;
+		if (cin.fail())
+		{
+			cin.clear();										 // clear the fail state
+			cin.ignore(numeric_limits<streamsize>::max(), '\n'); // discard invalid input
+			cout << "Invalid input. Please enter a number." << endl;
+			continue;
+		}
+		if (targetIndex >= 0 && targetIndex < possibleTargets.size())
+			validInput = true;
+		else
+			cout << "Invalid territory index. Please try again." << endl;
+	}
+	targetTerritory = possibleTargets[targetIndex];
+
+	return new Advance(this, numArmies, sourceTerritory, targetTerritory);
+}
+
 bool Player::isDoneIssuingOrder()
 {
 	return this->issueOrderStatus->at(static_cast<int>(IssuePhase::DeployPhase)) &&
@@ -396,11 +516,11 @@ void Player::issueOrder()
 {
 	// 1. Print the essential info: name, reinforcement pool, territories, hand, orders list
 	cout << "=== Player " << *(this->name) << "'s turn ===" << endl;
-	cout << "Reinforcement Pool: " << *(this->reinforcementPool) << endl;
-	cout << "Territories (name - armies): " << endl;
-	this->displayTerritories(*(this->territories));
-	cout << "Hand: " << endl;
-	cout << *(this->hand) << endl;
+	// cout << "Reinforcement Pool: " << *(this->reinforcementPool) << endl;
+	// cout << "Territories (name - armies): " << endl;
+	// this->displayTerritories(*(this->territories));
+	// cout << "Hand: " << endl;
+	// cout << *(this->hand) << endl;
 	cout << "Orders List: " << endl;
 	this->displayOrdersList(this->ordersList);
 	cout << "==========================" << endl;
@@ -413,6 +533,7 @@ void Player::issueOrder()
 		attackingTerritories = this->toAttack();
 		defendingTerritories = this->toDefend();
 		this->issueOrderStatus->at(static_cast<int>(IssuePhase::AttackDefendPhase)) = true;
+		return;
 	}
 	else
 	{
@@ -427,12 +548,26 @@ void Player::issueOrder()
 		// if the reinforcement pool is not empty, we only have one order option: Deploy
 		Order *deployOrder = this->deploy(defendingTerritories);
 		this->ordersList->addOrder(deployOrder);
+		return;
 	}
 	else
 	{
+		cout << "Reinforcement pool is empty. No deploy orders can be issued." << endl;
 		this->issueOrderStatus->at(static_cast<int>(IssuePhase::DeployPhase)) = true;
 	}
 	// 4. After deploying all reinforcements, we can issue other types of orders.
 	// *Note: the following orders are optional depending on what the player wants to do.
 	// That means they can skip issuing these orders if they want to
+	if (!this->issueOrderStatus->at(static_cast<int>(IssuePhase::AdvancePhase)))
+	{
+		// If advance phase orders have not been issued, we can issue them now.
+		Order *advanceOrder = this->advance(attackingTerritories, defendingTerritories);
+		if (advanceOrder != nullptr)
+			this->ordersList->addOrder(advanceOrder);
+		return;
+	}
+	else
+	{
+		cout << "Advance orders are finalized. Now you can issue other types using corresponding cards." << endl;
+	}
 }

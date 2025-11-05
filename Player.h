@@ -91,6 +91,7 @@ private:
 	unordered_map<string, Territory *> getAttackableTerritories();
 	unordered_map<string, Territory *> getDefendableTerritories();
 	Deploy *deploy(vector<Territory *> &defendingTerritories);
+	Advance *advance(vector<Territory *> &attackingTerritories, vector<Territory *> &defendingTerritories);
 	bool isDoneIssuingOrder();
 };
 
