@@ -48,6 +48,8 @@ string Order::getPlayer() const {
     return player ? player->getName() : std::string("<null>");
 }
 
+bool Order::status = true;
+
 //DEPLOY CLASS DEFINITON---------------------------------------------------
 
 // Constructor for Deploy order
@@ -139,7 +141,7 @@ ostream& operator<<(ostream& os, const Advance& a) {
 
 // Checks if the move is valid
 bool Advance::validate() {
-    return player == sourceTerritory->getPlayer() && sourceTerritory->getArmies() > numArmies && numArmies > 0 && targetTerritory->isEdge(sourceTerritory);
+    return player == sourceTerritory->getPlayer() && sourceTerritory->getArmies() > numArmies && numArmies > 0 && targetTerritory->isEdge(sourceTerritory) && player->isNegotiatedWith(targetTerritory->getPlayer()) == false;//negotiatedWith return true, then advance order is not valid
 }
 
 // Executes troop movement and combat logic
@@ -158,11 +160,16 @@ void Advance::execute() {
                 sourceTerritory->setArmies(sourceTerritory->getArmies()-numArmies);
                 targetTerritory->setArmies(result);
                 targetTerritory->setPlayer(player);
-                //add a card to the deck since conquered
-                //a player cannot get another card, so we need a block function so no other card can be assigned to the player
                 executed = true;
                 setExecutionEffect("Successfully conquered and advanced " + to_string(numArmies) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName() + "; "+ sourceTerritory->getName() + " has now " + to_string(sourceTerritory->getArmies()) + " troops and "  + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
-
+                //add a card to the player since conquered
+                if(Order::status == true) {
+                    player->getHand()->add(SpCard(new(ReinforcementCard)));//(3)
+                    cout << *player->getHand(); //checking if it added the card
+                    cout << "" << endl ;
+                    //a player cannot get another card, so we need a block function so no other card can be assigned to the player
+                    Order::status = false;
+                }
             } else { //the player successfully defended his own territory
                 int result = targetTerritory->getArmies()*0.7 - numArmies*0.6;
                 sourceTerritory->setArmies(sourceTerritory->getArmies()-numArmies);
@@ -272,8 +279,10 @@ void Blockade::execute() {
     if (validate()) {
         targetTerritory->setArmies(targetTerritory->getArmies()*3);
         //make it neutral territory ; change has to be made on part 3 in main game loop
+        targetTerritory->setPlayer(Player::getNeutralPlayer());
+
         executed = true;
-        setExecutionEffect("Successfully blockade " + targetTerritory->getName());
+        setExecutionEffect("Successfully blockade " + targetTerritory->getName() + ". It now belongs to the Neutral player " + Player::neutralPlayer->getName());
     }
 }
 
@@ -328,7 +337,7 @@ bool Airlift::validate() {
 void Airlift::execute() {
     if (validate()) {
         sourceTerritory->setArmies(sourceTerritory->getArmies()-numArmy);
-        targetTerritory->setArmies(sourceTerritory->getArmies()+numArmy);
+        targetTerritory->setArmies(targetTerritory->getArmies()+numArmy);
         executed = true;
         setExecutionEffect("Successfully airlift " + to_string(numArmy) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName());
     }
@@ -382,7 +391,8 @@ bool Negotiate::validate() {
 // Order execution method
 void Negotiate::execute() {
     if (validate()) {
-        //MAKE SURE NO PLAYER CAN CALL THE ADVANCE ORDER ON THE OTHER
+        player->addNegotiatedPlayers(targetPlayer);
+        targetPlayer->addNegotiatedPlayers(player);
         executed = true;
         setExecutionEffect("Successfully negotiate with " + targetPlayer->getName() + ". You cannot call the advance order for the next round");
     }

@@ -67,6 +67,13 @@ public:
 	void setName(string name);
 	string getName() const;
 
+	std::vector<Player*> negotiatedPlayers;
+	void addNegotiatedPlayers(Player* p);
+	bool isNegotiatedWith(Player* p) const;
+
+	static Player* getNeutralPlayer();
+	static Player* neutralPlayer;
+
 
 private:
 	string* name; // Player's name

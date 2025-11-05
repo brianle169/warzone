@@ -270,3 +270,17 @@ void Player::issueOrder(ORDER_TYPE otype) {
 
 	// Memory management note: orders should be deallocated after being executed.
 }
+
+void Player::addNegotiatedPlayers(Player* p) {
+	negotiatedPlayers.push_back(p);
+}
+
+bool Player::isNegotiatedWith(Player* p) const {
+    return std::find(negotiatedPlayers.begin(), negotiatedPlayers.end(), p) != negotiatedPlayers.end();
+}
+
+Player* Player::neutralPlayer = new Player("Neutral");
+
+Player* Player::getNeutralPlayer() {
+    return neutralPlayer;
+}

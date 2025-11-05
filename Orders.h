@@ -26,6 +26,7 @@ public:
     virtual bool validate() = 0;
     virtual void execute() = 0;
     std::string getPlayer() const;
+    static bool status;            //Condition to allow only one card, implement in the loop
 };
 
 // Deploy order: deploy armies to a territory
