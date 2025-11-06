@@ -10,6 +10,7 @@
 #include "Orders.h"
 #include "Cards.h"
 #include "Map.h"
+#include "GameEngine.h"
 
 using namespace std;
 
@@ -24,7 +25,7 @@ using namespace std;
 Player::Player() : name(new string("")),
 				   hand(new Hand()),
 				   ordersList(new OrdersList()),
-				   reinforcementPool(new int(50)),
+				   reinforcementPool(new int(0)),
 				   territories(new vector<Territory *>()),
 				   attacking(new vector<Territory *>()),
 				   defending(new vector<Territory *>()),
@@ -36,7 +37,7 @@ Player::Player() : name(new string("")),
 // The other attributes are initialized similarly to the default constructor.
 Player::Player(string name) : hand(new Hand()),
 							  ordersList(new OrdersList()),
-							  reinforcementPool(new int(50)),
+							  reinforcementPool(new int(0)),
 							  territories(new vector<Territory *>()),
 							  attacking(new vector<Territory *>()),
 							  defending(new vector<Territory *>()),
@@ -84,6 +85,7 @@ Player::~Player()
 	delete this->territories;
 	delete this->attacking;
 	delete this->defending;
+	delete this->issueOrderStatus;
 }
 
 // Below are the getters and setters for each attribute of the Player class.
@@ -516,11 +518,6 @@ void Player::issueOrder()
 {
 	// 1. Print the essential info: name, reinforcement pool, territories, hand, orders list
 	cout << "=== Player " << *(this->name) << "'s turn ===" << endl;
-	// cout << "Reinforcement Pool: " << *(this->reinforcementPool) << endl;
-	// cout << "Territories (name - armies): " << endl;
-	// this->displayTerritories(*(this->territories));
-	// cout << "Hand: " << endl;
-	// cout << *(this->hand) << endl;
 	cout << "Orders List: " << endl;
 	this->displayOrdersList(this->ordersList);
 	cout << "==========================" << endl;
@@ -570,4 +567,65 @@ void Player::issueOrder()
 	{
 		cout << "Advance orders are finalized. Now you can issue other types using corresponding cards." << endl;
 	}
+
+	// 5. Finally, we can issue other types of orders based on the cards in hand.
+	if (!this->issueOrderStatus->at(static_cast<int>(IssuePhase::OtherPhase)))
+	{
+		if (this->hand->getNumCards() == 0)
+		{
+			cout << "No cards in hand to issue other types of orders." << endl;
+			this->issueOrderStatus->at(static_cast<int>(IssuePhase::OtherPhase)) = true;
+			return;
+		}
+		else
+		{
+			cout << *this->hand << endl;
+			cout << "Select a card to play by its index (or type -1 to skip/finish issuing card orders) >> ";
+			int cardIndex = -2;
+			cin >> cardIndex;
+			if (cin.fail())
+			{
+				cin.clear();										 // clear the fail state
+				cin.ignore(numeric_limits<streamsize>::max(), '\n'); // discard invalid input
+				cout << "Invalid input. Please enter a number." << endl;
+				return;
+			}
+			if (cardIndex == -1)
+			{
+				this->issueOrderStatus->at(static_cast<int>(IssuePhase::OtherPhase)) = true;
+				cin.ignore(numeric_limits<streamsize>::max(), '\n');
+				return; // skip issuing other orders
+			}
+			if (cardIndex < 0 || cardIndex >= this->hand->getNumCards())
+			{
+				cout << "Invalid card index. Please try again." << endl;
+				return;
+			}
+			// Play the selected card
+			SpCard cardToPlay = this->hand->getCardAt(cardIndex);
+			cardToPlay->play(*GameEngine::getCardDeck(), *this);
+			this->hand->remove(cardIndex); // Remove the card from hand after playing
+			// Add the card back to the deck
+			GameEngine::getCardDeck()->add(cardToPlay);
+			return;
+		}
+	}
+	else
+	{
+		cout << "All possible orders have been issued for this turn." << endl;
+	}
+}
+
+bool Player::hasAllTerritories()
+{
+	// Idea: loop through the player's territories, and check if each territory is in the current game map's territories.
+	if (this->territories->size() != GameEngine::getGameMap()->getTerritories().size())
+		return false; // early return if the player has fewer territories than the total number of territories in the map
+	unordered_map<string, unique_ptr<Territory>> gameMapTerritories = GameEngine::getGameMap()->getTerritories();
+	for (Territory *t : *this->territories)
+	{
+		if (gameMapTerritories.find(t->getName()) == gameMapTerritories.end())
+			return false; // if any territory is not found, return false
+	}
+	return true; // all territories are found
 }

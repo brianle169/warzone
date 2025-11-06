@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <array>
+#include <unordered_map>
 
 using namespace std;
 
@@ -17,6 +18,7 @@ class Card;
 class Deck;
 class Continent;
 class Deploy;
+class Advance;
 
 typedef shared_ptr<Card> SpCard;   // Type alias
 typedef shared_ptr<Hand> SpHand;   // Type alias
@@ -76,6 +78,11 @@ public:
 	void displayOrdersList(const OrdersList *ordersList);
 	void displayHand(const Hand *hand);
 
+	unordered_map<string, Territory *> getAttackableTerritories();
+	unordered_map<string, Territory *> getDefendableTerritories();
+	bool isDoneIssuingOrder();
+	bool hasAllTerritories();
+
 private:
 	// Attributes
 	string *name;					  // Player's name
@@ -88,11 +95,8 @@ private:
 	array<bool, 4> *issueOrderStatus; // Status of issued orders
 
 	// Helper methods to get attackable and defendable territories
-	unordered_map<string, Territory *> getAttackableTerritories();
-	unordered_map<string, Territory *> getDefendableTerritories();
 	Deploy *deploy(vector<Territory *> &defendingTerritories);
 	Advance *advance(vector<Territory *> &attackingTerritories, vector<Territory *> &defendingTerritories);
-	bool isDoneIssuingOrder();
 };
 
 void testPlayers();
