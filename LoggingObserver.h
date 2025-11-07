@@ -90,4 +90,6 @@ public:
     void Update(ILoggable* loggable) override;
 };
 
+void testLoggingObserver();
+
 #endif // LOGGINGOBSERVER_H

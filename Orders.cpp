@@ -228,7 +228,7 @@ ostream &operator<<(ostream &os, const Bomb& b) {
 
 // Validate bombing conditions
 bool Bomb::validate() {
-    return player != targetTerritory->getPlayer() &&  player->getHand()->includes(this->getName()) && targetTerritory->isEdge(sourceTerritory);
+    return player != targetTerritory->getPlayer() && targetTerritory->isEdge(sourceTerritory);
 }
 
 void Bomb::execute() {
@@ -281,7 +281,7 @@ ostream &operator<<(ostream &os, const Blockade& b) {
 
 // Validate blockade conditions
 bool Blockade::validate() {
-    return player == targetTerritory->getPlayer() && player->getHand()->includes(this->getName());
+    return player == targetTerritory->getPlayer();
 }
 
 void Blockade::execute() {
@@ -342,7 +342,7 @@ ostream &operator<<(ostream &os, const Airlift& a) {
 
 // Validate airlift conditions
 bool Airlift::validate() {
-    return player == targetTerritory->getPlayer() && sourceTerritory->getArmies() > numArmy && numArmy > 0 && player->getHand()->includes(this->getName());
+    return player == targetTerritory->getPlayer() && sourceTerritory->getArmies() > numArmy && numArmy > 0;
 }
 
 void Airlift::execute() {
@@ -398,7 +398,7 @@ ostream &operator<<(ostream &os, const Negotiate& n) {
 
 // Validate negotiation
 bool Negotiate::validate() {
-    return player != targetPlayer && player->getHand()->includes(this->getName());
+    return player != targetPlayer;
 }
 
 // Order execution method

@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "Map.h"
 #include "Orders.h"
+#include "LoggingObserver.h"
 using namespace std;
 
 int main() {
@@ -28,5 +29,10 @@ int main() {
     cout << "==================== Testing Game Engine Driver ====================";
     cout << endl;
     testGameStates();
+    cout << endl << endl;
+    cout << "==================== Testing Logging Observer Driver ====================";
+    cout << endl;
+    testLoggingObserver();
+
     return 0;
 }
