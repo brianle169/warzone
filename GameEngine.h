@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "Map.h"
 #include "Cards.h"
+#include "LoggingObserver.h"
 
 using namespace std;
 
@@ -14,7 +15,7 @@ class GameState;
 
 // ==== Game Engine class ====
 
-class GameEngine {
+class GameEngine: public Subject, public ILoggable {
     // Grant GameState and its children access to GameEngine's private members
     friend class GameState;
 
@@ -35,6 +36,7 @@ class GameEngine {
         string getCurrentStateName() const;
         // State transition
         void transitionTo(GameState* newState);
+        std::string stringToLog() override;
 
         /* Assignment 2 implementation from here */
 

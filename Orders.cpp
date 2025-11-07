@@ -48,6 +48,11 @@ string Order::getPlayer() const {
     return player ? player->getName() : std::string("<null>");
 }
 
+string Order::stringToLog() {
+    return executionEffect;
+}
+
+
 //DEPLOY CLASS DEFINITON---------------------------------------------------
 
 // Constructor for Deploy order
@@ -91,6 +96,8 @@ void Deploy::execute() {
         executed = true;
         setExecutionEffect("Successfully deployed " + to_string(numArmies) + " armies to " + targetTerritory->getName() + "; " + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
     }
+    Notify(this);
+    // What abt if validate fails?
 }
 
 // Clone method
@@ -173,6 +180,7 @@ void Advance::execute() {
             }
         }
     }
+    Notify(this);
 }
 
 // Clone method
@@ -223,6 +231,8 @@ void Bomb::execute() {
         executed = true;
         setExecutionEffect("Successfully bombed " + targetTerritory->getName());
     }
+    Notify(this);
+    // What if it fails?
 }
 
 // Clone method
@@ -275,6 +285,8 @@ void Blockade::execute() {
         executed = true;
         setExecutionEffect("Successfully blockade " + targetTerritory->getName());
     }
+    Notify(this);
+    // fail?
 }
 
 // Clone method
@@ -332,6 +344,8 @@ void Airlift::execute() {
         executed = true;
         setExecutionEffect("Successfully airlift " + to_string(numArmy) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName());
     }
+    Notify(this);
+    //fail?
 }
 
 // Clone method
@@ -386,6 +400,8 @@ void Negotiate::execute() {
         executed = true;
         setExecutionEffect("Successfully negotiate with " + targetPlayer->getName() + ". You cannot call the advance order for the next round");
     }
+    Notify(this);
+    //f?
 }
 
 // Clone method
@@ -402,8 +418,16 @@ std::string Negotiate::getName() const{
 
 // Copy constructor (deep copy using clone)
 OrdersList::OrdersList(const OrdersList& other) {
+    lastModifiedOrder = nullptr;
+      // Deep copy each order
     for (const auto& order : other.orders) {
-        orders.push_back(order->clone());
+        Order* clonedOrder = order->clone();
+        orders.push_back(clonedOrder);
+
+        // If this order was the lastModifiedOrder in the original, set it here
+        if (order == other.lastModifiedOrder) {
+            lastModifiedOrder = clonedOrder;
+        }
     }
 }
 
@@ -411,8 +435,17 @@ OrdersList::OrdersList(const OrdersList& other) {
 OrdersList& OrdersList::operator=(const OrdersList& other) {
     if (this != &other) {
         orders.clear();
+        lastModifiedOrder = nullptr;
+
+        // Deep copy
         for (const auto& order : other.orders) {
-            orders.push_back(order->clone());
+            Order* clonedOrder = order->clone();
+            orders.push_back(clonedOrder);
+
+            // Keep track of last modified
+            if (order == other.lastModifiedOrder) {
+                lastModifiedOrder = clonedOrder;
+            }
         }
     }
     return *this;
@@ -424,6 +457,7 @@ OrdersList::~OrdersList() {
         delete order;
     }
     orders.clear();
+    lastModifiedOrder = nullptr;
 }
 
 ostream &operator<<(ostream &os, const OrdersList& list) {
@@ -437,6 +471,8 @@ ostream &operator<<(ostream &os, const OrdersList& list) {
 void OrdersList::addOrder(Order* order) {
     if (order) {
         orders.push_back(order); // Deleted std::move
+        lastModifiedOrder = order;   // track the order for logging
+        Notify(this);                // notify observers
     }
 }
 
@@ -470,4 +506,11 @@ Order* OrdersList::getOrder(int index) const {
         return orders[index];
     }
     return nullptr;
+}
+
+string OrdersList::stringToLog(){
+    if (lastModifiedOrder)
+            return "Order added: " + lastModifiedOrder->stringToLog();
+    else
+        return "No order added.";
 }
