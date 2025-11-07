@@ -1,5 +1,7 @@
 #include "CommandProcessing.h"
 #include "GameEngine.h"
+#include "LoggingObserver.h"
+
 
 
 /*
@@ -56,7 +58,13 @@ string Command::getEffect() const {
 // Save the effect of a command execution
 void Command::saveEffect(const string& eff) {
     *effect = eff;
+    Notify(this);
 }
+
+string Command::stringToLog() {
+    return "Command executed: " + *commandText + " | Effect: " + *effect;
+}
+
 
 
 /*
@@ -121,6 +129,7 @@ string CommandProcessor::readCommand() {
 void CommandProcessor::saveCommand(Command* cmd){
     if (cmd) {
         commands->push_back(cmd);
+        Notify(this);
     }
 }
 
@@ -169,6 +178,14 @@ const vector<Command*>* CommandProcessor::getCommandList() const {
     return commands; 
 }
 
+string CommandProcessor::stringToLog() {
+    if (commands->empty()) {
+        return "CommandProcessor: no commands yet.";
+    }
+    Command* lastCommand = commands->back();
+    return "Command saved: " + lastCommand->getCommandText();
+}
+
 
 /*
     === FileLineReader Class Implementation
@@ -179,12 +196,14 @@ const vector<Command*>* CommandProcessor::getCommandList() const {
 FileLineReader::FileLineReader() {
     filename = new string("");
     fileStream = nullptr;
+    lastLineRead = new string("");
 }
 
 // Constructor with parameter
 FileLineReader::FileLineReader(const string& file) {
     filename = new string(file);
     fileStream = new ifstream(*filename);
+    lastLineRead = new string("");
     if (!fileStream->is_open()) {
         cerr << "Error: Could not open the wanted file " << *filename << endl;
         delete fileStream;
@@ -195,6 +214,7 @@ FileLineReader::FileLineReader(const string& file) {
 // Copy Constructor
 FileLineReader::FileLineReader(const FileLineReader& other) {
     filename = new string(*other.filename);
+    lastLineRead = new string(*other.lastLineRead);
     if (!filename->empty()) {
         fileStream = new ifstream(*filename);
     } else {
@@ -211,6 +231,7 @@ FileLineReader::~FileLineReader() {
         delete fileStream;
     }
     delete filename;
+    delete lastLineRead;
 }
 
 // Assignment Operator
@@ -223,8 +244,10 @@ FileLineReader& FileLineReader::operator=(const FileLineReader& other) {
             delete fileStream;
         }
         delete filename;
+        delete lastLineRead;
 
         filename = new string(*other.filename);
+        lastLineRead = new string(*other.lastLineRead);
         if(!filename->empty()) {
             fileStream = new ifstream(*filename);
         } else {
@@ -244,10 +267,19 @@ ostream& operator<<(ostream& os, const FileLineReader& reader) {
 string FileLineReader::readLineFromFile() {
     string line;
     if (fileStream && fileStream->is_open() && getline(*fileStream, line)) {
+        Notify(this);
         return line;
     }
     return "";
 }
+
+string FileLineReader::stringToLog() {
+    if (lastLineRead->empty()) {
+        return "FileLineReader: reached end of file or read an empty line from " + *filename;
+    }
+    return "FileLineReader: read line '" + *lastLineRead + "' from file " + *filename;
+}
+
 
 
 /*
@@ -312,4 +344,12 @@ string FileCommandProcessorAdapter::readCommand() {
         }
     }
     return "";
+}
+
+string FileCommandProcessorAdapter::stringToLog() {
+    if (!flr) {
+        return "FileCommandProcessorAdapter: no file reader attached.";
+    }
+
+    return "FileCommandProcessorAdapter: reading commands from file.";
 }
