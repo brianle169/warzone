@@ -1,7 +1,11 @@
-#include "CommandProcessor.h"
+#include "CommandProcessing.h"
 #include "GameEngine.h"
 
-// === Command Class Implementation ===
+
+/*
+    === Command Class Implementation ===
+    It manages individual commands with their text and effects
+*/
 
 // Default Constructor
 Command::Command(){
@@ -55,7 +59,10 @@ void Command::saveEffect(const string& eff) {
 }
 
 
-// === CommandProcessor Class Implementation ===
+/*
+    === CommandProcessor Class Implementation ===
+    It processes and validates commands from console input
+*/
 
 // Default Constructor
 CommandProcessor::CommandProcessor() {
@@ -163,7 +170,10 @@ const vector<Command*>* CommandProcessor::getCommandList() const {
 }
 
 
-// === FileLineReader Class Implementation 
+/*
+    === FileLineReader Class Implementation
+    Reads lines from a text file
+*/ 
 
 // Default Constructor
 FileLineReader::FileLineReader() {
@@ -239,7 +249,11 @@ string FileLineReader::readLineFromFile() {
     return "";
 }
 
-// === FileCommandProcessorAdapter Class Implementation
+
+/*
+    === FileCommandProcessorAdapter Class Implementation
+    It adapts CommandProcessor to read from files using FileLineReader class
+*/
 
 // Default Constructor
 FileCommandProcessorAdapter::FileCommandProcessorAdapter() : CommandProcessor(), flr(nullptr) {
