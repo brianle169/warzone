@@ -312,3 +312,17 @@ void Player::issueOrder() {
 	vector<Territory*> attackingTerritories = this->toAttack();
 	vector<Territory*> defendingTerritories = this->toDefend();
 }
+
+void Player::addNegotiatedPlayers(Player* p) {
+	negotiatedPlayers.push_back(p);
+}
+
+bool Player::isNegotiatedWith(Player* p) const {
+    return std::find(negotiatedPlayers.begin(), negotiatedPlayers.end(), p) != negotiatedPlayers.end();
+}
+
+Player* Player::neutralPlayer = new Player("Neutral");
+
+Player* Player::getNeutralPlayer() {
+    return neutralPlayer;
+}

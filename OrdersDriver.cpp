@@ -63,6 +63,7 @@ void testOrdersList() {
     orders_list.addOrder( new Deploy(player1,territory3,300)); //working
     orders_list.addOrder( new Advance(player1,150,territory1, territory3));//invalid not enough army
     orders_list.addOrder( new Advance(player1,150,territory3, territory2)); //conquer
+    orders_list.addOrder( new Advance(player1,150,territory3, territory2)); //ownership transferred
     orders_list.addOrder( new Advance(player1,10,territory1, territory2)); //defense
     orders_list.addOrder( new Advance(player1,30,territory2, territory3)); //Invalid, since player does not own source territory
     orders_list.addOrder( new Deploy(player2,territory1,200)); //not working case
@@ -74,12 +75,13 @@ void testOrdersList() {
     orders_list.addOrder( new Airlift(player1,10,territory1,territory3));//valid
     orders_list.addOrder( new Negotiate(player1,player1));//invalid, same player
     orders_list.addOrder( new Negotiate(player1,player2));//valid
+    orders_list.addOrder( new Advance(player1, 150, territory1, territory4));//not valid since negotiated (4)
 
 
 
     cout << orders_list << endl;
 
-    cout << "\n2. Testing order validation..." << endl;
+    cout << "\n2. Testing order validation..." << endl; //(1)
     for (int i = 0; i < static_cast<int>(orders_list.size()); ++i) {
         Order* order = orders_list.getOrder(i);
         if (order->validate()) {
@@ -88,6 +90,8 @@ void testOrdersList() {
             cout << order->getPlayer() << ": " << order->getName() << " STATE -> " << "Invalid" << endl;
         }
     }
+
+    cout << "\nThe territory " << territory2->getName() << " is now owned by : " << *territory2->getPlayer(); //printing who owns the territory(2)
 
     cout << "\n3. Testing order execution..." << endl;
     for (int i = 0; i < static_cast<int>(orders_list.size()); ++i) {
@@ -98,6 +102,7 @@ void testOrdersList() {
 
         }
     }
+    cout << "\nThe territory " << territory2->getName() << " is now owned by : " << *territory2->getPlayer(); //printing who owns the territory(2)
 
     cout << "\n4. Testing move operation..." << endl;
     orders_list.move(5,0);

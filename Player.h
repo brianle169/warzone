@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <unordered_map>
 #include <memory>
 
 using namespace std;
@@ -74,6 +75,13 @@ public:
 	void displayTerritories(const std::vector<Territory*>& territories);
 	void displayOrdersList(const OrdersList* ordersList);
 	void displayHand(const Hand* hand);
+	std::vector<Player*> negotiatedPlayers;
+	void addNegotiatedPlayers(Player* p);
+	bool isNegotiatedWith(Player* p) const;
+
+	static Player* getNeutralPlayer();
+	static Player* neutralPlayer;
+
 
 private:
 	string* name; // Player's name
