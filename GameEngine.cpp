@@ -64,7 +64,12 @@ void GameEngine::transitionTo(GameState* newState) {
     delete currentState;
     // Take ownership of the new state
     currentState = newState;
+    Notify(this);
 }
+
+string GameEngine::stringToLog(){
+    return "New current state is " + currentState->getStateName();
+} 
 
 /*
     The following function execute a player command by delegating to the current state.

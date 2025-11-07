@@ -1,13 +1,14 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include "LoggingObserver.h"
 
 class Player;
 class Territory;
 class Hand;
 
 // Base class for all orders
-class Order {
+class Order: public Subject, public ILoggable {
 protected:
     std::string orderName; // Name of the order
     Player* player;        // Player issuing the order
@@ -26,6 +27,7 @@ public:
     virtual bool validate() = 0;
     virtual void execute() = 0;
     std::string getPlayer() const;
+    std::string stringToLog() override;
 };
 
 // Deploy order: deploy armies to a territory
@@ -137,9 +139,10 @@ public:
 };
 
 // Container class managing a list of orders
-class OrdersList {
+class OrdersList: public Subject, public ILoggable {
 private:
     std::vector<Order*> orders;
+    Order* lastModifiedOrder = nullptr; // for log tracking 
 public:
     OrdersList() = default;
     OrdersList(const OrdersList& other);
@@ -152,6 +155,7 @@ public:
     void remove(int fromIndex);
     Order* getOrder(int index) const;
     size_t size() const;
+    std::string stringToLog() override;
 };
 
 void testOrdersList(); // Test function for OrdersList class

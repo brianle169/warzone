@@ -114,5 +114,3 @@ void LogObserver::Update(ILoggable* loggable) {
         file.close();
     }
 }
-
-int main(){}
