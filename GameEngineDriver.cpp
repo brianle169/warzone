@@ -21,8 +21,13 @@ void testGameStates() {
         cout << engine << endl;
     }
 }
+void testStartupPhase() {
+    GameEngine engine;
+    engine.startupPhase();
+}
 
 int main() {
     testGameStates();
+    testStartupPhase();
     return 0;
 }
