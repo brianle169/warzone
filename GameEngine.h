@@ -1,5 +1,11 @@
 #include <iostream>
 #include <string>
+// Newly added includes
+#include "Player.h"
+#include "Map.h"
+#include "Cards.h"
+#include "LoggingObserver.h"
+
 using namespace std;
 
 #ifndef GameEngine_H
@@ -9,7 +15,7 @@ class GameState;
 
 // ==== Game Engine class ====
 
-class GameEngine {
+class GameEngine: public Subject, public ILoggable {
     // Grant GameState and its children access to GameEngine's private members
     friend class GameState;
 
@@ -30,9 +36,27 @@ class GameEngine {
         string getCurrentStateName() const;
         // State transition
         void transitionTo(GameState* newState);
+        std::string stringToLog() override;
+
+        /* Assignment 2 implementation from here */
+
+        // Main game loop method (Part 3)
+
+
     private:
         GameState* currentState;
         string userCommand;
+        // Game Engine should have attributes like: list of players, map, and the deck of cards.
+        vector<Player*> players;
+        Map* gameMap;
+        Deck* cardDeck;
+        // The main game loop method. This method will be invoked after we added players.
+        // The flow of the main game loop is as follows:
+        // 1. Reinforcement Phase: Assign extra armies to each player based on their territories and continents owned (to reinforcement pool)
+        // 2. Issue Orders Phase: Each player issues orders in round-robin fashion until all players have finished issuing orders
+        // 3. Execute Orders Phase: Each player executes orders in round-robin fashion until all orders from all players have been executed
+        //    - Deploy orders are executed first in each round
+        void mainGameLoop();
 };
 
 
@@ -161,6 +185,9 @@ class AssignReinforcementState final : public GameState {
         // Method to process commands for this state
         void processCommand(GameEngine& engine, const string& command) override;
     private:
+        // Assign the reinforcement to each players based on their Territory counts and Continent ownerships
+        // This method precedes the issue orders phase and is the first step of the main game loop
+        void reinforcementPhase();
 
 };
 
@@ -183,6 +210,10 @@ class IssueOrderState final : public GameState {
         // Method to process commands for this state
         void processCommand(GameEngine& engine, const string& command) override;
     private:
+        // Issue orders phase method. This is essentially a loop that continues until "endissueorders" command is given.
+        // This method will be invoked when ever the IssueOrderState is entered, i.e., it will be invoked
+        // within the constructor of IssueOrderState.
+        void issueOrdersPhase();
 
 };
 
@@ -205,6 +236,11 @@ class ExecuteOrderState final : public GameState {
         // Method to process commands for this state
         void processCommand(GameEngine& engine, const string& command) override;
     private:
+
+        // Execute orders phase method. This is essentially a loop that continues until "endexecuteorders" command is given.
+        // This method will be invoked when ever the ExecuteOrderState is entered, i.e., it will be invoked
+        // within the constructor of ExecuteOrderState.
+        void executeOrdersPhase();
 
 };
 

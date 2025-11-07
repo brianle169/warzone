@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <unordered_map>
+#include <algorithm>
 
 #include "Player.h"
 #include "Orders.h"
@@ -18,32 +20,15 @@ using namespace std;
 // -  hand is a new empty Hand object
 // -  ordersList is a new empty OrdersList object
 // -  territories is an empty vector of Territory pointers, which will be assigned later by the game engine
-Player::Player() {
-	this->name = new string("");
-	this->hand = new Hand();
-	this->ordersList = new OrdersList();
-	this->territories = new vector<Territory*>();
-	territories->push_back(new Territory("DefaultTerritory1", nullptr, 0)); // for testing
-	territories->push_back(new Territory("DefaultTerritory2", nullptr, 0)); // for testing
-	territories->push_back(new Territory("DefaultTerritory3", nullptr, 0)); // for testing
-	territories->push_back(new Territory("DefaultTerritory4", nullptr, 0)); // for testing
-
+Player::Player(): name(new string("")), hand(new Hand()), ordersList(new OrdersList()), reinforcementPool(new int(50)),
+territories(new vector<Territory*>()), attacking(new vector<Territory*>()), defending(new vector<Territory*>()) {
 }
 
 // Parameterized constructor: This constructor takes a string pointer as a parameter to set the player's name.
 // The other attributes are initialized similarly to the default constructor.
-Player::Player(string name) {
+Player::Player(string name): hand(new Hand()), ordersList(new OrdersList()), reinforcementPool(new int(50)),
+territories(new vector<Territory*>()), attacking(new vector<Territory*>()), defending(new vector<Territory*>()) {
 	this->name = new string(name); // This is a pointer assignment.
-	this->hand = new Hand();
-	this->ordersList = new OrdersList();
-	//this->territories = nullptr; // initially null, because the game engine will assign territories later
-	this->territories = new vector<Territory*>();
-	territories->push_back(new Territory("DefaultTerritory1", nullptr, 0)); // for testing
-	territories->push_back(new Territory("DefaultTerritory2", nullptr, 0)); // for testing
-	territories->push_back(new Territory("DefaultTerritory3", nullptr, 0)); // for testing
-	territories->push_back(new Territory("DefaultTerritory4", nullptr, 0)); // for testing
-
-	cout << "Player " << *this->name << " created." << std::endl;
 }
 
 // Copy constructor: This constructor creates a new Player object as a deep copy of an existing Player object.
@@ -53,17 +38,15 @@ Player::Player(const Player& p) {
 	this->name = new string(*(p.name)); // Deep copy
 	this->hand = new Hand(*(p.hand)); // use Hand's copy constructor
 	this->ordersList = new OrdersList(*(p.ordersList)); // use OrdersList's copy constructor
+	this->reinforcementPool = new int(*(p.reinforcementPool)); // Deep copy
 	if (p.territories != nullptr) {
 		this->territories = new vector<Territory*>(*(p.territories)); // Deep copy of vector
 	}
 	else {
 		this->territories = new vector<Territory*>();
-		territories->push_back(new Territory("DefaultTerritory1", nullptr, 0)); // for testing
-		territories->push_back(new Territory("DefaultTerritory2", nullptr, 0)); // for testing
-		territories->push_back(new Territory("DefaultTerritory3", nullptr, 0)); // for testing
-		territories->push_back(new Territory("DefaultTerritory4", nullptr, 0)); // for testing
 	}
-	cout << "Player " << *this->name << " copied." << std::endl;
+	this->attacking = new vector<Territory*>();
+	this->defending = new vector<Territory*>();
 }
 
 // Destructor: This destructor releases the memory allocated for the name, hand, ordersList, and territories.
@@ -77,6 +60,7 @@ Player::~Player() {
 	// for (Territory* t : *this->territories) {
 	// 	delete t; // Free each Territory pointer
 	// }
+	delete this->reinforcementPool;
 	delete this->territories;
 }
 
@@ -124,6 +108,14 @@ string Player::getName() const {
 	return *(this->name);
 }
 
+void Player::setReinforcementPool(int num){
+	*(this->reinforcementPool) = num;
+}
+
+int* Player::getReinforcementPool() const {
+	return this->reinforcementPool;
+}
+
 // Stream insertion operator overloading: This operator prints out general information about the Player object.
 // Currently for testing, the Player's Hand object is empty, and OrdersList is also initially empty, so to check
 // if they exist, we only check whether the pointers are pointing to nullptr or not.
@@ -161,114 +153,160 @@ Player& Player::operator= (const Player& p) {
 	return *this;
 }
 
+// getAttackableTerritories() method: return a list of territories that the player can attack.
+// these territories are adjacent to the player's own territories and are not owned by the player.
+unordered_map<string, Territory*> Player::getAttackableTerritories(){
+	unordered_map<string, Territory*> attackableTerritories;
+	for (Territory* ownedTerritory : *this->territories) {
+		for (Territory* adjacentTerritory : ownedTerritory->getEdges()) {
+			string adjacentPName = adjacentTerritory->getPlayer() ? adjacentTerritory->getPlayer()->getName() : "";
+			if (adjacentPName != *this->name && attackableTerritories.find(adjacentPName) == attackableTerritories.end()) {
+				attackableTerritories[adjacentPName] = adjacentTerritory;
+			}
+		}
+	}
+	return attackableTerritories;
+}
+
+unordered_map<string, Territory*> Player::getDefendableTerritories(){
+	unordered_map<string, Territory*> defendableTerritories;
+	for (Territory* ownedTerritory : *this->territories) {
+		defendableTerritories[ownedTerritory->getName()] = ownedTerritory;
+	}
+	return defendableTerritories;
+}
+
 // toAttack() method: this method returns a list (vector) of Territory objects which represents the
 // territories that the player will attack. In Assignment 1, we only create arbitrary terrtories for testing purposes.
 // In assignment 2, we will use the actual territories loaded and assigned to the player at the start of the game.
 vector<Territory*> Player::toAttack() {
-	// Implementation
-	cout << "Player::toAttack() called" << endl;
-	// Arbitrary assignment of territories for testing
-	vector<Territory*> attackableTerritories;
-	Territory* t1 = new Territory("US1", nullptr, 5);
-	Territory* t2 = new Territory("US2", nullptr, 4);
-	Territory* t3 = new Territory("US3", nullptr, 10);
-	Territory* t4 = new Territory("US4", nullptr, 11);
-	Territory* t5 = new Territory("US5", nullptr, 20);
-	// Set edges (adjacent territories)
-	t1->addEdge(t2);
-	t2->addEdge(t3);
-	t3->addEdge(t4);
-	t4->addEdge(t5);
-	t5->addEdge(t1);
-	// Add to attackable list
-	attackableTerritories.push_back(t1);
-	attackableTerritories.push_back(t2);
-	attackableTerritories.push_back(t3);
-	attackableTerritories.push_back(t4);
-	attackableTerritories.push_back(t5);
+	// Display current list of attacking territories
+	cout << "Attacking List: ";
+	for (Territory* t : *this->attacking) {
+		cout << t->getName() << ", ";
+	}
+	cout << endl;
 
-	// memory will be deallocated in PlayerDriver.cpp after testing
+	cout << "Available territories to attack (*: already chosen): ";
+	unordered_map<string, Territory*> attackableTerritories = this->getAttackableTerritories();
+	for (const auto& pair : attackableTerritories) {
+		if (std::find(this->attacking->begin(), this->attacking->end(), pair.second) != this->attacking->end()) {
+			cout << pair.first << "*" << " (" << pair.second->getArmies() << ")";
+		}
+		else {
+			cout << pair.first << " (" << pair.second->getArmies() << ")";
+		}
+		if (pair.second != this->attacking->back()) {
+			cout << ", ";
+		}
+	}
+	cout << endl;
 
-	return attackableTerritories;
+	cout << "Select territories to attack (separate by spaces, end with 'x'): ";
+	string input;
+	getline(cin, input);
+	istringstream iss(input);
+	string territoryName;
+
+	while (iss >> territoryName) {
+		if (territoryName == "x") {
+			break;
+		}
+		auto entry = attackableTerritories.find(territoryName);
+		if (entry != attackableTerritories.end() &&  
+			std::find(this->attacking->begin(), this->attacking->end(), entry->second) == this->attacking->end()) {
+			this->attacking->push_back(entry->second); // insert the territory pointer into attacking vector
+		}	
+	}
+
+	return *this->attacking;
 }
 
 // toDefend() method: the idea is exactly the same with toAttack() method above.
 vector<Territory*> Player::toDefend() {
 	// Implementation
-	cout << "Player::toDefend() called" << endl;
-	// Arbitrary assignment of territories for testing
-	vector<Territory*> defendingTerritories;
-	Territory* t1 = new Territory("CA1", nullptr, 50);
-	Territory* t2 = new Territory("CA2", nullptr, 40);
-	Territory* t3 = new Territory("CA3", nullptr, 10);
-	Territory* t4 = new Territory("CA4", nullptr, 11);
-	Territory* t5 = new Territory("CA5", nullptr, 20);
-	// Set edges (adjacent territories)
-	t1->addEdge(t2);
-	t2->addEdge(t3);
-	t3->addEdge(t4);
-	t4->addEdge(t5);
-	t5->addEdge(t1);
-	// Add to attackable list
-	defendingTerritories.push_back(t1);
-	defendingTerritories.push_back(t2);
-	defendingTerritories.push_back(t3);
-	defendingTerritories.push_back(t4);
-	defendingTerritories.push_back(t5);
+	cout << "Defending List: ";
+	for (Territory* t : *this->defending) {
+		cout << t->getName() << ", ";
+	}
+	cout << endl;
 
-	// memory will be deallocated in PlayerDriver.cpp after testing
-	return defendingTerritories;
+	cout << "Available territories to defend (*: already chosen): ";
+	unordered_map<string, Territory*> defendableTerritories = this->getDefendableTerritories();
+	for (const auto& pair : defendableTerritories) {
+		if (std::find(this->defending->begin(), this->defending->end(), pair.second) != this->defending->end()) {
+			cout << pair.first << "*" << " (" << pair.second->getArmies() << ")";
+		}
+		else {
+			cout << pair.first << " (" << pair.second->getArmies() << ")";
+		}
+		if (pair.second != this->defending->back()) {
+			cout << ", ";
+		}
+	}
+	cout << endl;
+
+	cout << "Select territories to defend (separate by spaces, end with 'x'): ";
+	string input;
+	getline(cin, input);
+	istringstream iss(input);
+	string territoryName;
+	// Arbitrary assignment of territories for testing
+
+	while (iss >> territoryName) {
+		if (territoryName == "x") {
+			break;
+		}
+		auto entry = defendableTerritories.find(territoryName);
+		if (entry != defendableTerritories.end() && 
+			std::find(this->defending->begin(), this->defending->end(), entry->second) == this->defending->end()) {
+			this->defending->push_back(entry->second); // insert the territory pointer into defending vector
+		}
+	}
+
+	return *this->defending;
 }
 
-// issueOrder() method: this method takes an ORDER_TYPE enum as a parameter, which indicates
-// the type of order that the player wants to issue. Based on the order type, the method creates
-// the corresponding Order object (Deploy, Advance, Bomb, Blockade, Airlift, Negotiate) and adds it to the player's ordersList.
-// This is where polymorphism is used, as the ordersList is a collection of Order pointers,
-void Player::issueOrder(ORDER_TYPE otype) {
-	// Implementation
-	cout << "Player::issueOrder() called with order type: " << otype << std::endl;
-	// From other type, choose which type of order to create
-	switch (otype) {
-	case DEPLOY: {
-		// Create a Deploy order and add to ordersList
-		cout << "Creating Deploy order" << endl;
-		this->ordersList->addOrder(new Deploy(this, nullptr, 1));
-		break;
-	}
-	case ADVANCE: {
-		// Create an Advance order and add to ordersList
-		cout << "Creating Advance order" << endl;
-		this->ordersList->addOrder(new Advance(this, 1, nullptr, nullptr));
-		break;
-	}
-	case BOMB: {
-		// Create a Bomb order and add to ordersList
-		cout << "Creating Bomb order" << endl;
-		this->ordersList->addOrder(new Bomb(this, nullptr, nullptr));
-		break;
-	}
-	case BLOCKADE: {
-		// Create a Bomb order and add to ordersList
-		cout << "Creating Blockade order" << endl;
-		this->ordersList->addOrder(new Blockade(this, nullptr));
-		break;
-	}
-	case AIRLIFT: {
-		// Create a Bomb order and add to ordersList
-		cout << "Creating Airlift order" << endl;
-		this->ordersList->addOrder(new Airlift(this, 1, nullptr, nullptr));
-		break;
-	}
-	case NEGOTIATE: {
-		// Create a Bomb order and add to ordersList
-		cout << "Creating Negotiate order" << endl;
-		this->ordersList->addOrder(new Negotiate(this, nullptr));
-		break;
-	}
-	}
-	cout << "Adding order to orders list" << endl;
+void Player::displayTerritories(const std::vector<Territory*>& territories) {
+    for (Territory* t : territories) {           
+        if (t) {
+            std::cout << t->getName()
+                      << " - " << t->getArmies() << '\n';
+        }
+    }
+}
 
-	// Memory management note: orders should be deallocated after being executed.
+// print the orders list
+void Player::displayOrdersList(const OrdersList* ordersList) {
+    if (!ordersList) {
+        cout << "OrdersList size: 0\n";
+        return;
+    } else {
+		cout << "OrdersList contains: " << endl;
+		for(int i = 0; i < static_cast<int>(ordersList->size()); i++){
+			if(ordersList->getOrder(i)) {
+				cout << " - " << ordersList->getOrder(i)->getName() << endl;
+			}
+		}
+	}
+}
+
+
+void Player::issueOrder() {
+	// 1. Print the essential info: name, reinforcement pool, territories, hand, orders list
+	cout << "=== Player " << *(this->name) << "'s turn ===" << endl;
+	cout << "Reinforcement Pool: " << *(this->reinforcementPool) << endl;
+	cout << "Territories (name - armies): " << endl;
+	this->displayTerritories(*(this->territories));
+	cout << "Hand: " << endl;
+	cout << *(this->hand) << endl;
+	cout << "Orders List: " << endl;
+	this->displayOrdersList(this->ordersList);
+	cout << "==========================" << endl;
+
+	// 2. Decide territories to attack and defend.
+	vector<Territory*> attackingTerritories = this->toAttack();
+	vector<Territory*> defendingTerritories = this->toDefend();
 }
 
 void Player::addNegotiatedPlayers(Player* p) {

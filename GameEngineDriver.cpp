@@ -21,3 +21,8 @@ void testGameStates() {
         cout << engine << endl;
     }
 }
+
+int main() {
+    testGameStates();
+    return 0;
+}

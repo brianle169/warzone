@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <unordered_map>
 #include <memory>
 
 using namespace std;
@@ -52,7 +53,7 @@ public:
 	std::vector<Territory*> toDefend();
 
 	// Issue an order based on the order type provided
-	void issueOrder(ORDER_TYPE otype);
+	void issueOrder();
 
 	// Getters setters
 	void setTerritories(vector<Territory*>* terrs); // this will be used to assign territories to the player at the start of the game
@@ -67,6 +68,12 @@ public:
 	void setName(string name);
 	string getName() const;
 
+	void setReinforcementPool(int num);
+	int* getReinforcementPool() const;
+
+	void displayTerritories(const std::vector<Territory*>& territories);
+	void displayOrdersList(const OrdersList* ordersList);
+	void displayHand(const Hand* hand);
 	std::vector<Player*> negotiatedPlayers;
 	void addNegotiatedPlayers(Player* p);
 	bool isNegotiatedWith(Player* p) const;
@@ -80,6 +87,13 @@ private:
 	Hand* hand; // Player's hand of cards
 	OrdersList* ordersList; // List of orders of the player
 	vector<Territory*>* territories; // Collection of pointers to territories owned by the player
+	vector<Territory*>* attacking; // Collection of pointers to territories the player is attacking
+	vector<Territory*>* defending; // Collection of pointers to territories the player is defending
+	int* reinforcementPool; // Number of armies available to the player for deployment
+
+	// Helper methods to get attackable and defendable territories
+	unordered_map<string, Territory*> getAttackableTerritories();
+	unordered_map<string, Territory*> getDefendableTerritories();
 };
 
 void testPlayers();

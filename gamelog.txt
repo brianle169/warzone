@@ -1,0 +1,8 @@
+New current state is map loaded
+New current state is map validated
+New current state is players added
+New current state is assign reinforcement
+New current state is issue orders
+New current state is execute orders
+New current state is win
+New current state is end
