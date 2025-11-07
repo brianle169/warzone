@@ -1,5 +1,5 @@
 #include "GameEngine.h"
-#include "GameProcessor.h"
+#include "CommandProcessing.h"
 #include "Map.h"
 #include <algorithm>
 #include <random>
@@ -144,7 +144,7 @@ void GameEngine::startupPhase() {
             std::string cmnd = commandStr;
         }
         //verify correct gamestate for command 
-        if (!processor->validate(command, this->getCurrentStateName())) {
+        if (!processor->validate(cmnd, this)) {
             cout << "Invalid command for current state: " << this->getCurrentStateName() << endl;
             continue;
         }
