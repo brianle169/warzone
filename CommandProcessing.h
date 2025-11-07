@@ -4,6 +4,8 @@
 #include <sstream>
 #include <fstream>
 
+#include "LoggingObserver.h"
+
 using namespace std;
 
 #ifndef CommandProcessor_H
@@ -12,7 +14,7 @@ using namespace std;
 class GameEngine; 
 
 // Represents a game command with its text and execution effect
-class Command {
+class Command : public Subject, public ILoggable {
     private:
         string* commandText; // The command entered by the user
         string* effect;      // The result of the command execution
@@ -34,10 +36,12 @@ class Command {
         string getEffect() const;
         // Save the effect of a command execution
         void saveEffect(const string& eff);
+        string stringToLog() override;
+
 };
 
 // The following class processes commands from console and validates them against game states
-class CommandProcessor {
+class CommandProcessor : public Subject, public ILoggable {
     private:
         // Collection of Command objects
         vector<Command*>* commands;
@@ -63,14 +67,17 @@ class CommandProcessor {
         virtual string readCommand();
         // Saves command to history
         void saveCommand(Command* cmd);
+        string stringToLog() override;
+
 };
 
 
 // The following class reads commands line-by-line from a text file
-class FileLineReader {
+class FileLineReader : public Subject, public ILoggable {
     private: 
         string* filename;       // Name of the file to read
         ifstream* fileStream;   // File input stream
+        string* lastLineRead;    // Stores the most recently read line 
     public:
         // Default Constructor
         FileLineReader();
@@ -86,6 +93,8 @@ class FileLineReader {
         friend ostream& operator<<(ostream& os, const FileLineReader& reader);
         // Read next line from file
         string readLineFromFile();
+        string stringToLog() override;
+
 };
 
 // The follwing is the Adapter class that reads commands from file instead of console
@@ -108,5 +117,8 @@ class FileCommandProcessorAdapter : public CommandProcessor {
     protected:
         // We override readCommand method but this time to read from file instead of from the console
         string readCommand() override;
+        // Logging
+        string stringToLog() override;
+
 };
 #endif
