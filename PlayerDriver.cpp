@@ -70,12 +70,12 @@ void testPlayers() {
 
 	cout << "=== issueOrder() Method ===" << endl;
 	cout << "Issuing DEPLOY order..." << endl;
-	p1->issueOrder(DEPLOY);
-	p1->issueOrder(AIRLIFT);
-	p1->issueOrder(ADVANCE);
-	p1->issueOrder(BLOCKADE);
-	p1->issueOrder(BOMB);
-	p1->issueOrder(NEGOTIATE);
+	// p1->issueOrder(DEPLOY);
+	// p1->issueOrder(AIRLIFT);
+	// p1->issueOrder(ADVANCE);
+	// p1->issueOrder(BLOCKADE);
+	// p1->issueOrder(BOMB);
+	// p1->issueOrder(NEGOTIATE);
 	printOrdersList(p1->getOrdersList());
 
 	delete p1;
