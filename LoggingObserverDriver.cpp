@@ -4,9 +4,13 @@
 #include "Player.h"
 #include "Map.h"
 #include "Orders.h"
+#include "CommandProcessing.h"
 
 #include <memory>
 #include <unordered_map>
+#include <iostream>
+
+using namespace std;
 
 // ================= Test Function =================
 void testLoggingObserver() {
@@ -19,7 +23,7 @@ void testLoggingObserver() {
     // ===== GameEngine Test =====
     GameEngine engine;
     engine.Attach(logger);
-    std::cout << "Testing GameEngine state transitions..." << std::endl;
+    cout << "Testing GameEngine state transitions..." << std::endl;
 
     engine.executeCommand("loadmap");
     engine.executeCommand("validatemap");
@@ -32,21 +36,22 @@ void testLoggingObserver() {
 
 
 
-    // // ===== CommandProcessor Test =====
-    // CommandProcessor cp;
-    // cp.Attach(logger);
-    // std::cout << "Testing CommandProcessor saveCommand/saveEffect..." << std::endl;
+    // ===== CommandProcessor Test =====
+    auto cp = make_unique<CommandProcessor>();
 
-    // Command* c1 = new Command("deploy army");
-    // Command* c2 = new Command("advance army");
+    cp->Attach(logger);
+    cout << "Testing CommandProcessor saveCommand/saveEffect..." << endl;
 
-    // cp.saveCommand(c1);
-    // cp.saveCommand(c2);
+    Command* c1 = cp->getCommand();
+    Command* c2 = cp->getCommand();
 
-    // c1->saveEffect("Deployed 5 armies");
-    // c2->saveEffect("Advanced to territory X");
+    c1->Attach(logger);
+    c2->Attach(logger);
 
-    std::cout << "Testing complete. Check gamelog.txt for results." << std::endl;
+    c1->saveEffect("Deployed 5 armies");
+    c2->saveEffect("Advanced to territory X");
+
+    cout << "Testing complete. Check gamelog.txt for results." << endl;
 }
 
 
