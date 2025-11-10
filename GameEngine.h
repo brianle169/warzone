@@ -1,3 +1,6 @@
+#ifndef GameEngine_H
+#define GameEngine_H
+
 #include <iostream>
 #include <string>
 // Newly added includes
@@ -6,9 +9,6 @@
 #include "Cards.h"
 
 using namespace std;
-
-#ifndef GameEngine_H
-#define GameEngine_H
 
 class GameState;
 
@@ -47,8 +47,13 @@ public:
     static Deck *getCardDeck();
     static void setCardDeck(Deck *deck);
     static void removePlayer(Player *player);
+    void mainGameLoop();
 
     /* Assignment 2 implementation from here */
+    // Move back to private after testing
+    void reinforcementPhase();
+    void issueOrdersPhase();
+    void executeOrdersPhase();
 
     // Main game loop method (Part 3)
 
@@ -62,10 +67,6 @@ private:
     // 2. Issue Orders Phase: Each player issues orders in round-robin fashion until all players have finished issuing orders
     // 3. Execute Orders Phase: Each player executes orders in round-robin fashion until all orders from all players have been executed
     //    - Deploy orders are executed first in each round
-    void mainGameLoop();
-    void reinforcementPhase();
-    void issueOrdersPhase();
-    void executeOrdersPhase();
 };
 
 // ==== GameState Base Class ====
@@ -199,9 +200,6 @@ public:
     void processCommand(GameEngine &engine, const string &command) override;
 
 private:
-    // Assign the reinforcement to each players based on their Territory counts and Continent ownerships
-    // This method precedes the issue orders phase and is the first step of the main game loop
-    void reinforcementPhase();
 };
 
 class IssueOrderState final : public GameState
@@ -225,10 +223,6 @@ public:
     void processCommand(GameEngine &engine, const string &command) override;
 
 private:
-    // Issue orders phase method. This is essentially a loop that continues until every player has finished issuing their orders.
-    // This method will be invoked when ever the IssueOrderState is entered, i.e., it will be invoked
-    // within the constructor of IssueOrderState.
-    void issueOrdersPhase();
 };
 
 class ExecuteOrderState final : public GameState
@@ -254,10 +248,6 @@ public:
     void processCommand(GameEngine &engine, const string &command) override;
 
 private:
-    // Execute orders phase method. This is essentially a loop that continues until "endexecuteorders" command is given.
-    // This method will be invoked when ever the ExecuteOrderState is entered, i.e., it will be invoked
-    // within the constructor of ExecuteOrderState.
-    void executeOrdersPhase(GameEngine &engine);
 };
 
 class WinState final : public GameState
@@ -308,5 +298,6 @@ private:
 
 // Free test function for Game Engine Section
 void testGameStates();
+void testMainGameLoop();
 
 #endif

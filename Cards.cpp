@@ -32,19 +32,19 @@ Card &Card::operator=(const Card &)
 // Default constructor
 Deck::Deck()
 {
-    cout << "Deck created." << endl;
+    // cout << "Deck created." << endl;
 }
 
 // Copy constructor
 Deck::Deck(const Deck &other) : spCards(other.spCards)
 {
-    cout << "Deck copied." << endl;
+    // cout << "Deck copied." << endl;
 }
 
 // Destructor
 Deck::~Deck()
 {
-    cout << "Deck destroyed." << endl;
+    // cout << "Deck destroyed." << endl;
 }
 
 // Operator overloading for Deck
@@ -61,7 +61,7 @@ Deck &Deck::operator=(const Deck &other)
 ostream &operator<<(ostream &out, const Deck &deck)
 {
     out << "Deck contains: ";
-    for (int i = 0; i < deck.spCards.size(); i++)
+    for (int i = 0; i < static_cast<int>(deck.spCards.size()); i++)
     {
         out << *deck.spCards[i] << ", ";
     }
@@ -100,18 +100,18 @@ SpCard Deck::draw()
 // Default constructor
 Hand::Hand()
 {
-    cout << "Hand created." << endl;
+    // cout << "Hand created." << endl;
 }
 // Copy constructor
 Hand::Hand(const Hand &other) : spCards(other.spCards)
 {
-    cout << "Hand copied." << endl;
+    // cout << "Hand copied." << endl;
 }
 // Destructor
 Hand::~Hand()
 {
     // initialize future members?
-    cout << "Hand destroyed." << endl;
+    // cout << "Hand destroyed." << endl;
 }
 
 // Operator overloading for Hand
@@ -130,7 +130,7 @@ Hand &Hand::operator=(const Hand &other)
 ostream &operator<<(ostream &out, const Hand &hand)
 {
     out << "Hand contains: ";
-    for (int i = 0; i < hand.spCards.size(); i++)
+    for (int i = 0; i < static_cast<int>(hand.spCards.size()); i++)
     {
         out << "[" << i << "] " << *hand.spCards[i] << ", ";
     }
@@ -153,7 +153,7 @@ void Hand::add(SpCard card)
 // Remove a card pointer from the hand
 SpCard Hand::remove(int index)
 {
-    if (index >= spCards.size() || index < 0)
+    if (index >= static_cast<int>(spCards.size()) || index < 0)
     {
         cout << "Invalid entry. ";
         return SpCard();
@@ -185,7 +185,7 @@ int Hand::getNumCards()
 
 SpCard Hand::getCardAt(int index)
 {
-    if (index >= 0 && index < spCards.size())
+    if (index >= 0 && index < static_cast<int>(spCards.size()))
     {
         return spCards[index];
     }
@@ -199,18 +199,18 @@ SpCard Hand::getCardAt(int index)
 // Default constructor
 BombCard::BombCard()
 {
-    cout << "BombCard created." << endl;
+    // cout << "BombCard created." << endl;
 }
 
 // Copy constructor
 BombCard::BombCard(const BombCard &other)
 {
-    cout << "BombCard copied." << endl;
+    // cout << "BombCard copied." << endl;
 }
 // Destructor
 BombCard::~BombCard()
 {
-    cout << "BombCard destroyed." << endl;
+    // cout << "BombCard destroyed." << endl;
 }
 
 // Assignment operator
@@ -262,19 +262,19 @@ void BombCard::play(Deck &deck, Player &player)
 // Default constructor
 ReinforcementCard::ReinforcementCard()
 {
-    cout << "ReinforcementCard created." << endl;
+    // cout << "ReinforcementCard created." << endl;
 }
 
 // Copy constructor
 ReinforcementCard::ReinforcementCard(const ReinforcementCard &other)
 {
-    cout << "ReinforcementCard copied." << endl;
+    // cout << "ReinforcementCard copied." << endl;
 }
 
 // Destructor
 ReinforcementCard::~ReinforcementCard()
 {
-    cout << "ReinforcementCard destroyed." << endl;
+    // cout << "ReinforcementCard destroyed." << endl;
 }
 
 // Assignment operator
@@ -304,19 +304,19 @@ string ReinforcementCard::getName() const
 // Default constructor
 BlockadeCard::BlockadeCard()
 {
-    cout << "BlockadeCard created." << endl;
+    // cout << "BlockadeCard created." << endl;
 }
 
 // Copy constructor
 BlockadeCard::BlockadeCard(const BlockadeCard &other)
 {
-    cout << "BlockadeCard copied." << endl;
+    // cout << "BlockadeCard copied." << endl;
 }
 
 // Destructor
 BlockadeCard::~BlockadeCard()
 {
-    cout << "BlockadeCard destroyed." << endl;
+    // cout << "BlockadeCard destroyed." << endl;
 }
 
 // Assignment operator
@@ -369,19 +369,19 @@ void BlockadeCard::play(Deck &deck, Player &player)
 // Default constructor
 AirliftCard::AirliftCard()
 {
-    cout << "AirliftCard created." << endl;
+    // cout << "AirliftCard created." << endl;
 }
 
 // Copy constructor
 AirliftCard::AirliftCard(const AirliftCard &other)
 {
-    cout << "AirliftCard copied." << endl;
+    // cout << "AirliftCard copied." << endl;
 }
 
 // Destructor
 AirliftCard::~AirliftCard()
 {
-    cout << "AirliftCard destroyed." << endl;
+    // cout << "AirliftCard destroyed." << endl;
 }
 
 // Assignment operator
@@ -461,19 +461,19 @@ void AirliftCard::play(Deck &deck, Player &player)
 // Default constructor
 DiplomacyCard::DiplomacyCard()
 {
-    cout << "DiplomacyCard created." << endl;
+    // cout << "DiplomacyCard created." << endl;
 }
 
 // Copy constructor
 DiplomacyCard::DiplomacyCard(const DiplomacyCard &other)
 {
-    cout << "DiplomacyCard copied." << endl;
+    // cout << "DiplomacyCard copied." << endl;
 }
 
 // Destructor
 DiplomacyCard::~DiplomacyCard()
 {
-    cout << "DiplomacyCard destroyed." << endl;
+    // cout << "DiplomacyCard destroyed." << endl;
 }
 
 // Assignment operator

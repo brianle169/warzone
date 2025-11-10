@@ -6,66 +6,81 @@
 #include <algorithm>
 using namespace std;
 
-//ORDER CLASS DEFINITION---------------------------------------------------
+// ORDER CLASS DEFINITION---------------------------------------------------
 
 // Constructor initializing order with name and player
-Order::Order(std::string orderN, Player *p) {
-    orderName=orderN;
-    player=p;
+Order::Order(std::string orderN, Player *p)
+{
+    orderName = orderN;
+    player = p;
+    executed = false;
 }
 
 // Copy constructor for Order
-Order::Order(const Order &other) {
-    orderName=other.orderName;
-    this->player=other.player;
+Order::Order(const Order &other)
+{
+    orderName = other.orderName;
+    this->player = other.player;
+    executed = other.executed;
 }
 
 // Assignment operator for Order
-Order& Order::operator=(const Order &other) {
-    if (this != &other) {
-        orderName=other.orderName;
-        this->player= other.player;
+Order &Order::operator=(const Order &other)
+{
+    if (this != &other)
+    {
+        orderName = other.orderName;
+        this->player = other.player;
+        executed = other.executed;
     }
     return *this;
 }
 
 // Output stream for displaying order execution
-ostream& operator<<(ostream& os, const Order& order) {
+ostream &operator<<(ostream &os, const Order &order)
+{
     os << order.getPlayer() << ": " << order.getName();
-    if (order.executed) {
+    if (order.executed)
+    {
         os << " EXECUTED -> " << order.executionEffect;
     }
     return os;
 }
 
 // Setter for execution effect description
-void Order::setExecutionEffect(const std::string& effect) {
+void Order::setExecutionEffect(const std::string &effect)
+{
     executionEffect = effect;
 }
 
 // Getter
-string Order::getPlayer() const {
+string Order::getPlayer() const
+{
     return player ? player->getName() : std::string("<null>");
 }
 
-//DEPLOY CLASS DEFINITON---------------------------------------------------
+// DEPLOY CLASS DEFINITON---------------------------------------------------
 
 // Constructor for Deploy order
-Deploy::Deploy(Player* p,Territory* targetT, int numA){
-    player=p;
-    targetTerritory=targetT;
-    numArmies=numA;
+Deploy::Deploy(Player *p, Territory *targetT, int numA)
+{
+    player = p;
+    targetTerritory = targetT;
+    numArmies = numA;
 }
 
 // Copy constructor for Deploy
-Deploy::Deploy(const Deploy& other) : Order(other) {
+Deploy::Deploy(const Deploy &other) : Order(other)
+{
     numArmies = other.numArmies;
     targetTerritory = other.targetTerritory;
 }
 
 // Assignment operator for Deploy
-Deploy& Deploy::operator=(const Deploy& other) {
-    if (this != &other) {
+Deploy &Deploy::operator=(const Deploy &other)
+{
+    if (this != &other)
+    {
         Order::operator=(other);
         numArmies = other.numArmies;
         targetTerritory = other.targetTerritory;
@@ -74,55 +89,70 @@ Deploy& Deploy::operator=(const Deploy& other) {
 }
 
 // Output stream for Deploy info
-ostream& operator<<(ostream& os, const Deploy& d) {
+ostream &operator<<(ostream &os, const Deploy &d)
+{
     os << "Deploy " << d.numArmies << " armies to territory " << d.targetTerritory->getName();
     return os;
 }
 
 // Validates if Deploy order can execute
-bool Deploy::validate() {
+bool Deploy::validate()
+{
     return player == targetTerritory->getPlayer() && numArmies > 0;
 }
 
 // Executes the Deploy order
-void Deploy::execute() {
-    if (validate()) {
-        targetTerritory->setArmies(targetTerritory->getArmies()+numArmies);
+void Deploy::execute()
+{
+    if (validate())
+    {
+        cout << "Deploying " << numArmies << " armies to " << targetTerritory->getName() << endl;
+        targetTerritory->setArmies(targetTerritory->getArmies() + numArmies);
         executed = true;
         setExecutionEffect("Successfully deployed " + to_string(numArmies) + " armies to " + targetTerritory->getName() + "; " + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
+    }
+    else
+    {
+        cout << "Deploy order validation failed. Cannot execute order." << endl;
     }
 }
 
 // Clone method
-Order* Deploy::clone() const {
+Order *Deploy::clone() const
+{
     return new Deploy(*this);
 }
 
 // Getter
-std::string Deploy::getName() const{
+std::string Deploy::getName() const
+{
     return "Deploy";
 }
 
-//ADVANCE CLASS DEFINITION---------------------------------------------------
+// ADVANCE CLASS DEFINITION---------------------------------------------------
 
 // Constructor for Advance order
-Advance::Advance(Player* p, int moveNumArmy, Territory *baseTerritory, Territory *wantedTerritory) {
-    player=p;
+Advance::Advance(Player *p, int moveNumArmy, Territory *baseTerritory, Territory *wantedTerritory)
+{
+    player = p;
     numArmies = moveNumArmy;
     sourceTerritory = baseTerritory;
     targetTerritory = wantedTerritory;
 }
 
 // Copy constructor
-Advance::Advance(const Advance &other) : Order(other) {
+Advance::Advance(const Advance &other) : Order(other)
+{
     numArmies = other.numArmies;
     sourceTerritory = other.sourceTerritory;
     targetTerritory = other.targetTerritory;
 }
 
 // Assignment operator
-Advance& Advance::operator=(const Advance &other) {
-    if (this != &other) {
+Advance &Advance::operator=(const Advance &other)
+{
+    if (this != &other)
+    {
         Order::operator=(other);
         numArmies = other.numArmies;
         sourceTerritory = other.sourceTerritory;
@@ -132,74 +162,92 @@ Advance& Advance::operator=(const Advance &other) {
 }
 
 // Output stream for Advance
-ostream& operator<<(ostream& os, const Advance& a) {
-    os << "Advance " << a.numArmies << " from " << a.sourceTerritory << " to " << a.targetTerritory;
+ostream &operator<<(ostream &os, const Advance &a)
+{
+    os << "Advance " << a.numArmies << " armies from " << a.sourceTerritory->getName() << " to " << a.targetTerritory->getName();
     return os;
 }
 
 // Checks if the move is valid
-bool Advance::validate() {
+bool Advance::validate()
+{
     return player == sourceTerritory->getPlayer() && sourceTerritory->getArmies() > numArmies && numArmies > 0 && targetTerritory->isEdge(sourceTerritory);
 }
 
 // Executes troop movement and combat logic
-void Advance::execute() {
-    if (validate()) {
-        if (player == targetTerritory->getPlayer()) { //the player owns the target territory and wants to advance troops from source
-            sourceTerritory->setArmies(sourceTerritory->getArmies()-numArmies);
-            targetTerritory->setArmies(targetTerritory->getArmies()+numArmies);
+void Advance::execute()
+{
+    if (validate())
+    {
+        cout << "Advancing " << numArmies << " armies from " << sourceTerritory->getName() << " to " << targetTerritory->getName() << endl;
+        if (player == targetTerritory->getPlayer())
+        { // the player owns the target territory and wants to advance troops from source
+            sourceTerritory->setArmies(sourceTerritory->getArmies() - numArmies);
+            targetTerritory->setArmies(targetTerritory->getArmies() + numArmies);
             executed = true;
             setExecutionEffect("Successfully advanced " + to_string(numArmies) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName() + "; " + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
         }
 
-        if (player != targetTerritory->getPlayer()) { //the player successfully conquered the territory
-            if (numArmies*0.6 > targetTerritory->getArmies()*0.7) {
-                int result = numArmies*0.6 - targetTerritory->getArmies()*0.7;
-                sourceTerritory->setArmies(sourceTerritory->getArmies()-numArmies);
+        if (player != targetTerritory->getPlayer())
+        { // the player successfully conquered the territory
+            if (numArmies * 0.6 > targetTerritory->getArmies() * 0.7)
+            {
+                int result = numArmies * 0.6 - targetTerritory->getArmies() * 0.7;
+                sourceTerritory->setArmies(sourceTerritory->getArmies() - numArmies);
                 targetTerritory->setArmies(result);
                 targetTerritory->setPlayer(player);
-                //add a card to the deck since conquered
-                //a player cannot get another card, so we need a block function so no other card can be assigned to the player
+                // add a card to the deck since conquered
+                // a player cannot get another card, so we need a block function so no other card can be assigned to the player
                 executed = true;
-                setExecutionEffect("Successfully conquered and advanced " + to_string(numArmies) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName() + "; "+ sourceTerritory->getName() + " has now " + to_string(sourceTerritory->getArmies()) + " troops and "  + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
-
-            } else { //the player successfully defended his own territory
-                int result = targetTerritory->getArmies()*0.7 - numArmies*0.6;
-                sourceTerritory->setArmies(sourceTerritory->getArmies()-numArmies);
+                setExecutionEffect("Successfully conquered and advanced " + to_string(numArmies) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName() + "; " + sourceTerritory->getName() + " has now " + to_string(sourceTerritory->getArmies()) + " troops and " + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
+            }
+            else
+            { // the player successfully defended his own territory
+                int result = targetTerritory->getArmies() * 0.7 - numArmies * 0.6;
+                sourceTerritory->setArmies(sourceTerritory->getArmies() - numArmies);
                 targetTerritory->setArmies(result);
                 executed = true;
-                setExecutionEffect("Unsuccessfully advanced, you lost " + to_string(numArmies)   + " troops; " + sourceTerritory->getName() + " has now " + to_string(sourceTerritory->getArmies()) + " troops and "  + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops" );
-
+                setExecutionEffect("Unsuccessfully advanced, you lost " + to_string(numArmies) + " troops; " + sourceTerritory->getName() + " has now " + to_string(sourceTerritory->getArmies()) + " troops and " + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
             }
         }
+    }
+    else
+    {
+        cout << "Advance order validation failed. Cannot execute order." << endl;
     }
 }
 
 // Clone method
-Order* Advance::clone() const {
+Order *Advance::clone() const
+{
     return new Advance(*this);
 }
 
 // Getter
-std::string Advance::getName() const{
+std::string Advance::getName() const
+{
     return "Advance";
 }
 
-//BOMB CLASS DEFINITION---------------------------------------------------
+// BOMB CLASS DEFINITION---------------------------------------------------
 
-Bomb::Bomb(Player* p, Territory *wantedTerritory, Territory *sTerritory) {
-    player=p;
+Bomb::Bomb(Player *p, Territory *wantedTerritory, Territory *sTerritory)
+{
+    player = p;
     targetTerritory = wantedTerritory;
     sourceTerritory = sTerritory;
 }
 
-Bomb::Bomb(const Bomb &other) : Order(other) {
+Bomb::Bomb(const Bomb &other) : Order(other)
+{
     targetTerritory = other.targetTerritory;
 }
 
 // Assignment operator
-Bomb &Bomb::operator=(const Bomb &other) {
-    if (this != &other) {
+Bomb &Bomb::operator=(const Bomb &other)
+{
+    if (this != &other)
+    {
         Order::operator=(other);
         targetTerritory = other.targetTerritory;
     }
@@ -207,50 +255,65 @@ Bomb &Bomb::operator=(const Bomb &other) {
 }
 
 // Output for Bomb
-ostream &operator<<(ostream &os, const Bomb& b) {
+ostream &operator<<(ostream &os, const Bomb &b)
+{
     os << "Bomb " << b.targetTerritory;
     return os;
 }
 
 // Validate bombing conditions
-bool Bomb::validate() {
-    return player != targetTerritory->getPlayer() &&  player->getHand()->includes(this->getName()) && targetTerritory->isEdge(sourceTerritory);
+bool Bomb::validate()
+{
+    return player != targetTerritory->getPlayer() && targetTerritory->isEdge(sourceTerritory);
 }
 
-void Bomb::execute() {
-    if (validate()) {
-        targetTerritory->setArmies(targetTerritory->getArmies()/2);
+void Bomb::execute()
+{
+    if (validate())
+    {
+        cout << "Bombing territory " << targetTerritory->getName() << endl;
+        targetTerritory->setArmies(targetTerritory->getArmies() / 2);
         executed = true;
         setExecutionEffect("Successfully bombed " + targetTerritory->getName());
+    }
+    else
+    {
+        cout << "Bomb order validation failed. Cannot execute order." << endl;
     }
 }
 
 // Clone method
-Order* Bomb::clone() const {
+Order *Bomb::clone() const
+{
     return new Bomb(*this);
 }
 
 // Getter
-std::string Bomb::getName() const{
+std::string Bomb::getName() const
+{
     return "Bomb";
 }
 
-//BLOCKADE CLASS DEFINTION---------------------------------------------------
+// BLOCKADE CLASS DEFINTION---------------------------------------------------
 
 // Constructor for Blockade
-Blockade::Blockade(Player* p, Territory *wantedTerritory) {
-    player=p;
+Blockade::Blockade(Player *p, Territory *wantedTerritory)
+{
+    player = p;
     targetTerritory = wantedTerritory;
 }
 
 // Copy constructor
-Blockade::Blockade(const Blockade &other) : Order(other) {
+Blockade::Blockade(const Blockade &other) : Order(other)
+{
     targetTerritory = other.targetTerritory;
 }
 
 // Assignment operator
-Blockade &Blockade::operator=(const Blockade &other) {
-    if (this != &other) {
+Blockade &Blockade::operator=(const Blockade &other)
+{
+    if (this != &other)
+    {
         Order::operator=(other);
         targetTerritory = other.targetTerritory;
     }
@@ -258,54 +321,69 @@ Blockade &Blockade::operator=(const Blockade &other) {
 }
 
 // Output for Blockade
-ostream &operator<<(ostream &os, const Blockade& b) {
+ostream &operator<<(ostream &os, const Blockade &b)
+{
     os << "Blockade " << b.targetTerritory;
     return os;
 }
 
 // Validate blockade conditions
-bool Blockade::validate() {
-    return player == targetTerritory->getPlayer() && player->getHand()->includes(this->getName());
+bool Blockade::validate()
+{
+    return player == targetTerritory->getPlayer();
 }
 
-void Blockade::execute() {
-    if (validate()) {
-        targetTerritory->setArmies(targetTerritory->getArmies()*3);
-        //make it neutral territory ; change has to be made on part 3 in main game loop
+void Blockade::execute()
+{
+    if (validate())
+    {
+        cout << "Blockading territory " << targetTerritory->getName() << endl;
+        targetTerritory->setArmies(targetTerritory->getArmies() * 3);
+        // make it neutral territory ; change has to be made on part 3 in main game loop
         executed = true;
         setExecutionEffect("Successfully blockade " + targetTerritory->getName());
+    }
+    else
+    {
+        cout << "Blockade order validation failed. Cannot execute order." << endl;
     }
 }
 
 // Clone method
-Order* Blockade::clone() const {
+Order *Blockade::clone() const
+{
     return new Blockade(*this);
 }
 
 // Getter
-std::string Blockade::getName() const{
+std::string Blockade::getName() const
+{
     return "Blockade";
 }
 
-//AIRLIFT CLASS DEFINITION---------------------------------------------------
+// AIRLIFT CLASS DEFINITION---------------------------------------------------
 
 // Constructor for Airlift
-Airlift::Airlift(Player* p, int nArmy, Territory *sTerritory, Territory *tTerritory) {
-    player=p;
+Airlift::Airlift(Player *p, int nArmy, Territory *sTerritory, Territory *tTerritory)
+{
+    player = p;
     numArmy = nArmy;
     sourceTerritory = sTerritory;
     targetTerritory = tTerritory;
 }
 
 // Copy constructor
-Airlift::Airlift(const Airlift &other) : Order(other) {
+Airlift::Airlift(const Airlift &other) : Order(other)
+{
     numArmy = other.numArmy;
     targetTerritory = other.targetTerritory;
 }
 
 // Assignment operator
-Airlift& Airlift::operator=(const Airlift& other) {
-    if (this != &other) {
+Airlift &Airlift::operator=(const Airlift &other)
+{
+    if (this != &other)
+    {
         Order::operator=(other);
         numArmy = other.numArmy;
         targetTerritory = other.targetTerritory;
@@ -315,103 +393,134 @@ Airlift& Airlift::operator=(const Airlift& other) {
 }
 
 // Output for Airlift
-ostream &operator<<(ostream &os, const Airlift& a) {
+ostream &operator<<(ostream &os, const Airlift &a)
+{
     os << "Airlift " << a.targetTerritory;
     return os;
 }
 
 // Validate airlift conditions
-bool Airlift::validate() {
-    return player == targetTerritory->getPlayer() && sourceTerritory->getArmies() > numArmy && numArmy > 0 && player->getHand()->includes(this->getName());
+bool Airlift::validate()
+{
+    return player == targetTerritory->getPlayer() && sourceTerritory->getArmies() > numArmy && numArmy > 0;
 }
 
-void Airlift::execute() {
-    if (validate()) {
-        sourceTerritory->setArmies(sourceTerritory->getArmies()-numArmy);
-        targetTerritory->setArmies(sourceTerritory->getArmies()+numArmy);
+void Airlift::execute()
+{
+    if (validate())
+    {
+        cout << "Airlifting " << numArmy << " armies from " << sourceTerritory->getName() << " to " << targetTerritory->getName() << endl;
+        sourceTerritory->setArmies(sourceTerritory->getArmies() - numArmy);
+        targetTerritory->setArmies(targetTerritory->getArmies() + numArmy);
         executed = true;
         setExecutionEffect("Successfully airlift " + to_string(numArmy) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName());
+    }
+    else
+    {
+        cout << "Airlift order validation failed. Cannot execute order." << endl;
     }
 }
 
 // Clone method
-Order* Airlift::clone() const {
+Order *Airlift::clone() const
+{
     return new Airlift(*this);
 }
 
 // Getter
-std::string Airlift::getName() const{
+std::string Airlift::getName() const
+{
     return "Airlift";
 }
 
-//NEGOTIATE CLASS DEFINITION---------------------------------------------------
+// NEGOTIATE CLASS DEFINITION---------------------------------------------------
 
 // Constructor for Negotiate
-Negotiate::Negotiate(Player *p, Player *tPlayer) {
-    player=p;
+Negotiate::Negotiate(Player *p, Player *tPlayer)
+{
+    player = p;
     targetPlayer = tPlayer;
 }
 
 // Copy constructor
-Negotiate::Negotiate(const Negotiate &other) : Order(other) {
-    player= other.player;
+Negotiate::Negotiate(const Negotiate &other) : Order(other)
+{
+    player = other.player;
     targetPlayer = other.targetPlayer;
 }
 
 // Assignment operator
-Negotiate &Negotiate::operator=(const Negotiate &other) {
-    if (this != &other) {
+Negotiate &Negotiate::operator=(const Negotiate &other)
+{
+    if (this != &other)
+    {
         Order::operator=(other);
-        player= other.player;
+        player = other.player;
         targetPlayer = other.targetPlayer;
     }
     return *this;
 }
 
 // Output for Negotiate
-ostream &operator<<(ostream &os, const Negotiate& n) {
+ostream &operator<<(ostream &os, const Negotiate &n)
+{
     os << "Negotiate " << n.targetPlayer;
     return os;
 }
 
 // Validate negotiation
-bool Negotiate::validate() {
-    return player != targetPlayer && player->getHand()->includes(this->getName());
+bool Negotiate::validate()
+{
+    return player != targetPlayer;
 }
 
 // Order execution method
-void Negotiate::execute() {
-    if (validate()) {
-        //MAKE SURE NO PLAYER CAN CALL THE ADVANCE ORDER ON THE OTHER
+void Negotiate::execute()
+{
+    if (validate())
+    {
+        cout << "Negotiating peace between " << player->getName() << " and " << targetPlayer->getName() << endl;
+        // MAKE SURE NO PLAYER CAN CALL THE ADVANCE ORDER ON THE OTHER
         executed = true;
         setExecutionEffect("Successfully negotiate with " + targetPlayer->getName() + ". You cannot call the advance order for the next round");
+    }
+    else
+    {
+        cout << "Negotiate order validation failed. Cannot execute order." << endl;
     }
 }
 
 // Clone method
-Order* Negotiate::clone() const {
+Order *Negotiate::clone() const
+{
     return new Negotiate(*this);
 }
 
 // Getter
-std::string Negotiate::getName() const{
+std::string Negotiate::getName() const
+{
     return "Negotiate";
 }
 
-//ORDERSLIST CLASS DEFINITION---------------------------------------------------
+// ORDERSLIST CLASS DEFINITION---------------------------------------------------
 
 // Copy constructor (deep copy using clone)
-OrdersList::OrdersList(const OrdersList& other) {
-    for (const auto& order : other.orders) {
+OrdersList::OrdersList(const OrdersList &other)
+{
+    for (const auto &order : other.orders)
+    {
         orders.push_back(order->clone());
     }
 }
 
 // Assignment operator
-OrdersList& OrdersList::operator=(const OrdersList& other) {
-    if (this != &other) {
+OrdersList &OrdersList::operator=(const OrdersList &other)
+{
+    if (this != &other)
+    {
         orders.clear();
-        for (const auto& order : other.orders) {
+        for (const auto &order : other.orders)
+        {
             orders.push_back(order->clone());
         }
     }
@@ -419,54 +528,67 @@ OrdersList& OrdersList::operator=(const OrdersList& other) {
 }
 
 // Destructor
-OrdersList::~OrdersList() {
-    for (auto* order : orders) {
+OrdersList::~OrdersList()
+{
+    for (auto *order : orders)
+    {
         delete order;
     }
     orders.clear();
 }
 
-ostream &operator<<(ostream &os, const OrdersList& list) {
-    for (const auto& order : list.orders) {
+ostream &operator<<(ostream &os, const OrdersList &list)
+{
+    for (const auto &order : list.orders)
+    {
         os << order->getPlayer() << ": Order -> " << order->getName() << endl;
     }
     return os;
 }
 
 // Adding order
-void OrdersList::addOrder(Order* order) {
-    if (order) {
+void OrdersList::addOrder(Order *order)
+{
+    if (order)
+    {
         orders.push_back(order); // Deleted std::move
     }
 }
 
 // Remove an order by index
-void OrdersList::remove(int index) {
-    if (index >= 0 && index < static_cast<int>(orders.size())) {
+void OrdersList::remove(int index)
+{
+    if (index >= 0 && index < static_cast<int>(orders.size()))
+    {
         orders.erase(orders.begin() + index);
     }
 }
 
 // Move an order from one index to another
-void OrdersList::move(int fromIndex, int toIndex) {
+void OrdersList::move(int fromIndex, int toIndex)
+{
     if (fromIndex >= 0 && fromIndex < static_cast<int>(orders.size()) &&
-        toIndex >= 0 && toIndex < static_cast<int>(orders.size())) {
+        toIndex >= 0 && toIndex < static_cast<int>(orders.size()))
+    {
 
         auto order = std::move(orders[fromIndex]);
         orders.erase(orders.begin() + fromIndex);
         orders.insert(orders.begin() + toIndex, std::move(order));
-        }
+    }
 }
 
 // Return number of orders in the list
-size_t OrdersList::size() const {
+size_t OrdersList::size() const
+{
     return orders.size();
 }
 
 // Retrieve a pointer to an order by index
-Order* OrdersList::getOrder(int index) const {
-    if (index >= 0 && index < static_cast<int>(orders.size())) {
-        //return orders[index].get();
+Order *OrdersList::getOrder(int index) const
+{
+    if (index >= 0 && index < static_cast<int>(orders.size()))
+    {
+        // return orders[index].get();
         return orders[index];
     }
     return nullptr;

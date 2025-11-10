@@ -21,6 +21,7 @@ class Card
 {
 public:
     // Virtual enables polymorphism, = 0 makes it abstract
+    Card() = default;
     virtual ~Card(); // Destructor
     Card &operator=(const Card &);
     // virtual void play(Deck &deck, Hand &hand, Player &player);

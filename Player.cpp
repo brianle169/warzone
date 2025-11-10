@@ -25,10 +25,10 @@ using namespace std;
 Player::Player() : name(new string("")),
 				   hand(new Hand()),
 				   ordersList(new OrdersList()),
-				   reinforcementPool(new int(0)),
 				   territories(new vector<Territory *>()),
 				   attacking(new vector<Territory *>()),
 				   defending(new vector<Territory *>()),
+				   reinforcementPool(new int(0)),
 				   issueOrderStatus(new array<bool, 4>())
 {
 }
@@ -37,10 +37,10 @@ Player::Player() : name(new string("")),
 // The other attributes are initialized similarly to the default constructor.
 Player::Player(string name) : hand(new Hand()),
 							  ordersList(new OrdersList()),
-							  reinforcementPool(new int(0)),
 							  territories(new vector<Territory *>()),
 							  attacking(new vector<Territory *>()),
 							  defending(new vector<Territory *>()),
+							  reinforcementPool(new int(0)),
 							  issueOrderStatus(new array<bool, 4>())
 {
 	this->name = new string(name); // This is a pointer assignment.
@@ -158,11 +158,9 @@ int Player::getReinforcementPool() const
 ostream &operator<<(ostream &out, const Player &player)
 {
 	out << "Player Name: " << *(player.name) << endl;
-	out << "Player's Hand exists? " << (player.hand != nullptr ? "Yes" : "No") << endl;
-	out << "Player's OrdersList exists? " << (player.ordersList != nullptr ? "Yes" : "No") << endl;
-	out << "Player's Territories exists? " << (player.territories != nullptr ? "Yes" : "No") << endl;
-	for (Territory *t : *player.territories)
-		out << "Name: " << t->getName() << " - Armies: " << t->getArmies() << endl;
+	out << "Reinforcement Pool: " << *(player.reinforcementPool) << endl;
+	out << "Territories Owned: " << player.territories->size() << endl;
+	out << *player.hand << endl;
 	return out; // out = output stream
 }
 
@@ -192,25 +190,45 @@ Player &Player::operator=(const Player &p)
 // these territories are adjacent to the player's own territories and are not owned by the player.
 unordered_map<string, Territory *> Player::getAttackableTerritories()
 {
-	unordered_map<string, Territory *> attackableTerritories;
-	for (Territory *ownedTerritory : *this->territories)
+	unordered_map<string, Territory *> res;
+
+	if (!this->territories || this->territories->empty())
+		return res;
+
+	for (Territory *owned : *this->territories)
 	{
-		for (Territory *adjacentTerritory : ownedTerritory->getEdges())
+		if (!owned)
+			continue;
+
+		const vector<Territory *> &adj = owned->getEdges(); // assume returns const ref or copy
+		for (Territory *neighbor : adj)
 		{
-			string adjacentPName = adjacentTerritory->getPlayer() ? adjacentTerritory->getPlayer()->getName() : "";
-			if (adjacentPName != *this->name && attackableTerritories.find(adjacentPName) == attackableTerritories.end())
-				attackableTerritories[adjacentPName] = adjacentTerritory;
+			if (!neighbor)
+				continue;
+
+			Player *owner = neighbor->getPlayer();
+			// Attackable if unowned OR owned by someone else
+			if (owner != this)
+			{
+				// Insert only once
+				res.emplace(neighbor->getName(), neighbor);
+			}
 		}
 	}
-	return attackableTerritories;
+	return res;
 }
 
 unordered_map<string, Territory *> Player::getDefendableTerritories()
 {
-	unordered_map<string, Territory *> defendableTerritories;
-	for (Territory *ownedTerritory : *this->territories)
-		defendableTerritories[ownedTerritory->getName()] = ownedTerritory;
-	return defendableTerritories;
+	unordered_map<string, Territory *> res;
+	for (Territory *terr : *this->territories)
+	{
+		if (terr)
+		{
+			res.emplace(terr->getName(), terr);
+		}
+	}
+	return res;
 }
 
 // toAttack() method: this method returns a list (vector) of Territory objects which represents the
@@ -218,89 +236,76 @@ unordered_map<string, Territory *> Player::getDefendableTerritories()
 // In assignment 2, we will use the actual territories loaded and assigned to the player at the start of the game.
 vector<Territory *> Player::toAttack()
 {
-	// Display current list of attacking territories
-	cout << "Attacking List: ";
-	for (Territory *t : *this->attacking)
-		cout << t->getName() << ", ";
-	cout << endl;
-
-	cout << "Available territories to attack (*: already chosen): ";
+	cout << "Available territories to attack: " << endl;
 	unordered_map<string, Territory *> attackableTerritories = this->getAttackableTerritories();
 	for (const auto &pair : attackableTerritories)
 	{
-		if (std::find(this->attacking->begin(), this->attacking->end(), pair.second) != this->attacking->end())
-			cout << pair.first << "*" << " (" << pair.second->getArmies() << ")";
-		else
-			cout << pair.first << " (" << pair.second->getArmies() << ")";
-		if (pair.second != this->attacking->back())
-			cout << ", ";
+		cout << "- " << pair.first << " (" << pair.second->getArmies() << ")" << endl;
 	}
 	cout << endl;
 
-	cout << "Select territories to attack (separate by spaces, end with 'x'): ";
-	string input;
-	getline(cin, input);
-	istringstream iss(input);
-	string territoryName;
-
-	while (iss >> territoryName)
+	string input = "";
+	do
 	{
-		if (territoryName == "x" || territoryName == "X")
+		cout << "Select territories to attack (Enter 'x' to finish) \n>> ";
+		cin >> input;
+		if (input == "x" || input == "X")
 			break;
-		auto entry = attackableTerritories.find(territoryName);
-		if (entry != attackableTerritories.end() &&
-			std::find(this->attacking->begin(), this->attacking->end(), entry->second) == this->attacking->end())
+		try
 		{
-			// if the territory is found and not already in the attacking list
-			this->attacking->push_back(entry->second); // insert the territory pointer into attacking vector
+			Territory *terr = attackableTerritories.at(input);
+			if (std::find(this->attacking->begin(), this->attacking->end(), terr) != this->attacking->end())
+			{
+				cout << "Territory " << terr->getName() << " has already been selected for attack." << endl;
+				continue;
+			}
+			cout << "Territory " << terr->getName() << " selected for attack." << endl;
+			this->attacking->push_back(terr); // insert the territory pointer into attacking vector
+			this->displayTerritories(*this->attacking);
 		}
-	}
-
+		catch (const out_of_range &)
+		{
+			cout << "Invalid territory. Please try again." << endl;
+		}
+	} while (true);
 	return *this->attacking;
 }
 
 // toDefend() method: the idea is exactly the same with toAttack() method above.
 vector<Territory *> Player::toDefend()
 {
-	// Implementation
-	cout << "Defending List: ";
-	for (Territory *t : *this->defending)
-		cout << t->getName() << ", ";
-	cout << endl;
-
-	cout << "Available territories to defend (*: already chosen): ";
+	cout << "Available territories to defend: " << endl;
 	unordered_map<string, Territory *> defendableTerritories = this->getDefendableTerritories();
 	for (const auto &pair : defendableTerritories)
 	{
-		if (std::find(this->defending->begin(), this->defending->end(), pair.second) != this->defending->end())
-			cout << pair.first << "*" << " (" << pair.second->getArmies() << ")";
-		else
-			cout << pair.first << " (" << pair.second->getArmies() << ")";
-		if (pair.second != this->defending->back())
-			cout << ", ";
+		cout << "- " << pair.first << " (" << pair.second->getArmies() << ")" << endl;
 	}
 	cout << endl;
 
-	cout << "Select territories to defend (separate by spaces, end with 'x'): ";
-	string input;
-	getline(cin, input);
-	istringstream iss(input);
-	string territoryName;
-	// Arbitrary assignment of territories for testing
-
-	while (iss >> territoryName)
+	string input = "";
+	do
 	{
-		if (territoryName == "x" || territoryName == "X")
+		cout << "Select territories to defend (Enter 'x' to finish) \n>> ";
+		cin >> input;
+		if (input == "x" || input == "X")
 			break;
-		auto entry = defendableTerritories.find(territoryName);
-		if (entry != defendableTerritories.end() &&
-			std::find(this->defending->begin(), this->defending->end(), entry->second) == this->defending->end())
+		try
 		{
-			// if the territory is found and not already in the defending list
-			this->defending->push_back(entry->second); // insert the territory pointer into defending vector
+			Territory *terr = defendableTerritories.at(input);
+			if (std::find(this->defending->begin(), this->defending->end(), terr) != this->defending->end())
+			{
+				cout << "Territory " << terr->getName() << " has already been selected for defend." << endl;
+				continue;
+			}
+			cout << "Territory " << terr->getName() << " selected for defend." << endl;
+			this->defending->push_back(terr); // insert the territory pointer into defending vector
+			this->displayTerritories(*this->defending);
 		}
-	}
-
+		catch (const out_of_range &)
+		{
+			cout << "Invalid territory. Please try again." << endl;
+		}
+	} while (true);
 	return *this->defending;
 }
 
@@ -328,7 +333,7 @@ void Player::displayOrdersList(const OrdersList *ordersList)
 		{
 			if (ordersList->getOrder(i))
 			{
-				cout << " - " << ordersList->getOrder(i)->getName() << endl;
+				cout << i << ". " << *ordersList->getOrder(i) << endl;
 			}
 		}
 	}
@@ -339,21 +344,18 @@ Deploy *Player::deploy(vector<Territory *> &defendingTerritories)
 	cout << "===========================================" << endl;
 	cout << "============Deployment Phase===============" << endl;
 	cout << "===========================================" << endl;
-	cout << "\nDefending List: ";
+	cout << "\nDefending List: " << endl;
 	int count = 0;
 	for (Territory *t : defendingTerritories)
 	{
-		if (count == defendingTerritories.size() - 1)
-			cout << "(" << count << ") " << t->getName() << endl;
-		else
-			cout << "(" << count << ") " << t->getName() << " - ";
+		cout << count << ". " << t->getName() << " (" << t->getArmies() << ") " << endl;
 		count++;
 	}
 	int numArmies = 0, territoryIndex = 0;
 	bool validInput = false;
 	while (!validInput)
 	{
-		cout << "Number of armies to deploy >> ";
+		cout << "Number of armies to deploy \n>> ";
 		cin >> numArmies;
 		if (cin.fail())
 		{
@@ -363,14 +365,17 @@ Deploy *Player::deploy(vector<Territory *> &defendingTerritories)
 			continue;
 		}
 		if (numArmies > 0 && numArmies <= *(this->reinforcementPool))
+		{
 			validInput = true;
+			this->setReinforcementPool(*(this->reinforcementPool) - numArmies);
+		}
 		else
 			cout << "Invalid number of armies. Please enter a number between 1 and " << *(this->reinforcementPool) << "." << endl;
 	}
 	validInput = false;
 	while (!validInput)
 	{
-		cout << "Select territory to deploy to (please use the index provided in the parentheses) >> ";
+		cout << "Select territory to deploy to (please use the index provided) \n>> ";
 		cin >> territoryIndex;
 		if (cin.fail())
 		{
@@ -379,12 +384,12 @@ Deploy *Player::deploy(vector<Territory *> &defendingTerritories)
 			cout << "Invalid input. Please enter a number." << endl;
 			continue;
 		}
-		if (territoryIndex >= 0 && territoryIndex < defendingTerritories.size())
+		if (territoryIndex >= 0 && territoryIndex < static_cast<int>(defendingTerritories.size()))
 			validInput = true;
 		else
 			cout << "Invalid territory index. Please try again." << endl;
 	}
-	cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	// cin.ignore(numeric_limits<streamsize>::max(), '\n');
 	return new Deploy(this, defendingTerritories[territoryIndex], numArmies);
 }
 
@@ -394,7 +399,7 @@ Advance *Player::advance(vector<Territory *> &attackingTerritories, vector<Terri
 	cout << "============Advancement Phase==============" << endl;
 	cout << "===========================================" << endl;
 
-	cout << "\nAdvance orders are optional. Do you want to issue an Advance order?\nYes (y) to issue an Advance order. No (n) to move on to other orders (y/n) >> ";
+	cout << "\nAdvance orders are optional. Do you want to issue an Advance order?\nYes (y) to issue an Advance order. No (n) to move on to other orders (y/n) \n>> ";
 	string choice;
 	cin >> choice;
 	if (choice != "y" && choice != "Y")
@@ -411,14 +416,11 @@ Advance *Player::advance(vector<Territory *> &attackingTerritories, vector<Terri
 	possibleTargets.insert(possibleTargets.end(), defendingTerritories.begin(), defendingTerritories.end());
 
 	// Choose a source territory from the user's own territories
-	cout << "\nCurrent territories you own: ";
+	cout << "\nCurrent territories you own: " << endl;
 	int count = 0;
 	for (Territory *t : *this->territories)
 	{
-		if (count == this->territories->size() - 1)
-			cout << "(" << count << ") " << t->getName() << " - Armies:" << t->getArmies() << endl;
-		else
-			cout << "(" << count << ") " << t->getName() << " - Armies:" << t->getArmies() << ", ";
+		cout << count << ". " << t->getName() << " (" << t->getArmies() << ") " << endl;
 		count++;
 	}
 
@@ -426,7 +428,7 @@ Advance *Player::advance(vector<Territory *> &attackingTerritories, vector<Terri
 	bool validInput = false;
 	while (!validInput)
 	{
-		cout << "\nChoose a source territory to advance from (using the index provided in the parentheses) >> ";
+		cout << "\nChoose a source territory to advance from (using the index provided) >> ";
 		cin >> sourceIndex;
 		if (cin.fail())
 		{
@@ -435,7 +437,7 @@ Advance *Player::advance(vector<Territory *> &attackingTerritories, vector<Terri
 			cout << "Invalid input. Please enter a number." << endl;
 			continue;
 		}
-		if (sourceIndex >= 0 && sourceIndex < this->territories->size())
+		if (sourceIndex >= 0 && sourceIndex < static_cast<int>(this->territories->size()))
 			validInput = true;
 		else
 			cout << "Invalid territory index. Please try again." << endl;
@@ -456,37 +458,33 @@ Advance *Player::advance(vector<Territory *> &attackingTerritories, vector<Terri
 			continue;
 		}
 		else
+		{
 			validInput = true;
+		}
 	}
 
 	cout << "\nChoose a target territory to advance to from the two lists below." << endl;
 	count = 0;
 	validInput = false;
 
-	cout << "Attacking territories: ";
+	cout << "Attacking territories: " << endl;
 	for (Territory *t : attackingTerritories)
 	{
-		if (count == attackingTerritories.size() - 1)
-			cout << "(" << count << ") " << t->getName() << endl;
-		else
-			cout << "(" << count << ") " << t->getName() << " - ";
+		cout << count << ". " << t->getName() << endl;
 		count++;
 	}
 
-	cout << "Defending territories: ";
+	cout << "Defending territories: " << endl;
 	for (Territory *t : defendingTerritories)
 	{
-		if (count == defendingTerritories.size() - 1)
-			cout << "(" << count << ") " << t->getName() << endl;
-		else
-			cout << "(" << count << ") " << t->getName() << " - ";
+		cout << count << ". " << t->getName() << endl;
 		count++;
 	}
 
 	int targetIndex = -1;
 	while (!validInput)
 	{
-		cout << "\nSelect target territory to advance to (using the index provided in the parentheses) >> ";
+		cout << "\nSelect target territory to advance to (using the index provided) >> ";
 		cin >> targetIndex;
 		if (cin.fail())
 		{
@@ -495,7 +493,7 @@ Advance *Player::advance(vector<Territory *> &attackingTerritories, vector<Terri
 			cout << "Invalid input. Please enter a number." << endl;
 			continue;
 		}
-		if (targetIndex >= 0 && targetIndex < possibleTargets.size())
+		if (targetIndex >= 0 && targetIndex < static_cast<int>(possibleTargets.size()))
 			validInput = true;
 		else
 			cout << "Invalid territory index. Please try again." << endl;
@@ -503,6 +501,48 @@ Advance *Player::advance(vector<Territory *> &attackingTerritories, vector<Terri
 	targetTerritory = possibleTargets[targetIndex];
 
 	return new Advance(this, numArmies, sourceTerritory, targetTerritory);
+}
+
+void Player::cardOrder()
+{
+	cout << "===========================================" << endl;
+	cout << "==========Issue Card Order Phase===========" << endl;
+	cout << "===========================================" << endl;
+	do
+	{
+		cout << "Select a card to play by its index (or type -1 to skip/finish issuing card orders) \n>> ";
+		int cardIndex = -2;
+		cin >> cardIndex;
+		if (cin.fail())
+		{
+			cin.clear();										 // clear the fail state
+			cin.ignore(numeric_limits<streamsize>::max(), '\n'); // discard invalid input
+			cout << "Invalid input. Please enter a number." << endl;
+			continue;
+		}
+		if (cardIndex == -1)
+		{
+			this->issueOrderStatus->at(static_cast<int>(IssuePhase::OtherPhase)) = true;
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			return; // skip issuing other orders
+		}
+		if (cardIndex < 0 || cardIndex >= this->hand->getNumCards())
+		{
+			cout << "Invalid card index. Please try again." << endl;
+			continue;
+		}
+		// Play the selected card
+		SpCard cardToPlay = this->hand->getCardAt(cardIndex);
+		cardToPlay->play(*GameEngine::getCardDeck(), *this);
+		this->hand->remove(cardIndex); // Remove the card from hand after playing
+		if (this->hand->getNumCards() == 0)
+		{
+			this->issueOrderStatus->at(static_cast<int>(IssuePhase::OtherPhase)) = true;
+		}
+		// Add the card back to the deck
+		GameEngine::getCardDeck()->add(cardToPlay);
+		return;
+	} while (true);
 }
 
 bool Player::isDoneIssuingOrder()
@@ -517,10 +557,12 @@ bool Player::isDoneIssuingOrder()
 void Player::issueOrder()
 {
 	// 1. Print the essential info: name, reinforcement pool, territories, hand, orders list
+	cout << "\n\n==========================" << endl;
 	cout << "=== Player " << *(this->name) << "'s turn ===" << endl;
-	cout << "Orders List: " << endl;
+	cout << *this;
 	this->displayOrdersList(this->ordersList);
 	cout << "==========================" << endl;
+	cout << endl;
 
 	vector<Territory *> attackingTerritories;
 	vector<Territory *> defendingTerritories;
@@ -571,44 +613,7 @@ void Player::issueOrder()
 	// 5. Finally, we can issue other types of orders based on the cards in hand.
 	if (!this->issueOrderStatus->at(static_cast<int>(IssuePhase::OtherPhase)))
 	{
-		if (this->hand->getNumCards() == 0)
-		{
-			cout << "No cards in hand to issue other types of orders." << endl;
-			this->issueOrderStatus->at(static_cast<int>(IssuePhase::OtherPhase)) = true;
-			return;
-		}
-		else
-		{
-			cout << *this->hand << endl;
-			cout << "Select a card to play by its index (or type -1 to skip/finish issuing card orders) >> ";
-			int cardIndex = -2;
-			cin >> cardIndex;
-			if (cin.fail())
-			{
-				cin.clear();										 // clear the fail state
-				cin.ignore(numeric_limits<streamsize>::max(), '\n'); // discard invalid input
-				cout << "Invalid input. Please enter a number." << endl;
-				return;
-			}
-			if (cardIndex == -1)
-			{
-				this->issueOrderStatus->at(static_cast<int>(IssuePhase::OtherPhase)) = true;
-				cin.ignore(numeric_limits<streamsize>::max(), '\n');
-				return; // skip issuing other orders
-			}
-			if (cardIndex < 0 || cardIndex >= this->hand->getNumCards())
-			{
-				cout << "Invalid card index. Please try again." << endl;
-				return;
-			}
-			// Play the selected card
-			SpCard cardToPlay = this->hand->getCardAt(cardIndex);
-			cardToPlay->play(*GameEngine::getCardDeck(), *this);
-			this->hand->remove(cardIndex); // Remove the card from hand after playing
-			// Add the card back to the deck
-			GameEngine::getCardDeck()->add(cardToPlay);
-			return;
-		}
+		this->cardOrder();
 	}
 	else
 	{
@@ -621,7 +626,7 @@ bool Player::hasAllTerritories()
 	// Idea: loop through the player's territories, and check if each territory is in the current game map's territories.
 	if (this->territories->size() != GameEngine::getGameMap()->getTerritories().size())
 		return false; // early return if the player has fewer territories than the total number of territories in the map
-	unordered_map<string, unique_ptr<Territory>> gameMapTerritories = GameEngine::getGameMap()->getTerritories();
+	const auto &gameMapTerritories = GameEngine::getGameMap()->getTerritories();
 	for (Territory *t : *this->territories)
 	{
 		if (gameMapTerritories.find(t->getName()) == gameMapTerritories.end())
