@@ -112,7 +112,8 @@ string GameEngine::getCurrentStateName() const {
 }
 
 void GameEngine::startupPhase() {
-    std::cout << "//Startup Phase//";
+    std::cout << "//Startup Phase//\n";
+	//choose input method:
     std::cout << "read from file (1) or input (2)?";
     int choice;
     std::cin >> choice;
@@ -126,10 +127,8 @@ void GameEngine::startupPhase() {
 		std::cout << "Enter filename: ";
 		std::string filename;
         std::getline(std::cin, filename);
-
+		//make processor adapter
         processor = std::make_unique<FileCommandProcessorAdapter>(filename);
-        
-        
     }
     else {
         processor = std::make_unique<CommandProcessor>();
@@ -138,16 +137,16 @@ void GameEngine::startupPhase() {
     Command* command;
     std::string cmnd;
     std::string arg;
-    
-  
+   
     while (true) {
         cmnd.clear();
         arg.clear();
        
         command = processor->getCommand();
+        //check if empty
         if (command->getCommandText().empty()) {
             std::cout << "No command entered." << std::endl;
-           
+			//if reading from file, an empty line means eof
             if (dynamic_cast<FileCommandProcessorAdapter*>(processor.get())) {
                 std::cout << "End of file reached. Exiting startup phase.\n";
                 break;
@@ -155,9 +154,8 @@ void GameEngine::startupPhase() {
             continue;
 		}
 
-		std::cout << command->getCommandText() << std::endl;
         std::string commandStr = command->getCommandText();
-        //parse commandStr to extract arg if present 
+        //parse commandStr to extract arg if present to seperate arg and command 
         if (commandStr.back() == '>') {
             size_t start = commandStr.find('<');
             size_t end = commandStr.find('>');
@@ -167,8 +165,7 @@ void GameEngine::startupPhase() {
         else {
             cmnd = commandStr;
         }
-		std::cout << "Command: " << cmnd << ", Argument: " << arg << std::endl;
-
+        //gamestart is equal to assigncountries from A1
         if (cmnd == "gamestart") {
 			cmnd = "assigncountries";
         }
@@ -185,6 +182,9 @@ void GameEngine::startupPhase() {
             }
             //load map and set map, change gamestate
             auto loader = std::make_unique<MapLoader>();
+            if (loader.get()->load(arg) == nullptr) {
+                continue;
+            }
             this->setGameMap(loader.get()->load(arg));
             this->executeCommand("loadmap");
         }
@@ -204,15 +204,24 @@ void GameEngine::startupPhase() {
                 cout << "No player specified." << endl;
                 continue;
             }
+			//check if playercount is maxed out
+            if (this->getPlayers().size() == 6) {
+                std::cout << "Maximum number of players (6) reached. Cannot add more players." << std::endl;
+                continue;
+            }
             //create and add a new player
             this->addPlayer(new Player(arg));
             //state change
             executeCommand("addplayer");
         }
         if (cmnd == "assigncountries") {
-
-
             int playerCount = this->getPlayers().size();
+            //check if playercount is > 2
+            if (playerCount < 2) {
+                std::cout << "Add at least 2 players" << std::endl;
+                continue;
+            }
+            
             int c = 0;
             //Goes through map's terretories and assigns them cyclically to players
             for (const auto& pair : this->getGameMap()->getTerritories()) {
@@ -220,7 +229,6 @@ void GameEngine::startupPhase() {
                 c++;
             }
             //determine randomly the order of play (shuffle player vector)
-
             int pNum = this->getPlayers().size();
             std::random_device rd;
             std::default_random_engine rng(rd());
@@ -420,9 +428,9 @@ void PlayersAddedState::processCommand(GameEngine& engine, const string& command
         cout << "Adding another player... (state unchanged)" << endl;
         return;
     } else if (command == "assigncountries") {
-        //this->mainGameLoop();
-        // (Minh) For assignment 2, we will modify this to trigger the main game loop.
+        
         engine.transitionTo(new AssignReinforcementState());
+        //this->mainGameLoop();
     } else {
         cout << "[Invalid] From 'players added' you may only enter: addplayer or assigncountries" << endl;
     }
