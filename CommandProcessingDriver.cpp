@@ -6,6 +6,15 @@
     It tests console input, file input, and command validation
     @param mode is either: "all", "console", "file"
 */
+
+// Helper function to extract the command word from full command string
+string extractCommandWord(const string& fullCommand) {
+    stringstream ss(fullCommand);
+    string cmd;
+    ss >> cmd;
+    return cmd;
+}
+
 void testCommandProcessor(const string& mode = "all") {
     cout << endl << " === Testing Command Processor System === " << endl;
 
@@ -24,7 +33,9 @@ void testCommandProcessor(const string& mode = "all") {
             if (consoleCP->validate(cmd->getCommandText(), engine)) {
                 cout << "Valid -> Executing..." << endl;
                 cmd->saveEffect("Valid -> executed successfully");
-                engine->executeCommand(cmd->getCommandText());
+
+                string commandWord = extractCommandWord(cmd->getCommandText());
+                engine->executeCommand(commandWord);
             } else {
                 cout << "Invalid for current state" << endl;
                 cmd->saveEffect("Invalid -> rejected");
@@ -74,7 +85,8 @@ void testCommandProcessor(const string& mode = "all") {
             if (fileCP->validate(cmd->getCommandText(), engine)) {
                 cout << "Valid -> Executing..." << endl;
                 cmd->saveEffect("Valid -> executed successfully");
-                engine->executeCommand(cmd->getCommandText());
+                string commandWord = extractCommandWord(cmd->getCommandText());
+                engine->executeCommand(commandWord);
             } else {
                 cout << "Invalid for current state" << endl;
                 cmd->saveEffect("Invalid -> rejected");
@@ -110,7 +122,8 @@ void testCommandProcessor(const string& mode = "all") {
         string testCommand1 = "validatemap";
         if (testCP->validate(testCommand1, engine)) {
             cout << "Valid" << endl;
-            engine->executeCommand(testCommand1);
+            string commandWord = extractCommandWord(testCommand1);
+            engine->executeCommand(commandWord);
         } else {
             cout << "Invalid (expected -> map not loaded)" << endl;
         }
@@ -120,7 +133,8 @@ void testCommandProcessor(const string& mode = "all") {
         string testCommand2 = "loadmap test.map";
         if (testCP->validate(testCommand2, engine)) {
             cout << "Valid" << endl;
-            engine->executeCommand(testCommand2);
+            string commandWord = extractCommandWord(testCommand2);
+            engine->executeCommand(commandWord);
         } else {
             cout << "Invalid" << endl;
         }
