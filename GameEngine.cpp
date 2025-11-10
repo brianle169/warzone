@@ -68,7 +68,7 @@ void GameEngine::transitionTo(GameState* newState) {
 }
 
 string GameEngine::stringToLog(){
-    return "New current state is " + currentState->getStateName();
+    return "New state: " + currentState->getStateName();
 } 
 
 /*

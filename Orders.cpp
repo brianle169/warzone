@@ -49,7 +49,7 @@ string Order::getPlayer() const {
 }
 
 string Order::stringToLog() {
-    return executionEffect;
+    return "Order Effect: " + executionEffect;
 }
 
 bool Order::status = true;
@@ -514,7 +514,7 @@ Order* OrdersList::getOrder(int index) const {
 
 string OrdersList::stringToLog(){
     if (lastModifiedOrder)
-            return "Order added: " + lastModifiedOrder->stringToLog();
+            return "Order added: " + lastModifiedOrder->getName();
     else
         return "No order added.";
 }

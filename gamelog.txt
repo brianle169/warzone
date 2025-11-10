@@ -6,7 +6,11 @@ New current state is issue orders
 New current state is execute orders
 New current state is win
 New current state is end
-Command saved: jjf
-Command saved: fef
-Command executed: jjf | Effect: Deployed 5 armies
-Command executed: fef | Effect: Advanced to territory X
+Command saved: validate
+Command saved: map
+Command executed: validate | Effect: Deployed 5 armies
+Command executed: map | Effect: Advanced to territory X
+Order added: Deploy
+Order added: Advance
+Order Effect: Successfully deployed 10 armies to North; North has now 15 troops
+Order Effect: Successfully conquered and advanced 5 troops from North to South; North has now 10 troops and South has now 0 troops
