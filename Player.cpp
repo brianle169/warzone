@@ -97,11 +97,13 @@ void Player::setTerritories(vector<Territory *> *terrs)
 	this->territories = terrs;
 }
 
-void Player::addTerritory(Territory* terr) {
+void Player::addTerritory(Territory *terr)
+{
 	this->getTerritories()->push_back(terr);
 }
 
-vector<Territory*>* Player::getTerritories() const {
+vector<Territory *> *Player::getTerritories() const
+{
 	return this->territories;
 }
 
@@ -638,16 +640,27 @@ bool Player::hasAllTerritories()
 	return true; // all territories are found
 }
 
-void Player::addNegotiatedPlayers(Player* p) {
+void Player::clearIssueOrderStatus()
+{
+	for (size_t i = 0; i < this->issueOrderStatus->size(); i++)
+	{
+		this->issueOrderStatus->at(i) = false;
+	}
+}
+
+void Player::addNegotiatedPlayers(Player *p)
+{
 	negotiatedPlayers.push_back(p);
 }
 
-bool Player::isNegotiatedWith(Player* p) const {
-    return std::find(negotiatedPlayers.begin(), negotiatedPlayers.end(), p) != negotiatedPlayers.end();
+bool Player::isNegotiatedWith(Player *p) const
+{
+	return std::find(negotiatedPlayers.begin(), negotiatedPlayers.end(), p) != negotiatedPlayers.end();
 }
 
-Player* Player::neutralPlayer = new Player("Neutral");
+Player *Player::neutralPlayer = new Player("Neutral");
 
-Player* Player::getNeutralPlayer() {
-    return neutralPlayer;
+Player *Player::getNeutralPlayer()
+{
+	return neutralPlayer;
 }

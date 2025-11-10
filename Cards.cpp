@@ -432,7 +432,7 @@ void AirliftCard::play(Deck &deck, Player &player)
     {
         cout << "Enter the number of armies to airlift >> ";
         cin >> numArmies;
-        if (cin.fail() || numArmies <= 0 || numArmies > fromTerritory->getArmies())
+        if (cin.fail())
         {
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');

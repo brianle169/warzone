@@ -69,7 +69,7 @@ GameEngine::~GameEngine()
 vector<Player *> GameEngine::players = vector<Player *>();
 // Map *GameEngine::gameMap;
 unique_ptr<Map> GameEngine::gameMap = nullptr;
-Deck *GameEngine::cardDeck;
+Deck *GameEngine::cardDeck = new Deck();
 
 // Static Getter/Setters
 vector<Player *> &GameEngine::getPlayers()
@@ -135,18 +135,18 @@ void GameEngine::addPlayer(Player *player)
     GameEngine::getPlayers().push_back(player);
 }
 
-Card *GameEngine::createCard(const int typeID)
+shared_ptr<Card> GameEngine::createCard(const int typeID)
 {
     switch (typeID)
     {
     case 0:
-        return new BombCard();
+        return make_shared<BombCard>();
     case 1:
-        return new BlockadeCard();
+        return make_shared<BlockadeCard>();
     case 2:
-        return new AirliftCard();
+        return make_shared<AirliftCard>();
     case 3:
-        return new DiplomacyCard();
+        return make_shared<DiplomacyCard>();
     default:
         return nullptr;
     }
@@ -272,8 +272,12 @@ void GameEngine::mainGameLoop()
         this->reinforcementPhase();                         // Trigger reinforcement phase
         this->transitionTo(new IssueOrderState());          // Transition to IssueOrderState
         this->issueOrdersPhase();                           // Trigger issue orders phase
-        this->transitionTo(new ExecuteOrderState());        // Transition to ExecuteOrderState
-        this->executeOrdersPhase();                         // Trigger execute orders phase
+        for (auto p : GameEngine::getPlayers())
+        {
+            p->clearIssueOrderStatus(); // Reset issue order status for the next round
+        }
+        this->transitionTo(new ExecuteOrderState()); // Transition to ExecuteOrderState
+        this->executeOrdersPhase();                  // Trigger execute orders phase
         // Check if there's only one player left (winner)
         if (this->currentState->getStateName() == "win")
         {
@@ -299,6 +303,7 @@ void GameEngine::startupPhase()
     std::cin >> choice;
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::unique_ptr<CommandProcessor> processor;
+
     if (choice != 1 && choice != 2)
     {
         std::cout << "select 1 or 2";
@@ -315,6 +320,15 @@ void GameEngine::startupPhase()
     else
     {
         processor = std::make_unique<CommandProcessor>();
+    }
+
+    for (int i = 0; i < 100; i++)
+    {
+        shared_ptr<Card> card = createCard(i % 4);
+        if (card)
+        {
+            GameEngine::getCardDeck()->add(card);
+        }
     }
 
     Command *command;
@@ -388,14 +402,6 @@ void GameEngine::startupPhase()
             if (GameEngine::getGameMap()->validate())
             {
                 this->executeCommand("validatemap");
-                for (int i = 0; i < 100; i++)
-                {
-                    Card *card = createCard(i % 4);
-                    if (card)
-                    {
-                        GameEngine::getCardDeck()->add(std::shared_ptr<Card>(card));
-                    }
-                }
             }
             else
             {
@@ -438,6 +444,14 @@ void GameEngine::startupPhase()
                 GameEngine::getPlayers()[c % playerCount]->addTerritory(pair.second.get());
                 c++;
             }
+
+            for (auto p : GameEngine::getPlayers())
+            {
+                for (auto terr : *(p->getTerritories()))
+                {
+                    terr->setPlayer(p);
+                }
+            }
             // determine randomly the order of play (shuffle player vector)
             int pNum = GameEngine::getPlayers().size();
             std::random_device rd;
@@ -463,16 +477,19 @@ void GameEngine::startupPhase()
 
 void GameEngine::reinforcementPhase()
 {
+    cout << "Checkpoint 1" << endl;
     // set all pools to 0, and then terr/3
     for (auto p : GameEngine::getPlayers())
     {
+        cout << "Checkpoint 2" << endl;
         int a = 0;
         a += static_cast<int>(p->getTerritories()->size()) / 3;
-        p->setReinforcementPool(a);
+        p->setReinforcementPool(p->getReinforcementPool() + a);
     }
     // loop each continent's territories to see if one player owns them all
     for (auto &pair : GameEngine::getGameMap()->getContinents())
     {
+        cout << "Checkpoint 3" << endl;
         auto p = pair.second.get()->getTerritories()[0]->getPlayer();
         int i = 1;
         auto terrs = pair.second.get()->getTerritories();
@@ -492,6 +509,7 @@ void GameEngine::reinforcementPhase()
     // ensure minimum 3 armies per player
     for (auto p : GameEngine::getPlayers())
     {
+        cout << "Checkpoint 4" << endl;
         if ((p->getReinforcementPool()) < 3)
         {
             p->setReinforcementPool(3);

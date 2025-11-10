@@ -48,7 +48,7 @@ public:
 
     // Setters
     static void addPlayer(Player *player);
-    static Card *createCard(const int typeID);
+    static shared_ptr<Card> createCard(const int typeID);
 
     std::string stringToLog() override;
 

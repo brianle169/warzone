@@ -252,6 +252,7 @@ void testMainGameLoop()
 void testStartupPhase()
 {
     GameEngine engine;
+    engine.Attach(std::make_shared<LogObserver>());
     engine.startupPhase();
 }
 
