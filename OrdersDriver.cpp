@@ -3,7 +3,7 @@
 #include "Player.h"
 #include "Cards.h"
 
-void testOrdersList() {
+void testOrderExecution() {
     // Initializing 2 players
     Player* player1 = new Player("Anas");
     Player* player2 = new Player("West");

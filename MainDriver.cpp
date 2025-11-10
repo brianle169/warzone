@@ -24,7 +24,7 @@ int main() {
     cout << endl << endl;
     cout << "==================== Testing Orders Driver ====================";
     cout << endl;
-    testOrdersList();
+    testOrderExecution();
     cout << endl << endl;
     cout << "==================== Testing Game Engine Driver ====================";
     cout << endl;
