@@ -90,7 +90,7 @@ public:
 	bool isNegotiatedWith(Player *p) const;
 	bool isDoneIssuingOrder();
 	bool hasAllTerritories();
-	void clearIssueOrderStatus();
+	void clearState();
 
 	static Player *getNeutralPlayer();
 	static Player *neutralPlayer;

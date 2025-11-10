@@ -640,12 +640,14 @@ bool Player::hasAllTerritories()
 	return true; // all territories are found
 }
 
-void Player::clearIssueOrderStatus()
+void Player::clearState()
 {
 	for (size_t i = 0; i < this->issueOrderStatus->size(); i++)
 	{
 		this->issueOrderStatus->at(i) = false;
 	}
+	this->attacking->clear();
+	this->defending->clear();
 }
 
 void Player::addNegotiatedPlayers(Player *p)

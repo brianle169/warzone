@@ -158,6 +158,23 @@ string GameEngine::stringToLog()
     return "New state: " + currentState->getStateName();
 }
 
+void GameEngine::clearGame()
+{
+    // Clear players
+    for (Player *player : GameEngine::getPlayers())
+    {
+        delete player;
+    }
+    GameEngine::getPlayers().clear();
+
+    // Clear map
+    GameEngine::gameMap.reset();
+
+    // Clear deck
+    delete GameEngine::cardDeck;
+    GameEngine::cardDeck = new Deck();
+}
+
 /*
     The following function execute a player command by delegating to the current state.
     Defensive null-guard helps avoid undefined behavior.
@@ -274,11 +291,12 @@ void GameEngine::mainGameLoop()
         this->issueOrdersPhase();                           // Trigger issue orders phase
         for (auto p : GameEngine::getPlayers())
         {
-            p->clearIssueOrderStatus(); // Reset issue order status for the next round
+            p->clearState(); // Reset issue order status for the next round
         }
-        this->transitionTo(new ExecuteOrderState()); // Transition to ExecuteOrderState
-        this->executeOrdersPhase();                  // Trigger execute orders phase
+        // this->transitionTo(new ExecuteOrderState()); // Transition to ExecuteOrderState
+        // this->executeOrdersPhase();                  // Trigger execute orders phase
         // Check if there's only one player left (winner)
+        this->transitionTo(new WinState());
         if (this->currentState->getStateName() == "win")
         {
             cout << "=== Main Game Loop Ended ===" << endl;
@@ -470,7 +488,18 @@ void GameEngine::startupPhase()
 
             // switch the game to the play phase
             this->executeCommand("assigncountries");
+        }
+        if (cmnd == "end")
+        {
+            GameEngine::clearGame();
+            this->executeCommand("end");
             break;
+        }
+        if (cmnd == "play")
+        {
+            GameEngine::clearGame();
+            this->executeCommand("play");
+            continue;
         }
     }
 }
@@ -872,6 +901,7 @@ void WinState::processCommand(GameEngine &engine, const string &command)
     if (command == "play")
     {
         engine.transitionTo(new StartState()); // Restart Game
+        engine.startupPhase();                 // Start new game
     }
     else if (command == "end")
     {

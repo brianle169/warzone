@@ -200,7 +200,15 @@ void Advance::execute()
 
         if (player != targetTerritory->getPlayer())
         { // the player successfully conquered the territory
-            if (numArmies * 0.6 > targetTerritory->getArmies() * 0.7)
+            if (targetTerritory->getArmies() == 0)
+            {
+                sourceTerritory->setArmies(sourceTerritory->getArmies() - numArmies);
+                targetTerritory->setArmies(numArmies);
+                targetTerritory->setPlayer(player);
+                executed = true;
+                setExecutionEffect("Successfully advanced " + to_string(numArmies) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName() + "; " + sourceTerritory->getName() + " has now " + to_string(sourceTerritory->getArmies()) + " troops and " + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
+            }
+            else if (numArmies * 0.6 > targetTerritory->getArmies() * 0.7)
             {
                 int result = numArmies * 0.6 - targetTerritory->getArmies() * 0.7;
                 sourceTerritory->setArmies(sourceTerritory->getArmies() - numArmies);

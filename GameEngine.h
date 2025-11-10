@@ -51,6 +51,7 @@ public:
     static shared_ptr<Card> createCard(const int typeID);
 
     std::string stringToLog() override;
+    static void clearGame();
 
     /* Assignment 2 implementation from here */
     // Startup
