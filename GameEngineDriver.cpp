@@ -27,7 +27,9 @@ void testStartupPhase() {
 }
 
 int main() {
-    testGameStates();
+    //testGameStates();
     testStartupPhase();
+    std::cout << "Press Enter to exit...";
+    std::cin.get();
     return 0;
 }

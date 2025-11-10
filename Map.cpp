@@ -235,7 +235,7 @@ bool Map::continentsConnected() {//BFS search in strictly each continent's terre
 		while (!q.empty()) {
 
 			for (Territory* edge : q.front()->getEdges()) {
-				if (edge && edge->getContinent() && edge->getContinent() == c.second.get() 
+				if (edge && edge->getContinent() && edge->getContinent() == c.second.get()
 					&& visited.insert(edge).second) {
 					//checks if edge is in the continent, and if they each exist
 					q.push(edge);
@@ -247,8 +247,9 @@ bool Map::continentsConnected() {//BFS search in strictly each continent's terre
 			return false;
 		}
 	}
+	return true;
+}
 
-	
 
 bool Map::territoryExclusive() {//adds every t in every c to a set
 	std::set<Territory*> visited;
@@ -289,6 +290,7 @@ bool Map::validate() {
 
 	return true;
 }
+
 
 //Map loader (only one function)
 MapLoader::MapLoader(){}

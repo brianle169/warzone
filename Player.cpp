@@ -74,7 +74,7 @@ void Player::setTerritories(vector<Territory*>* terrs) {
 }
 
 void Player::addTerritory(Territory* terr) {
-	this->getTerritories->push_back(terr);
+	this->getTerritories()->push_back(terr);
 }
 
 vector<Territory*>* Player::getTerritories() const {
