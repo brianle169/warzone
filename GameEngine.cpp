@@ -2,10 +2,14 @@
 #include <algorithm>
 
 #include "GameEngine.h"
-#include "Map.h"
 #include "Player.h"
 #include "Cards.h"
 #include "Orders.h"
+#include "CommandProcessing.h"
+#include "Map.h"
+#include <algorithm>
+#include <random>
+#include <limits>
 
 using namespace std;
 /*
@@ -121,7 +125,29 @@ void GameEngine::transitionTo(GameState *newState)
     delete currentState;
     // Take ownership of the new state
     currentState = newState;
+    Notify(this);
 }
+//Getters
+Map* GameEngine::getGameMap(){
+	return this->gameMap.get();
+}
+vector<Player*> GameEngine::getPlayers(){
+	return this->players;
+}
+//Setters
+void GameEngine::setGameMap(unique_ptr<Map> map){
+    this->gameMap = std::move(map);
+}
+void GameEngine::addPlayer(Player* player){
+	this->players.push_back(player);
+}
+
+
+
+// Create string that will be sent to logger
+string GameEngine::stringToLog(){
+    return "New state: " + currentState->getStateName();
+} 
 
 /*
     The following function execute a player command by delegating to the current state.
@@ -253,6 +279,174 @@ void GameEngine::mainGameLoop()
             break; // Exit the main game loop
         }
     }
+void GameEngine::startupPhase() {
+    std::cout << "//Startup Phase//\n";
+	//choose input method:
+    std::cout << "read from file (1) or input (2)?";
+    int choice;
+    std::cin >> choice;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::unique_ptr<CommandProcessor> processor;
+    if (choice != 1 && choice != 2){
+        std::cout << "select 1 or 2";
+        return;
+    }
+    if (choice == 1) {
+		std::cout << "Enter filename: ";
+		std::string filename;
+        std::getline(std::cin, filename);
+		//make processor adapter
+        processor = std::make_unique<FileCommandProcessorAdapter>(filename);
+    }
+    else {
+        processor = std::make_unique<CommandProcessor>();
+    }
+
+    Command* command;
+    std::string cmnd;
+    std::string arg;
+   
+    while (true) {
+        cmnd.clear();
+        arg.clear();
+       
+        command = processor->getCommand();
+        //check if empty
+        if (command->getCommandText().empty()) {
+            std::cout << "No command entered." << std::endl;
+			//if reading from file, an empty line means eof
+            if (dynamic_cast<FileCommandProcessorAdapter*>(processor.get())) {
+                std::cout << "End of file reached. Exiting startup phase.\n";
+                break;
+            }
+            continue;
+		}
+
+        std::string commandStr = command->getCommandText();
+        //parse commandStr to extract arg if present to seperate arg and command 
+        if (commandStr.back() == '>') {
+            size_t start = commandStr.find('<');
+            size_t end = commandStr.find('>');
+            cmnd = commandStr.substr(0, start);
+            arg = commandStr.substr(start + 1, end - start - 1);
+        }
+        else {
+            cmnd = commandStr;
+        }
+        //gamestart is equal to assigncountries from A1
+        if (cmnd == "gamestart") {
+			cmnd = "assigncountries";
+        }
+        //verify correct gamestate for command 
+        if (!processor->validate(cmnd, this)) {
+            cout << "Invalid command for current state: " << this->getCurrentStateName() << endl;
+            continue;
+        }
+        //loadmap command
+        if (cmnd == "loadmap") {
+            if (arg.empty()) {
+                cout << "No map file specified." << endl;
+                continue;
+            }
+            //load map and set map, change gamestate
+            auto loader = std::make_unique<MapLoader>();
+            if (loader.get()->load(arg) == nullptr) {
+                continue;
+            }
+            this->setGameMap(loader.get()->load(arg));
+            this->executeCommand("loadmap");
+        }
+        //validate map command
+        if (cmnd == "validatemap") {
+            //change state if map is validated
+            if (this->gameMap.get()->validate()) {
+                this->executeCommand("validatemap");
+            }
+            else {
+				std::cout << "Map validation failed. Please load a valid map." << std::endl;
+            }
+        }
+        //addplayer command
+        if (cmnd == "addplayer") {
+            if (arg.empty()) {
+                cout << "No player specified." << endl;
+                continue;
+            }
+			//check if playercount is maxed out
+            if (this->getPlayers().size() == 6) {
+                std::cout << "Maximum number of players (6) reached. Cannot add more players." << std::endl;
+                continue;
+            }
+            //create and add a new player
+            this->addPlayer(new Player(arg));
+            //state change
+            executeCommand("addplayer");
+        }
+        if (cmnd == "assigncountries") {
+            int playerCount = this->getPlayers().size();
+            //check if playercount is > 2
+            if (playerCount < 2) {
+                std::cout << "Add at least 2 players" << std::endl;
+                continue;
+            }
+            
+            int c = 0;
+            //Goes through map's terretories and assigns them cyclically to players
+            for (const auto& pair : this->getGameMap()->getTerritories()) {
+                this->getPlayers()[c % playerCount]->addTerritory(pair.second.get());
+                c++;
+            }
+            //determine randomly the order of play (shuffle player vector)
+            int pNum = this->getPlayers().size();
+            std::random_device rd;
+            std::default_random_engine rng(rd());
+            std::shuffle(this->getPlayers().begin(), this->getPlayers().end(), rng);
+
+            for (auto p : this->getPlayers()) {
+                //give 50 initial army units to players
+                p->setReinforcementPool(50);
+                std::cout << "Drawing for " << *p;
+                //let each player draw 2 initial cards from the deck
+                p->getHand()->add(this->cardDeck->draw());
+                p->getHand()->add(this->cardDeck->draw());
+            }
+
+            //switch the game to the play phase
+            this->executeCommand("assigncountries");
+			break;
+        }
+    }
+}
+
+void GameEngine::reinforcementPhase() {
+    //set all pools to 0, and then terr/3
+    for (auto p : this->players) {
+        int a = 0;
+        a += static_cast<int>(p->getTerritories()->size())/ 3;
+        p->setReinforcementPool(a);
+    }
+	//loop each continent's territories to see if one player owns them all
+    for (auto& pair : this->getGameMap()->getContinents()) {
+        auto p = pair.second.get()->getTerritories()[0]->getPlayer();
+        int i = 1;
+        auto terrs = pair.second.get()->getTerritories();
+        for (auto* terr : terrs) {
+            if (terr->getPlayer()->getName() != p->getName()) {
+                break;
+            }
+			i++; 
+            if (i == terrs.size()) {
+            p->setReinforcementPool(*(p->getReinforcementPool()) + pair.second.get()->getBonus());
+            }
+        }
+    }
+	//ensure minimum 3 armies per player
+    for (auto p : this->players) {
+		if (*(p->getReinforcementPool()) < 3) {
+			p->setReinforcementPool(3);
+		}
+		std::cout << p << " has " << *(p->getReinforcementPool()) << " armies in reinforcement pool." << std::endl;
+    }
 }
 
 /*
@@ -290,10 +484,9 @@ string StartState::getStateName() const
 
 // The only valid command from "start" is "loadmap" to transition to MapLoadedState
 // The other commands are rejected whitout changing state.
-void StartState::processCommand(GameEngine &engine, const string &command)
-{
-    if (command == "loadmap")
-    {
+void StartState::processCommand(GameEngine& engine, const string& command) {
+    if (command == "loadmap") {
+		std::cout << "Loading map..." << std::endl;
         engine.transitionTo(new MapLoadedState());
     }
     else
@@ -337,9 +530,8 @@ void MapLoadedState::processCommand(GameEngine &engine, const string &command)
     {
         cout << "Reloading... (state unchanged)" << endl;
         return;
-    }
-    else if (command == "validatemap")
-    {
+    } else if (command == "validatemap") {
+		cout << "Validating map..." << endl;
         engine.transitionTo(new MapValidatedState());
     }
     else
@@ -423,14 +615,11 @@ void PlayersAddedState::processCommand(GameEngine &engine, const string &command
     {
         cout << "Adding another player... (state unchanged)" << endl;
         return;
-    }
-    else if (command == "assigncountries") // this will be "gamestart"
-    {
-        // (Minh) For assignment 2, we will modify this to trigger the main game loop.
+    } else if (command == "assigncountries") {
+        
         engine.transitionTo(new AssignReinforcementState());
-    }
-    else
-    {
+        // this->mainGameLoop();
+    } else {
         cout << "[Invalid] From 'players added' you may only enter: addplayer or assigncountries" << endl;
     }
 }

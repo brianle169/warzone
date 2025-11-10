@@ -249,14 +249,16 @@ void testMainGameLoop()
     delete player1;
     delete player2;
 }
+void testStartupPhase() {
+    GameEngine engine;
+    engine.startupPhase();
+}
 
-int main()
-{
-    // Uncomment the following line to test the game states FSM
-    // testGameStates();
-
-    // Uncomment the following line to test the main game loop
+int main() {
+    //testGameStates();
+    testStartupPhase();
     testMainGameLoop();
-
+    std::cout << "Press Enter to exit...";
+    std::cin.get();
     return 0;
 }

@@ -235,7 +235,7 @@ bool Map::continentsConnected() {//BFS search in strictly each continent's terre
 		while (!q.empty()) {
 
 			for (Territory* edge : q.front()->getEdges()) {
-				if (edge && edge->getContinent() && edge->getContinent() == c.second.get() 
+				if (edge && edge->getContinent() && edge->getContinent() == c.second.get()
 					&& visited.insert(edge).second) {
 					//checks if edge is in the continent, and if they each exist
 					q.push(edge);
@@ -249,6 +249,7 @@ bool Map::continentsConnected() {//BFS search in strictly each continent's terre
 	}
 	return true;
 }
+
 
 bool Map::territoryExclusive() {//adds every t in every c to a set
 	std::set<Territory*> visited;
@@ -267,28 +268,30 @@ bool Map::territoryExclusive() {//adds every t in every c to a set
 	return true;
 }
 //calls all three validation functions
-bool Map::validate(const std::string& name) {
+bool Map::validate() {
 	if (!this->isConnected()) {
-		std::cout << "Map " << name << " is not connected\n";
+		std::cout << "Map is not connected\n";
 		return false;
 	}
-	std::cout << "Map " << name << " is connected\n";
+	std::cout << "Map is connected\n";
 
 	if (!this->continentsConnected()) {
-		std::cout << "Map " << name << "'s continents not are not connected\n";
+		std::cout << "Map's continents not are not connected\n";
 		return false;
 	}
-	std::cout << "Map " << name << "'s continents are connected\n";
+	std::cout << "Map's continents are connected\n";
 
 
 	if (!this->territoryExclusive()) {
-		std::cout << "Map " << name << "'s territories are not exclusive\n";
+		std::cout << "Map's territories are not exclusive\n";
 		return false;
 	}
-	std::cout << "Map " << name << "'s territories are exclusive\n";
+	std::cout << "Map's territories are exclusive\n";
 
 	return true;
 }
+
+
 //Map loader (only one function)
 MapLoader::MapLoader(){}
 std::unique_ptr<Map> MapLoader::load(const std::string& filename) {
@@ -349,11 +352,11 @@ std::unique_ptr<Map> MapLoader::load(const std::string& filename) {
 		continue;
 	}
 	for (std::vector<std::string> line : territoryLines) { //create territories from parsed lines
-		//army amount is random from 2-7
+		//army amount is 0
 		if (!map->getContinent(line[1])) {
 			return nullptr;
 		}
-		map->addTerritory(line[0], map->getContinent(line[1]), rand() % 7 + 2);
+		map->addTerritory(line[0], map->getContinent(line[1]), 0);
 	}
 	for (std::vector<std::string> line : territoryLines) {//create territory edges 
 		for (int i = 2; i < line.size(); i++) {

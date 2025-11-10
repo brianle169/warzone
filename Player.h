@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <unordered_map>
 #include <memory>
 #include <array>
 #include <unordered_map>
@@ -59,8 +60,9 @@ public:
 	void issueOrder();
 
 	// Getters setters
-	void setTerritories(vector<Territory *> *terrs); // this will be used to assign territories to the player at the start of the game
-	vector<Territory *> *getTerritories() const;
+	void setTerritories(vector<Territory*>* terrs); // this will be used to assign territories to the player at the start of the game
+	void addTerritory(Territory* terr);
+	vector<Territory*>* getTerritories() const;
 
 	void setHand(Hand *h);
 	Hand *getHand() const;
@@ -78,15 +80,20 @@ public:
 	vector<Territory *> *getAttacking() const { return this->attacking; }
 	vector<Territory *> *getDefending() const { return this->defending; }
 
-	void displayTerritories(const std::vector<Territory *> &territories);
-	void displayOrdersList(const OrdersList *ordersList);
-	void displayHand(const Hand *hand);
-
-	unordered_map<string, Territory *> getAttackableTerritories();
+	void displayTerritories(const std::vector<Territory*>& territories);
+	void displayOrdersList(const OrdersList* ordersList);
+	void displayHand(const Hand* hand);
+  unordered_map<string, Territory *> getAttackableTerritories();
 	unordered_map<string, Territory *> getDefendableTerritories();
-
-	bool isDoneIssuingOrder();
+	std::vector<Player*> negotiatedPlayers;
+	void addNegotiatedPlayers(Player* p);
+	bool isNegotiatedWith(Player* p) const;
+  bool isDoneIssuingOrder();
 	bool hasAllTerritories();
+
+	static Player* getNeutralPlayer();
+	static Player* neutralPlayer;
+
 
 private:
 	// Attributes

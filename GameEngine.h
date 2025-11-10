@@ -7,6 +7,7 @@
 #include "Player.h"
 #include "Map.h"
 #include "Cards.h"
+#include "LoggingObserver.h"
 
 using namespace std;
 
@@ -14,59 +15,59 @@ class GameState;
 
 // ==== Game Engine class ====
 
-class GameEngine
-{
+class GameEngine: public Subject, public ILoggable {
     // Grant GameState and its children access to GameEngine's private members
     friend class GameState;
 
-public:
-    static vector<Player *> players;
-    static Map *gameMap;
-    static Deck *cardDeck;
-    // Default Constructor
-    GameEngine();
-    // Copy Constructor
-    GameEngine(const GameEngine &other);
-    // Assignment Operator
-    GameEngine &operator=(const GameEngine &other);
-    // Stream Insertion Operator
-    friend ostream &operator<<(ostream &os, const GameEngine &engine);
-    // Destructor
-    ~GameEngine();
-    // User commands passing
-    void executeCommand(const string &command);
-    // Current state name getter
-    string getCurrentStateName() const;
-    // State transition
-    void transitionTo(GameState *newState);
-    // Getter/setters for players, gameMap and cardDeck
-    static vector<Player *> &getPlayers();
-    static void setPlayers(const vector<Player *> &players);
-    static Map *getGameMap();
-    static void setGameMap(Map *map);
-    static Deck *getCardDeck();
-    static void setCardDeck(Deck *deck);
-    static void removePlayer(Player *player);
-    void mainGameLoop();
+    public:
+        // Default Constructor
+        GameEngine();
+        // Copy Constructor 
+        GameEngine(const GameEngine& other);
+        // Assignment Operator
+        GameEngine& operator=(const GameEngine& other);
+        // Stream Insertion Operator
+        friend ostream& operator<<(ostream& os, const GameEngine& engine);
+        // Destructor
+        ~GameEngine();
+        // User commands passing
+        void executeCommand(const string& command);
+        // Current state name getter
+        string getCurrentStateName() const;
+        // State transition
+        void transitionTo(GameState* newState);
 
-    /* Assignment 2 implementation from here */
-    // Move back to private after testing
-    void reinforcementPhase();
-    void issueOrdersPhase();
-    void executeOrdersPhase();
+        static vector<Player *> &getPlayers();
+        static void setPlayers(const vector<Player *> &players);
+        static Map *getGameMap();
+        static void setGameMap(unique_ptr<Map> map);
+        static Deck *getCardDeck();
+        static void setCardDeck(Deck *deck);
+        static void removePlayer(Player *player);
 
-    // Main game loop method (Part 3)
+        //Setters
+		    void addPlayer(Player* player);
 
-private:
-    GameState *currentState;
-    string userCommand;
-    // Game Engine should have attributes like: list of players, map, and the deck of cards.
-    // The main game loop method. This method will be invoked after we added players.
-    // The flow of the main game loop is as follows:
-    // 1. Reinforcement Phase: Assign extra armies to each player based on their territories and continents owned (to reinforcement pool)
-    // 2. Issue Orders Phase: Each player issues orders in round-robin fashion until all players have finished issuing orders
-    // 3. Execute Orders Phase: Each player executes orders in round-robin fashion until all orders from all players have been executed
-    //    - Deploy orders are executed first in each round
+        std::string stringToLog() override;
+
+
+        /* Assignment 2 implementation from here */
+        //Startup
+        void startupPhase();
+        // Main game loop method (Part 3)
+        void reinforcementPhase();
+        void issueOrdersPhase();
+        void executeOrdersPhase();
+        void mainGameLoop();
+
+
+    private:
+        GameState* currentState;
+        string userCommand;
+        // Game Engine should have attributes like: list of players, map, and the deck of cards.
+        static vector<Player*> players;
+        static unique_ptr<Map> gameMap;
+        static Deck* cardDeck;
 };
 
 // ==== GameState Base Class ====

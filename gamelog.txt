@@ -1,0 +1,16 @@
+New state: map loaded
+New state: map validated
+New state: players added
+New state: assign reinforcement
+New state: issue orders
+New state: execute orders
+New state: win
+New state: end
+Command saved: ggg
+Command saved: ddd
+Command executed: ggg | Effect: Deployed 5 armies
+Command executed: ddd | Effect: Advanced to territory X
+Order added: Deploy
+Order added: Advance
+Order Effect: Successfully deployed 10 armies to North; North has now 15 troops
+Order Effect: Successfully conquered and advanced 5 troops from North to South; North has now 10 troops and South has now 0 troops
