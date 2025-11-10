@@ -84,13 +84,9 @@ public:
 
 	unordered_map<string, Territory *> getAttackableTerritories();
 	unordered_map<string, Territory *> getDefendableTerritories();
+
 	bool isDoneIssuingOrder();
 	bool hasAllTerritories();
-
-	// Helper methods to get attackable and defendable territories (move back to private after testing)
-	Deploy *deploy(vector<Territory *> &defendingTerritories);
-	Advance *advance(vector<Territory *> &attackingTerritories, vector<Territory *> &defendingTerritories);
-	void cardOrder();
 
 private:
 	// Attributes
@@ -102,6 +98,10 @@ private:
 	vector<Territory *> *defending;	  // Collection of pointers to territories the player is defending
 	int *reinforcementPool;			  // Number of armies available to the player for deployment
 	array<bool, 4> *issueOrderStatus; // Status of issued orders
+	// Helper methods to get attackable and defendable territories (move back to private after testing)
+	Deploy *deploy(vector<Territory *> &defendingTerritories);
+	Advance *advance(vector<Territory *> &attackingTerritories, vector<Territory *> &defendingTerritories);
+	void cardOrder();
 };
 
 void testPlayers();
