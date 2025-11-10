@@ -48,6 +48,7 @@ string Order::getPlayer() const {
     return player ? player->getName() : std::string("<null>");
 }
 
+// Create string that will be sent to logger
 string Order::stringToLog() {
     return "Order Effect: " + executionEffect;
 }
@@ -512,6 +513,7 @@ Order* OrdersList::getOrder(int index) const {
     return nullptr;
 }
 
+// Create string that will be sent to logger
 string OrdersList::stringToLog(){
     if (lastModifiedOrder)
             return "Order added: " + lastModifiedOrder->getName();

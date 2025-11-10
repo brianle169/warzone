@@ -73,11 +73,10 @@ class CommandProcessor : public Subject, public ILoggable {
 
 
 // The following class reads commands line-by-line from a text file
-class FileLineReader : public Subject, public ILoggable {
+class FileLineReader {
     private: 
         string* filename;       // Name of the file to read
         ifstream* fileStream;   // File input stream
-        string* lastLineRead;    // Stores the most recently read line 
     public:
         // Default Constructor
         FileLineReader();
@@ -93,8 +92,6 @@ class FileLineReader : public Subject, public ILoggable {
         friend ostream& operator<<(ostream& os, const FileLineReader& reader);
         // Read next line from file
         string readLineFromFile();
-        string stringToLog() override;
-
 };
 
 // The follwing is the Adapter class that reads commands from file instead of console

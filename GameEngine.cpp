@@ -67,6 +67,7 @@ void GameEngine::transitionTo(GameState* newState) {
     Notify(this);
 }
 
+// Create string that will be sent to logger
 string GameEngine::stringToLog(){
     return "New state: " + currentState->getStateName();
 } 

@@ -1,15 +1,15 @@
-New current state is map loaded
-New current state is map validated
-New current state is players added
-New current state is assign reinforcement
-New current state is issue orders
-New current state is execute orders
-New current state is win
-New current state is end
-Command saved: validate
-Command saved: map
-Command executed: validate | Effect: Deployed 5 armies
-Command executed: map | Effect: Advanced to territory X
+New state: map loaded
+New state: map validated
+New state: players added
+New state: assign reinforcement
+New state: issue orders
+New state: execute orders
+New state: win
+New state: end
+Command saved: ggg
+Command saved: ddd
+Command executed: ggg | Effect: Deployed 5 armies
+Command executed: ddd | Effect: Advanced to territory X
 Order added: Deploy
 Order added: Advance
 Order Effect: Successfully deployed 10 armies to North; North has now 15 troops
