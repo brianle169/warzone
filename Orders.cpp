@@ -171,8 +171,6 @@ void Advance::execute() {
                 //add a card to the player since conquered
                 if(Order::status == true) {
                     player->getHand()->add(SpCard(new(ReinforcementCard)));//(3)
-                    cout << *player->getHand(); //checking if it added the card
-                    cout << "" << endl ;
                     //a player cannot get another card, so we need a block function so no other card can be assigned to the player
                     Order::status = false;
                 }
