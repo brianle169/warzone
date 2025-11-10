@@ -88,8 +88,9 @@ void GameEngine::addPlayer(Player* player){
 
 
 
+// Create string that will be sent to logger
 string GameEngine::stringToLog(){
-    return "New current state is " + currentState->getStateName();
+    return "New state: " + currentState->getStateName();
 } 
 
 /*

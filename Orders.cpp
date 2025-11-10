@@ -48,8 +48,9 @@ string Order::getPlayer() const {
     return player ? player->getName() : std::string("<null>");
 }
 
+// Create string that will be sent to logger
 string Order::stringToLog() {
-    return executionEffect;
+    return "Order Effect: " + executionEffect;
 }
 
 bool Order::status = true;
@@ -96,9 +97,8 @@ void Deploy::execute() {
         targetTerritory->setArmies(targetTerritory->getArmies()+numArmies);
         executed = true;
         setExecutionEffect("Successfully deployed " + to_string(numArmies) + " armies to " + targetTerritory->getName() + "; " + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
+        Notify(this);
     }
-    Notify(this);
-    // What abt if validate fails?
 }
 
 // Clone method
@@ -183,8 +183,8 @@ void Advance::execute() {
 
             }
         }
+        Notify(this);
     }
-    Notify(this);
 }
 
 // Clone method
@@ -234,9 +234,8 @@ void Bomb::execute() {
         targetTerritory->setArmies(targetTerritory->getArmies()/2);
         executed = true;
         setExecutionEffect("Successfully bombed " + targetTerritory->getName());
+        Notify(this);
     }
-    Notify(this);
-    // What if it fails?
 }
 
 // Clone method
@@ -290,9 +289,8 @@ void Blockade::execute() {
 
         executed = true;
         setExecutionEffect("Successfully blockade " + targetTerritory->getName() + ". It now belongs to the Neutral player " + Player::neutralPlayer->getName());
+        Notify(this);
     }
-    Notify(this);
-    // fail?
 }
 
 // Clone method
@@ -349,9 +347,8 @@ void Airlift::execute() {
         targetTerritory->setArmies(targetTerritory->getArmies()+numArmy);
         executed = true;
         setExecutionEffect("Successfully airlift " + to_string(numArmy) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName());
+        Notify(this);
     }
-    Notify(this);
-    //fail?
 }
 
 // Clone method
@@ -406,9 +403,8 @@ void Negotiate::execute() {
         targetPlayer->addNegotiatedPlayers(player);
         executed = true;
         setExecutionEffect("Successfully negotiate with " + targetPlayer->getName() + ". You cannot call the advance order for the next round");
+        Notify(this);
     }
-    Notify(this);
-    //f?
 }
 
 // Clone method
@@ -515,9 +511,10 @@ Order* OrdersList::getOrder(int index) const {
     return nullptr;
 }
 
+// Create string that will be sent to logger
 string OrdersList::stringToLog(){
     if (lastModifiedOrder)
-            return "Order added: " + lastModifiedOrder->stringToLog();
+            return "Order added: " + lastModifiedOrder->getName();
     else
         return "No order added.";
 }
