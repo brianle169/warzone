@@ -62,6 +62,7 @@ public:
     // Prints the ReinforcementCard name
     virtual void print(ostream &os) const override;
     std::string getName() const override;
+    // void play(Deck &deck, Player &player) override;
 };
 
 // A child of Card that can be played by the player

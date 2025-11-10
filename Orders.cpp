@@ -2,6 +2,7 @@
 #include "Map.h"
 #include "Player.h"
 #include "Cards.h"
+#include "GameEngine.h"
 #include <iostream>
 #include <algorithm>
 using namespace std;
@@ -60,13 +61,14 @@ string Order::getPlayer() const
 }
 
 // Create string that will be sent to logger
-string Order::stringToLog() {
+string Order::stringToLog()
+{
     return "Order Effect: " + executionEffect;
 }
 
 bool Order::status = true;
 
-//DEPLOY CLASS DEFINITON---------------------------------------------------
+// DEPLOY CLASS DEFINITON---------------------------------------------------
 
 // Constructor for Deploy order
 Deploy::Deploy(Player *p, Territory *targetT, int numA)
@@ -177,8 +179,9 @@ ostream &operator<<(ostream &os, const Advance &a)
 }
 
 // Checks if the move is valid
-bool Advance::validate() {
-    return player == sourceTerritory->getPlayer() && sourceTerritory->getArmies() > numArmies && numArmies > 0 && targetTerritory->isEdge(sourceTerritory) && player->isNegotiatedWith(targetTerritory->getPlayer()) == false;//negotiatedWith return true, then advance order is not valid
+bool Advance::validate()
+{
+    return player == sourceTerritory->getPlayer() && sourceTerritory->getArmies() > numArmies && numArmies > 0 && targetTerritory->isEdge(sourceTerritory) && player->isNegotiatedWith(targetTerritory->getPlayer()) == false; // negotiatedWith return true, then advance order is not valid
 }
 
 // Executes troop movement and combat logic
@@ -204,16 +207,20 @@ void Advance::execute()
                 targetTerritory->setArmies(result);
                 targetTerritory->setPlayer(player);
                 executed = true;
-                setExecutionEffect("Successfully conquered and advanced " + to_string(numArmies) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName() + "; "+ sourceTerritory->getName() + " has now " + to_string(sourceTerritory->getArmies()) + " troops and "  + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
-                //add a card to the player since conquered
-                if(Order::status == true) {
-                    player->getHand()->add(SpCard(new(ReinforcementCard)));//(3)
-                    //a player cannot get another card, so we need a block function so no other card can be assigned to the player
+                setExecutionEffect("Successfully conquered and advanced " + to_string(numArmies) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName() + "; " + sourceTerritory->getName() + " has now " + to_string(sourceTerritory->getArmies()) + " troops and " + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
+                // add a card to the player since conquered
+                if (Order::status == true)
+                {
+                    // player->getHand()->add(SpCard(new(ReinforcementCard)));//(3)
+                    player->getHand()->add(GameEngine::getCardDeck()->draw());
+                    // a player cannot get another card, so we need a block function so no other card can be assigned to the player
                     Order::status = false;
                 }
-            } else { //the player successfully defended his own territory
-                int result = targetTerritory->getArmies()*0.7 - numArmies*0.6;
-                sourceTerritory->setArmies(sourceTerritory->getArmies()-numArmies);
+            }
+            else
+            { // the player successfully defended his own territory
+                int result = targetTerritory->getArmies() * 0.7 - numArmies * 0.6;
+                sourceTerritory->setArmies(sourceTerritory->getArmies() - numArmies);
                 targetTerritory->setArmies(result);
                 executed = true;
                 setExecutionEffect("Unsuccessfully advanced, you lost " + to_string(numArmies) + " troops; " + sourceTerritory->getName() + " has now " + to_string(sourceTerritory->getArmies()) + " troops and " + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
@@ -272,7 +279,8 @@ ostream &operator<<(ostream &os, const Bomb &b)
 }
 
 // Validate bombing conditions
-bool Bomb::validate() {
+bool Bomb::validate()
+{
     return player != targetTerritory->getPlayer() && targetTerritory->isEdge(sourceTerritory);
 }
 
@@ -338,14 +346,17 @@ ostream &operator<<(ostream &os, const Blockade &b)
 }
 
 // Validate blockade conditions
-bool Blockade::validate() {
+bool Blockade::validate()
+{
     return player == targetTerritory->getPlayer();
 }
 
-void Blockade::execute() {
-    if (validate()) {
-        targetTerritory->setArmies(targetTerritory->getArmies()*3);
-        //make it neutral territory ; change has to be made on part 3 in main game loop
+void Blockade::execute()
+{
+    if (validate())
+    {
+        targetTerritory->setArmies(targetTerritory->getArmies() * 3);
+        // make it neutral territory ; change has to be made on part 3 in main game loop
         targetTerritory->setPlayer(Player::getNeutralPlayer());
 
         executed = true;
@@ -409,14 +420,17 @@ ostream &operator<<(ostream &os, const Airlift &a)
 }
 
 // Validate airlift conditions
-bool Airlift::validate() {
+bool Airlift::validate()
+{
     return player == targetTerritory->getPlayer() && sourceTerritory->getArmies() > numArmy && numArmy > 0;
 }
 
-void Airlift::execute() {
-    if (validate()) {
-        sourceTerritory->setArmies(sourceTerritory->getArmies()-numArmy);
-        targetTerritory->setArmies(targetTerritory->getArmies()+numArmy);
+void Airlift::execute()
+{
+    if (validate())
+    {
+        sourceTerritory->setArmies(sourceTerritory->getArmies() - numArmy);
+        targetTerritory->setArmies(targetTerritory->getArmies() + numArmy);
         executed = true;
         setExecutionEffect("Successfully airlift " + to_string(numArmy) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName());
         Notify(this);
@@ -475,13 +489,16 @@ ostream &operator<<(ostream &os, const Negotiate &n)
 }
 
 // Validate negotiation
-bool Negotiate::validate() {
+bool Negotiate::validate()
+{
     return player != targetPlayer;
 }
 
 // Order execution method
-void Negotiate::execute() {
-    if (validate()) {
+void Negotiate::execute()
+{
+    if (validate())
+    {
         player->addNegotiatedPlayers(targetPlayer);
         targetPlayer->addNegotiatedPlayers(player);
         executed = true;
@@ -509,15 +526,18 @@ std::string Negotiate::getName() const
 // ORDERSLIST CLASS DEFINITION---------------------------------------------------
 
 // Copy constructor (deep copy using clone)
-OrdersList::OrdersList(const OrdersList& other) {
+OrdersList::OrdersList(const OrdersList &other)
+{
     lastModifiedOrder = nullptr;
-      // Deep copy each order
-    for (const auto& order : other.orders) {
-        Order* clonedOrder = order->clone();
+    // Deep copy each order
+    for (const auto &order : other.orders)
+    {
+        Order *clonedOrder = order->clone();
         orders.push_back(clonedOrder);
 
         // If this order was the lastModifiedOrder in the original, set it here
-        if (order == other.lastModifiedOrder) {
+        if (order == other.lastModifiedOrder)
+        {
             lastModifiedOrder = clonedOrder;
         }
     }
@@ -532,12 +552,14 @@ OrdersList &OrdersList::operator=(const OrdersList &other)
         lastModifiedOrder = nullptr;
 
         // Deep copy
-        for (const auto& order : other.orders) {
-            Order* clonedOrder = order->clone();
+        for (const auto &order : other.orders)
+        {
+            Order *clonedOrder = order->clone();
             orders.push_back(clonedOrder);
 
             // Keep track of last modified
-            if (order == other.lastModifiedOrder) {
+            if (order == other.lastModifiedOrder)
+            {
                 lastModifiedOrder = clonedOrder;
             }
         }
@@ -570,9 +592,9 @@ void OrdersList::addOrder(Order *order)
 {
     if (order)
     {
-        orders.push_back(order); // Deleted std::move
-        lastModifiedOrder = order;   // track the order for logging
-        Notify(this);                // notify observers
+        orders.push_back(order);   // Deleted std::move
+        lastModifiedOrder = order; // track the order for logging
+        Notify(this);              // notify observers
     }
 }
 
@@ -616,9 +638,10 @@ Order *OrdersList::getOrder(int index) const
 }
 
 // Create string that will be sent to logger
-string OrdersList::stringToLog(){
+string OrdersList::stringToLog()
+{
     if (lastModifiedOrder)
-            return "Order added: " + lastModifiedOrder->getName();
+        return "Order added: " + lastModifiedOrder->getName();
     else
         return "No order added.";
 }

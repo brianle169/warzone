@@ -15,59 +15,59 @@ class GameState;
 
 // ==== Game Engine class ====
 
-class GameEngine: public Subject, public ILoggable {
+class GameEngine : public Subject, public ILoggable
+{
     // Grant GameState and its children access to GameEngine's private members
     friend class GameState;
 
-    public:
-        // Default Constructor
-        GameEngine();
-        // Copy Constructor 
-        GameEngine(const GameEngine& other);
-        // Assignment Operator
-        GameEngine& operator=(const GameEngine& other);
-        // Stream Insertion Operator
-        friend ostream& operator<<(ostream& os, const GameEngine& engine);
-        // Destructor
-        ~GameEngine();
-        // User commands passing
-        void executeCommand(const string& command);
-        // Current state name getter
-        string getCurrentStateName() const;
-        // State transition
-        void transitionTo(GameState* newState);
+public:
+    // Default Constructor
+    GameEngine();
+    // Copy Constructor
+    GameEngine(const GameEngine &other);
+    // Assignment Operator
+    GameEngine &operator=(const GameEngine &other);
+    // Stream Insertion Operator
+    friend ostream &operator<<(ostream &os, const GameEngine &engine);
+    // Destructor
+    ~GameEngine();
+    // User commands passing
+    void executeCommand(const string &command);
+    // Current state name getter
+    string getCurrentStateName() const;
+    // State transition
+    void transitionTo(GameState *newState);
 
-        static vector<Player *> &getPlayers();
-        static void setPlayers(const vector<Player *> &players);
-        static Map *getGameMap();
-        static void setGameMap(unique_ptr<Map> map);
-        static Deck *getCardDeck();
-        static void setCardDeck(Deck *deck);
-        static void removePlayer(Player *player);
+    static vector<Player *> &getPlayers();
+    static void setPlayers(const vector<Player *> &players);
+    static Map *getGameMap();
+    static void setGameMap(unique_ptr<Map> map);
+    static Deck *getCardDeck();
+    static void setCardDeck(Deck *deck);
+    static void removePlayer(Player *player);
 
-        //Setters
-		    void addPlayer(Player* player);
+    // Setters
+    static void addPlayer(Player *player);
+    static Card *createCard(const int typeID);
 
-        std::string stringToLog() override;
+    std::string stringToLog() override;
 
+    /* Assignment 2 implementation from here */
+    // Startup
+    void startupPhase();
+    // Main game loop method (Part 3)
+    void reinforcementPhase();
+    void issueOrdersPhase();
+    void executeOrdersPhase();
+    void mainGameLoop();
 
-        /* Assignment 2 implementation from here */
-        //Startup
-        void startupPhase();
-        // Main game loop method (Part 3)
-        void reinforcementPhase();
-        void issueOrdersPhase();
-        void executeOrdersPhase();
-        void mainGameLoop();
-
-
-    private:
-        GameState* currentState;
-        string userCommand;
-        // Game Engine should have attributes like: list of players, map, and the deck of cards.
-        static vector<Player*> players;
-        static unique_ptr<Map> gameMap;
-        static Deck* cardDeck;
+private:
+    GameState *currentState;
+    string userCommand;
+    // Game Engine should have attributes like: list of players, map, and the deck of cards.
+    static vector<Player *> players;
+    static unique_ptr<Map> gameMap;
+    static Deck *cardDeck;
 };
 
 // ==== GameState Base Class ====
