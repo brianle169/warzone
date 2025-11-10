@@ -36,19 +36,30 @@ class GameEngine: public Subject, public ILoggable {
         string getCurrentStateName() const;
         // State transition
         void transitionTo(GameState* newState);
+
+        
+        //Getters
+        Map* getGameMap();
+		vector<Player*> getPlayers();
+        //Setters
+		void setGameMap(unique_ptr<Map>);
+		void addPlayer(Player* player);
+
         std::string stringToLog() override;
 
+
         /* Assignment 2 implementation from here */
-
+        //Startup
+        void startupPhase();
         // Main game loop method (Part 3)
-
+        void reinforcementPhase();
 
     private:
         GameState* currentState;
         string userCommand;
         // Game Engine should have attributes like: list of players, map, and the deck of cards.
         vector<Player*> players;
-        Map* gameMap;
+        unique_ptr<Map> gameMap;
         Deck* cardDeck;
         // The main game loop method. This method will be invoked after we added players.
         // The flow of the main game loop is as follows:

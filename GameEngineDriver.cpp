@@ -21,3 +21,15 @@ void testGameStates() {
         cout << engine << endl;
     }
 }
+void testStartupPhase() {
+    GameEngine engine;
+    engine.startupPhase();
+}
+
+int main() {
+    //testGameStates();
+    testStartupPhase();
+    std::cout << "Press Enter to exit...";
+    std::cin.get();
+    return 0;
+}
