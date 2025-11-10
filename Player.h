@@ -57,6 +57,7 @@ public:
 
 	// Getters setters
 	void setTerritories(vector<Territory*>* terrs); // this will be used to assign territories to the player at the start of the game
+	void addTerritory(Territory* terr);
 	vector<Territory*>* getTerritories() const;
 
 	void setHand(Hand* h);
