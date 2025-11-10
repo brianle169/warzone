@@ -173,41 +173,6 @@ void GameEngine::issueOrdersPhase()
     cout << endl;
 }
 
-void GameEngine::reinforcementPhase()
-{
-    cout << "=== Reinforcement Phase Started ===" << endl;
-    // Implementation of the reinforcement phase
-    for (Player *player : GameEngine::getPlayers())
-    {
-        int territoryCount = player->getTerritories()->size();
-        int reinforcementFromTerritories = territoryCount / 3; // Minimum of 3 armies
-        int reinforcementFromContinents = 0;
-        // Calculate reinforcement from continents owned
-        const auto &continents = GameEngine::getGameMap()->getContinents();
-        for (const auto &pair : continents)
-        {
-            Continent *continent = pair.second.get();
-            bool ownsAll = true;
-            for (Territory *territory : continent->getTerritories())
-            {
-                if (find(player->getTerritories()->begin(), player->getTerritories()->end(), territory) == player->getTerritories()->end())
-                {
-                    ownsAll = false;
-                    break;
-                }
-            }
-            if (ownsAll)
-            {
-                reinforcementFromContinents += continent->getBonus();
-            }
-        }
-        int totalReinforcement = max(3, reinforcementFromTerritories + reinforcementFromContinents);
-        player->setReinforcementPool(player->getReinforcementPool() + totalReinforcement);
-        cout << "Player " << player->getName() << " receives " << totalReinforcement << " reinforcement armies." << endl;
-    }
-    cout << "=== Reinforcement Phase Ended ===" << endl;
-}
-
 void GameEngine::executeOrdersPhase()
 {
     // Implementation of the execute orders phase
