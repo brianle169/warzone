@@ -256,12 +256,12 @@ void testStartupPhase()
     engine.startupPhase();
 }
 
-int main()
-{
-    // testGameStates();
-    testStartupPhase();
-    // testMainGameLoop();
-    std::cout << "Press Enter to exit...";
-    std::cin.get();
-    return 0;
-}
+// int main()
+// {
+//     // testGameStates();
+//     testStartupPhase();
+//     // testMainGameLoop();
+//     std::cout << "Press Enter to exit...";
+//     std::cin.get();
+//     return 0;
+// }

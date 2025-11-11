@@ -118,4 +118,7 @@ class FileCommandProcessorAdapter : public CommandProcessor {
         string stringToLog() override;
 
 };
+
+// Free test function for Game Engine Section
+void testCommandProcessor(const string& mode = "all");
 #endif

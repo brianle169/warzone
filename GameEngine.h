@@ -299,7 +299,8 @@ private:
 };
 
 // Free test function for Game Engine Section
-void testGameStates();
+// void testGameStates();
 void testMainGameLoop();
+void testStartupPhase();
 
 #endif
