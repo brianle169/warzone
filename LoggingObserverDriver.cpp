@@ -17,92 +17,72 @@ void testLoggingObserver() {
     // Clear log file first
     std::ofstream("gamelog.txt", std::ios::trunc).close();
 
-    // Create a LogObserver
-    auto logger = std::make_shared<LogObserver>();
-
     // ===== GameEngine Test =====
-    GameEngine engine;
-    engine.Attach(logger);
-    cout << "Testing GameEngine state transitions..." << std::endl;
+    cout << "=== Test: GameEngine State Transitions Logging ===" << endl;
 
-    // REPLACE WHEN COMMANDS GET FIXED
-    engine.executeCommand("loadmap");
-    engine.executeCommand("validatemap");
-    engine.executeCommand("addplayer");
-    engine.executeCommand("assigncountries");
-    engine.executeCommand("issueorder");
-    engine.executeCommand("endissueorders");
-    engine.executeCommand("win");
-    engine.executeCommand("end");
+    auto engine = make_shared<GameEngine>();
+    engine->Attach(make_shared<LogObserver>());
 
+    cout << "Initial state: " << engine->getCurrentStateName() << endl;
+
+    // State transitions
+    engine->executeCommand("loadmap");
+    engine->executeCommand("validatemap");
+    engine->executeCommand("addplayer");
 
     // ===== CommandProcessor Test =====
+    cout << "=== Testing CommandProcessor saveCommand/saveEffect... ===" << endl;
+
     auto cp = make_unique<CommandProcessor>();
+    cp->Attach(make_shared<LogObserver>());
 
-    cp->Attach(logger);
-    cout << "Testing CommandProcessor saveCommand/saveEffect..." << endl;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    auto c1 = make_shared<Command>(*cp->getCommand());
+    auto c2 = make_shared<Command>(*cp->getCommand());
 
-    Command* c1 = cp->getCommand();
-    Command* c2 = cp->getCommand();
-
-    c1->Attach(logger);
-    c2->Attach(logger);
+    c1->Attach(make_shared<LogObserver>());
+    c2->Attach(make_shared<LogObserver>());
 
     c1->saveEffect("Deployed 5 armies");
     c2->saveEffect("Advanced to territory X");
 
-    cout << "Testing complete. Check gamelog.txt for results." << endl;
+    // ===== Orders Observer Pattern Test =====
     cout << "=== TESTING ORDERS OBSERVER PATTERN ===" << endl;
 
-    // Create players
-    Player* alice = new Player("Alice");
-    Player* bob = new Player("Bob");
+    auto alice = make_shared<Player>("Alice");
+    auto bob = make_shared<Player>("Bob");
 
-    // Create dummy territories
-    Territory* t1 = new Territory("North", nullptr, 5);
-    Territory* t2 = new Territory("South", nullptr, 3);
-    t1->setPlayer(alice);
-    t2->setPlayer(bob);
+    auto t1 = make_shared<Territory>("North", nullptr, 5);
+    auto t2 = make_shared<Territory>("South", nullptr, 3);
+    t1->setPlayer(alice.get());
+    t2->setPlayer(bob.get());
 
     // Make them adjacent for validation
-    t1->addEdge(t2);
-    t2->addEdge(t1);
+    t1->addEdge(t2.get());
+    t2->addEdge(t1.get());
 
-    // Create an orders list and attach a log observer
-    OrdersList* ol = new OrdersList();
-    ol->Attach(logger);
+    auto ordersList = alice->getOrdersList(); // pointer to original
+    ordersList->Attach(make_shared<LogObserver>());
 
-    // Also attach observer to specific orders for demonstration
-    Deploy* deployOrder = new Deploy(alice, t1, 10);
-    deployOrder->Attach(logger);
+    auto deployOrder = make_shared<Deploy>(alice.get(), t1.get(), 10);
+    deployOrder->Attach(make_shared<LogObserver>());
 
-    Advance* advanceOrder = new Advance(alice, 5, t1, t2);
-    advanceOrder->Attach(logger);
+    auto negotiateOrder = make_shared<Negotiate>(alice.get(), bob.get());
+    negotiateOrder->Attach(make_shared<LogObserver>());
 
-    // Add orders to the list (triggers Notify from OrdersList)
+    // Add to the actual list
     cout << "\nAdding Deploy order to OrdersList...\n";
-    ol->addOrder(deployOrder);
+    ordersList->addOrder(deployOrder.get());
 
-    cout << "\nAdding Advance order to OrdersList...\n";
-    ol->addOrder(advanceOrder);
+    cout << "\nAdding Negotiate order to OrdersList...\n";
+    ordersList->addOrder(negotiateOrder.get());
 
     // Execute orders (triggers Notify from each Order)
     cout << "\nExecuting Deploy order...\n";
     deployOrder->execute();
 
-    cout << "\nExecuting Advance order...\n";
-    advanceOrder->execute();
+    cout << "\nExecuting Negotiate order...\n";
+    negotiateOrder->execute();
 
-    // Display final orders list
-    cout << "\nFinal Orders List:\n" << *ol << endl;
-
-    // Clean up
-    delete ol;
-    delete alice;
-    delete bob;
-    delete t1;
-    delete t2;
-    delete deployOrder;
-    delete advanceOrder;   
+    cout << "Testing complete. Check gamelog.txt for results." << endl;
 }
-

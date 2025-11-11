@@ -25,26 +25,26 @@ void testOrderExecution()
 
     // Initializing cards for each players
     SpCard bc1 = SpCard(new BombCard());
-    SpCard rc1 = SpCard(new ReinforcementCard());
+    // SpCard rc1 = SpCard(new ReinforcementCard());
     SpCard blc1 = SpCard(new BlockadeCard());
     SpCard ac1 = SpCard(new AirliftCard());
     SpCard dc1 = SpCard(new DiplomacyCard());
 
     SpCard bc2 = SpCard(new BombCard());
-    SpCard rc2 = SpCard(new ReinforcementCard());
+    // SpCard rc2 = SpCard(new ReinforcementCard());
     SpCard blc2 = SpCard(new BlockadeCard());
     SpCard ac2 = SpCard(new AirliftCard());
     SpCard dc2 = SpCard(new DiplomacyCard());
 
     // Adding cards to each player's hand
     player1->getHand()->add(bc1);
-    player1->getHand()->add(rc1);
+    // player1->getHand()->add(rc1);
     player1->getHand()->add(blc1);
     player1->getHand()->add(ac1);
     player1->getHand()->add(dc1);
 
     player2->getHand()->add(bc2);
-    player2->getHand()->add(rc2);
+    // player2->getHand()->add(rc2);
     player2->getHand()->add(blc2);
     player2->getHand()->add(ac2);
     player2->getHand()->add(dc2);
