@@ -102,6 +102,20 @@ void Player::addTerritory(Territory *terr)
 	this->getTerritories()->push_back(terr);
 }
 
+void Player::removeTerritory(Territory *t)
+{
+	int count = 0;
+	for (Territory *terr : *this->getTerritories())
+	{
+		if (terr->getName() == t->getName())
+		{
+			break;
+		}
+		count++;
+	}
+	this->getTerritories()->erase(this->getTerritories()->begin() + count);
+}
+
 vector<Territory *> *Player::getTerritories() const
 {
 	return this->territories;

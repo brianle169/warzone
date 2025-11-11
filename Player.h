@@ -91,6 +91,7 @@ public:
 	bool isDoneIssuingOrder();
 	bool hasAllTerritories();
 	void clearState();
+	void removeTerritory(Territory *t);
 
 	static Player *getNeutralPlayer();
 	static Player *neutralPlayer;

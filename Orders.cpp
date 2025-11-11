@@ -195,7 +195,11 @@ void Advance::execute()
             sourceTerritory->setArmies(sourceTerritory->getArmies() - numArmies);
             targetTerritory->setArmies(targetTerritory->getArmies() + numArmies);
             executed = true;
-            setExecutionEffect("Successfully advanced " + to_string(numArmies) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName() + "; " + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
+            setExecutionEffect("Successfully advanced " + to_string(numArmies) +
+                               " troops from " + sourceTerritory->getName() +
+                               " to " + targetTerritory->getName() + "; " +
+                               targetTerritory->getName() + " has now " +
+                               to_string(targetTerritory->getArmies()) + " troops");
         }
 
         if (player != targetTerritory->getPlayer())
@@ -204,22 +208,39 @@ void Advance::execute()
             {
                 sourceTerritory->setArmies(sourceTerritory->getArmies() - numArmies);
                 targetTerritory->setArmies(numArmies);
+                // update territory ownership
+                targetTerritory->getPlayer()->removeTerritory(targetTerritory);
                 targetTerritory->setPlayer(player);
+                player->addTerritory(targetTerritory);
                 executed = true;
-                setExecutionEffect("Successfully advanced " + to_string(numArmies) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName() + "; " + sourceTerritory->getName() + " has now " + to_string(sourceTerritory->getArmies()) + " troops and " + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
+                setExecutionEffect("Successfully advanced " + to_string(numArmies) +
+                                   " troops from " + sourceTerritory->getName() +
+                                   " to " + targetTerritory->getName() + "; " +
+                                   sourceTerritory->getName() + " has now " +
+                                   to_string(sourceTerritory->getArmies()) + " troops and " +
+                                   targetTerritory->getName() + " has now " +
+                                   to_string(targetTerritory->getArmies()) + " troops");
             }
             else if (numArmies * 0.6 > targetTerritory->getArmies() * 0.7)
             {
                 int result = numArmies * 0.6 - targetTerritory->getArmies() * 0.7;
                 sourceTerritory->setArmies(sourceTerritory->getArmies() - numArmies);
                 targetTerritory->setArmies(result);
+                // update territory ownership
+                targetTerritory->getPlayer()->removeTerritory(targetTerritory);
                 targetTerritory->setPlayer(player);
+                player->addTerritory(targetTerritory);
                 executed = true;
-                setExecutionEffect("Successfully conquered and advanced " + to_string(numArmies) + " troops from " + sourceTerritory->getName() + " to " + targetTerritory->getName() + "; " + sourceTerritory->getName() + " has now " + to_string(sourceTerritory->getArmies()) + " troops and " + targetTerritory->getName() + " has now " + to_string(targetTerritory->getArmies()) + " troops");
+                setExecutionEffect("Successfully conquered and advanced " + to_string(numArmies) +
+                                   " troops from " + sourceTerritory->getName() +
+                                   " to " + targetTerritory->getName() + "; " +
+                                   sourceTerritory->getName() + " has now " +
+                                   to_string(sourceTerritory->getArmies()) + " troops and " +
+                                   targetTerritory->getName() + " has now " +
+                                   to_string(targetTerritory->getArmies()) + " troops");
                 // add a card to the player since conquered
                 if (Order::status == true)
                 {
-                    // player->getHand()->add(SpCard(new(ReinforcementCard)));//(3)
                     player->getHand()->add(GameEngine::getCardDeck()->draw());
                     // a player cannot get another card, so we need a block function so no other card can be assigned to the player
                     Order::status = false;
@@ -365,8 +386,9 @@ void Blockade::execute()
     {
         targetTerritory->setArmies(targetTerritory->getArmies() * 3);
         // make it neutral territory ; change has to be made on part 3 in main game loop
+        player->removeTerritory(targetTerritory);
         targetTerritory->setPlayer(Player::getNeutralPlayer());
-
+        Player::getNeutralPlayer()->addTerritory(targetTerritory);
         executed = true;
         setExecutionEffect("Successfully blockade " + targetTerritory->getName() + ". It now belongs to the Neutral player " + Player::neutralPlayer->getName());
         Notify(this);

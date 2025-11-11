@@ -246,6 +246,15 @@ void GameEngine::executeOrdersPhase()
                     cout << "Executing order for player " << player->getName() << ": " << *order << endl;
                     order->execute();
                     ordersList->remove(0); // Remove the executed order from the list
+                    for (Player *player : GameEngine::getPlayers())
+                    {
+                        if (player->getTerritories()->empty())
+                        {
+                            cout << "Player " << player->getName() << " has no territories left and is eliminated from the game." << endl;
+                            // Additional logic for player elimination can be added here
+                            GameEngine::removePlayer(player);
+                        }
+                    }
                 }
                 // Check for winning condition after each order execution
                 if (player->hasAllTerritories())
@@ -258,12 +267,6 @@ void GameEngine::executeOrdersPhase()
                     return;
                 }
                 // And check whether any players will be eliminated
-                if (player->getTerritories()->empty())
-                {
-                    cout << "Player " << player->getName() << " has no territories left and is eliminated from the game." << endl;
-                    // Additional logic for player elimination can be added here
-                    GameEngine::removePlayer(player);
-                }
             }
         }
         if (allDone)
@@ -316,7 +319,7 @@ void GameEngine::startupPhase()
     std::ofstream("gamelog.txt", std::ios::trunc).close();
     std::cout << "//Startup Phase//\n";
     // choose input method:
-    std::cout << "read from file (1) or input (2)?";
+    std::cout << "read from file (1) or input (2)? >> ";
     int choice;
     std::cin >> choice;
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -498,7 +501,10 @@ void GameEngine::startupPhase()
             }
 
             // switch the game to the play phase
+            cout << "All countries assigned. Starting main game loop..." << endl;
+            cout << endl;
             this->executeCommand("assigncountries");
+            // break;
         }
         if (cmnd == "end")
         {
