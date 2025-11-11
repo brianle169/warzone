@@ -254,7 +254,9 @@ void BombCard::play(Deck &deck, Player &player)
         else
             cout << "Invalid territory name. Please try again." << endl;
     }
-    player.getOrdersList()->addOrder(new Bomb(&player, targetTerritory, nullptr));
+    Bomb *bombOrder = new Bomb(&player, targetTerritory, nullptr);
+    bombOrder->Attach(std::make_shared<LogObserver>());
+    player.getOrdersList()->addOrder(bombOrder);
 }
 
 //------------ReinforcementCard----------------
@@ -361,7 +363,9 @@ void BlockadeCard::play(Deck &deck, Player &player)
         else
             cout << "Invalid territory name. Please try again." << endl;
     }
-    player.getOrdersList()->addOrder(new Blockade(&player, targetTerritory));
+    Blockade *blockadeOrder = new Blockade(&player, targetTerritory);
+    blockadeOrder->Attach(std::make_shared<LogObserver>());
+    player.getOrdersList()->addOrder(blockadeOrder);
 }
 
 //------------AirliftCard----------------
@@ -453,7 +457,9 @@ void AirliftCard::play(Deck &deck, Player &player)
         else
             cout << "Invalid territory name. Please try again." << endl;
     }
-    player.getOrdersList()->addOrder(new Airlift(&player, numArmies, fromTerritory, toTerritory)); // Number of armies will be set in Airlift order execution
+    Airlift *airliftOrder = new Airlift(&player, numArmies, fromTerritory, toTerritory);
+    airliftOrder->Attach(std::make_shared<LogObserver>());
+    player.getOrdersList()->addOrder(airliftOrder); // Number of armies will be set in Airlift order execution
 }
 
 //------------DiplomacyCard----------------
@@ -528,5 +534,7 @@ void DiplomacyCard::play(Deck &deck, Player &player)
         else
             cout << "Invalid player name. Please try again." << endl;
     }
-    player.getOrdersList()->addOrder(new Negotiate(&player, targetPlayer));
+    Negotiate *negotiationOrder = new Negotiate(&player, targetPlayer);
+    negotiationOrder->Attach(std::make_shared<LogObserver>());
+    player.getOrdersList()->addOrder(negotiationOrder);
 }

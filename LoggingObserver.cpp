@@ -103,7 +103,6 @@ void Subject::Notify(ILoggable *loggable)
 
 LogObserver::LogObserver()
 {
-    std::ofstream("gamelog.txt", std::ios::trunc).close();
 }
 LogObserver::~LogObserver() {}
 

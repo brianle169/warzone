@@ -591,6 +591,7 @@ void Player::issueOrder()
 	{
 		// if the reinforcement pool is not empty, we only have one order option: Deploy
 		Order *deployOrder = this->deploy(defendingTerritories);
+		deployOrder->Attach(std::make_shared<LogObserver>());
 		this->ordersList->addOrder(deployOrder);
 		return;
 	}
@@ -607,7 +608,10 @@ void Player::issueOrder()
 		// If advance phase orders have not been issued, we can issue them now.
 		Order *advanceOrder = this->advance(attackingTerritories, defendingTerritories);
 		if (advanceOrder != nullptr)
+		{
+			advanceOrder->Attach(std::make_shared<LogObserver>());
 			this->ordersList->addOrder(advanceOrder);
+		}
 		return;
 	}
 	else

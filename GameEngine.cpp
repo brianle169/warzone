@@ -293,10 +293,9 @@ void GameEngine::mainGameLoop()
         {
             p->clearState(); // Reset issue order status for the next round
         }
-        // this->transitionTo(new ExecuteOrderState()); // Transition to ExecuteOrderState
-        // this->executeOrdersPhase();                  // Trigger execute orders phase
+        this->transitionTo(new ExecuteOrderState()); // Transition to ExecuteOrderState
+        this->executeOrdersPhase();                  // Trigger execute orders phase
         // Check if there's only one player left (winner)
-        this->transitionTo(new WinState());
         if (this->currentState->getStateName() == "win")
         {
             cout << "=== Main Game Loop Ended ===" << endl;
@@ -314,6 +313,7 @@ void GameEngine::mainGameLoop()
 
 void GameEngine::startupPhase()
 {
+    std::ofstream("gamelog.txt", std::ios::trunc).close();
     std::cout << "//Startup Phase//\n";
     // choose input method:
     std::cout << "read from file (1) or input (2)?";
@@ -339,6 +339,7 @@ void GameEngine::startupPhase()
     {
         processor = std::make_unique<CommandProcessor>();
     }
+    processor->Attach(std::make_shared<LogObserver>());
 
     for (int i = 0; i < 100; i++)
     {
@@ -359,10 +360,14 @@ void GameEngine::startupPhase()
         arg.clear();
 
         command = processor->getCommand();
+
+        command->Attach(std::make_shared<LogObserver>());
+
         // check if empty
         if (command->getCommandText().empty())
         {
             std::cout << "No command entered." << std::endl;
+            command->saveEffect("Invalid: No command entered.");
             // if reading from file, an empty line means eof
             if (dynamic_cast<FileCommandProcessorAdapter *>(processor.get()))
             {
@@ -399,6 +404,7 @@ void GameEngine::startupPhase()
         // loadmap command
         if (cmnd == "loadmap")
         {
+            command->saveEffect("Loading map from file: " + arg);
             if (arg.empty())
             {
                 cout << "No map file specified." << endl;
@@ -416,6 +422,7 @@ void GameEngine::startupPhase()
         // validate map command
         if (cmnd == "validatemap")
         {
+            command->saveEffect("Validating map.");
             // change state if map is validated
             if (GameEngine::getGameMap()->validate())
             {
@@ -429,6 +436,7 @@ void GameEngine::startupPhase()
         // addplayer command
         if (cmnd == "addplayer")
         {
+            command->saveEffect("Adding player: " + arg);
             if (arg.empty())
             {
                 cout << "No player specified." << endl;
@@ -441,12 +449,15 @@ void GameEngine::startupPhase()
                 continue;
             }
             // create and add a new player
-            GameEngine::addPlayer(new Player(arg));
+            Player *player = new Player(arg);
+            player->getOrdersList()->Attach(std::make_shared<LogObserver>());
+            GameEngine::addPlayer(player);
             // state change
             executeCommand("addplayer");
         }
         if (cmnd == "assigncountries")
         {
+            command->saveEffect("Starting game.");
             int playerCount = GameEngine::getPlayers().size();
             // check if playercount is > 2
             if (playerCount < 2)
@@ -491,12 +502,14 @@ void GameEngine::startupPhase()
         }
         if (cmnd == "end")
         {
+            command->saveEffect("Ending game.");
             GameEngine::clearGame();
             this->executeCommand("end");
             break;
         }
         if (cmnd == "play")
         {
+            command->saveEffect("Replaying game.");
             GameEngine::clearGame();
             this->executeCommand("play");
             continue;
@@ -506,11 +519,9 @@ void GameEngine::startupPhase()
 
 void GameEngine::reinforcementPhase()
 {
-    cout << "Checkpoint 1" << endl;
     // set all pools to 0, and then terr/3
     for (auto p : GameEngine::getPlayers())
     {
-        cout << "Checkpoint 2" << endl;
         int a = 0;
         a += static_cast<int>(p->getTerritories()->size()) / 3;
         p->setReinforcementPool(p->getReinforcementPool() + a);
@@ -518,7 +529,6 @@ void GameEngine::reinforcementPhase()
     // loop each continent's territories to see if one player owns them all
     for (auto &pair : GameEngine::getGameMap()->getContinents())
     {
-        cout << "Checkpoint 3" << endl;
         auto p = pair.second.get()->getTerritories()[0]->getPlayer();
         int i = 1;
         auto terrs = pair.second.get()->getTerritories();
@@ -538,12 +548,11 @@ void GameEngine::reinforcementPhase()
     // ensure minimum 3 armies per player
     for (auto p : GameEngine::getPlayers())
     {
-        cout << "Checkpoint 4" << endl;
         if ((p->getReinforcementPool()) < 3)
         {
             p->setReinforcementPool(3);
         }
-        std::cout << p << " has " << (p->getReinforcementPool()) << " armies in reinforcement pool." << std::endl;
+        std::cout << *p << " has " << (p->getReinforcementPool()) << " armies in reinforcement pool." << std::endl;
     }
 }
 
