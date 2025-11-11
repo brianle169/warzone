@@ -21,7 +21,8 @@ void testLoggingObserver() {
     cout << "=== Test: GameEngine State Transitions Logging ===" << endl;
 
     auto engine = make_shared<GameEngine>();
-    engine->Attach(make_shared<LogObserver>());
+    auto engineObs = make_shared<LogObserver>();
+    engine->Attach(engineObs);
 
     cout << "Initial state: " << engine->getCurrentStateName() << endl;
 
@@ -34,14 +35,17 @@ void testLoggingObserver() {
     cout << "=== Testing CommandProcessor saveCommand/saveEffect... ===" << endl;
 
     auto cp = make_unique<CommandProcessor>();
-    cp->Attach(make_shared<LogObserver>());
+    auto cpObs = make_shared<LogObserver>();
+    cp->Attach(cpObs);
 
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
     auto c1 = make_shared<Command>(*cp->getCommand());
     auto c2 = make_shared<Command>(*cp->getCommand());
 
-    c1->Attach(make_shared<LogObserver>());
-    c2->Attach(make_shared<LogObserver>());
+    auto c1Obs = make_shared<LogObserver>();
+    auto c2Obs = make_shared<LogObserver>();
+    c1->Attach(c1Obs);
+    c2->Attach(c2Obs);
 
     c1->saveEffect("Deployed 5 armies");
     c2->saveEffect("Advanced to territory X");
@@ -50,7 +54,7 @@ void testLoggingObserver() {
     cout << "=== TESTING ORDERS OBSERVER PATTERN ===" << endl;
 
     auto alice = make_shared<Player>("Alice");
-    auto bob = make_shared<Player>("Bob");
+    auto bob = make_shared<Player>("Bob"); 
 
     auto t1 = make_shared<Territory>("North", nullptr, 5);
     auto t2 = make_shared<Territory>("South", nullptr, 3);
@@ -61,21 +65,28 @@ void testLoggingObserver() {
     t1->addEdge(t2.get());
     t2->addEdge(t1.get());
 
+    auto ordersListObs = make_shared<LogObserver>();
     auto ordersList = alice->getOrdersList(); // pointer to original
-    ordersList->Attach(make_shared<LogObserver>());
+    ordersList->Attach(ordersListObs);
 
-    auto deployOrder = make_shared<Deploy>(alice.get(), t1.get(), 10);
-    deployOrder->Attach(make_shared<LogObserver>());
+    // Create orders as RAW POINTERS directly (no shared_ptr)
+    // OrdersList will take ownership and delete them
+    Deploy* deployOrder = new Deploy(alice.get(), t1.get(), 10);
+    Negotiate* negotiateOrder = new Negotiate(alice.get(), bob.get());
 
-    auto negotiateOrder = make_shared<Negotiate>(alice.get(), bob.get());
-    negotiateOrder->Attach(make_shared<LogObserver>());
+    // Attach observers BEFORE adding to list
+    auto deployObs = make_shared<LogObserver>();
+    deployOrder->Attach(deployObs);
 
-    // Add to the actual list
+    auto negotiateObs = make_shared<LogObserver>();
+    negotiateOrder->Attach(negotiateObs);
+
+    // Add to the actual list - OrdersList takes ownership
     cout << "\nAdding Deploy order to OrdersList...\n";
-    ordersList->addOrder(deployOrder.get());
+    ordersList->addOrder(deployOrder);
 
     cout << "\nAdding Negotiate order to OrdersList...\n";
-    ordersList->addOrder(negotiateOrder.get());
+    ordersList->addOrder(negotiateOrder);
 
     // Execute orders (triggers Notify from each Order)
     cout << "\nExecuting Deploy order...\n";
@@ -85,4 +96,14 @@ void testLoggingObserver() {
     negotiateOrder->execute();
 
     cout << "Testing complete. Check gamelog.txt for results." << endl;
+
+    // No manual cleanup needed:
+    // - engine, alice, bob will be cleaned up by shared_ptrs
+    // - OrdersList will delete deployOrder and negotiateOrder in its destructor
+    // - Observers will be cleaned up by shared_ptrs
+}
+
+int main()  {
+    testLoggingObserver();
+    return 0;
 }
