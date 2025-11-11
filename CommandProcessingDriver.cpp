@@ -15,7 +15,7 @@ string extractCommandWord(const string& fullCommand) {
     return cmd;
 }
 
-void testCommandProcessor(const string& mode = "all") {
+void testCommandProcessor(const string& mode) {
     cout << endl << " === Testing Command Processor System === " << endl;
 
     // Creating a Game Engine obj for validation testing

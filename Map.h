@@ -105,4 +105,4 @@ public:
 };
 //free func
 void testLoadMaps();
-int main();
+// int main();
