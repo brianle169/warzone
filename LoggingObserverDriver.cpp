@@ -69,7 +69,7 @@ void testLoggingObserver() {
     auto ordersList = alice->getOrdersList(); // pointer to original
     ordersList->Attach(ordersListObs);
 
-    // Create orders as RAW POINTERS directly (no shared_ptr)
+    // Created orders as raw pointers directly
     // OrdersList will take ownership and delete them
     Deploy* deployOrder = new Deploy(alice.get(), t1.get(), 10);
     Negotiate* negotiateOrder = new Negotiate(alice.get(), bob.get());
@@ -96,14 +96,10 @@ void testLoggingObserver() {
     negotiateOrder->execute();
 
     cout << "Testing complete. Check gamelog.txt for results." << endl;
-
-    // No manual cleanup needed:
-    // - engine, alice, bob will be cleaned up by shared_ptrs
-    // - OrdersList will delete deployOrder and negotiateOrder in its destructor
-    // - Observers will be cleaned up by shared_ptrs
 }
 
-int main()  {
-    testLoggingObserver();
-    return 0;
-}
+
+// int main()  {
+//     testLoggingObserver();
+//     return 0;
+// }

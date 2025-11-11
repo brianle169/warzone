@@ -66,9 +66,8 @@ void testCommandProcessor(const string& mode) {
         file << "validatemap\n";
         file << "addplayer Alice\n";
         file << "addplayer Bob\n";
-        file << "assigncountries\n";
         file.close();
-        cout << "Created 'commands.txt' with 5 commands\n" << endl;
+        cout << "Created 'commands.txt' with 4 commands\n" << endl;
 
         // Reset the game engine to the start state
         delete engine;
@@ -147,27 +146,27 @@ void testCommandProcessor(const string& mode) {
 
 
 // The following is the driver program that accepts command-line arguments to specify the test mode
-int main (int argc, char* argv[]) {
-    // No command-line arguments: run all tests
-    if (argc < 2) {
-        testCommandProcessor("all");
-        return 0;
-    }
-    string mode = argv[1];
+// int main (int argc, char* argv[]) {
+//     // No command-line arguments: run all tests
+//     if (argc < 2) {
+//         testCommandProcessor("all");
+//         return 0;
+//     }
+//     string mode = argv[1];
 
-    // Console mode: run only Test 1 (console input reading)
-    if (mode == "-console") {
-        testCommandProcessor("console");
-    } 
-    // File mode: run only Test 2 (file reading)
-    else if (mode == "-file") {
-        testCommandProcessor("file");
-    } 
-    // Invalid command-line option
-    else {
-        cout << "Usage: ./CommandProcessingDriver [-console | -file]" << endl;
-        cout << "No arguments runs all tests." << endl;
-        return 1;
-    }
-    return 0;
-}
+//     // Console mode: run only Test 1 (console input reading)
+//     if (mode == "-console") {
+//         testCommandProcessor("console");
+//     } 
+//     // File mode: run only Test 2 (file reading)
+//     else if (mode == "-file") {
+//         testCommandProcessor("file");
+//     } 
+//     // Invalid command-line option
+//     else {
+//         cout << "Usage: ./CommandProcessingDriver [-console | -file]" << endl;
+//         cout << "No arguments runs all tests." << endl;
+//         return 1;
+//     }
+//     return 0;
+// }

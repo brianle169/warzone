@@ -12,6 +12,9 @@ using namespace std;
 
 void game()
 {
+    GameEngine engine;
+    engine.Attach(std::make_shared<LogObserver>());
+    engine.startupPhase();
 }
 
 void test()
@@ -38,7 +41,7 @@ void test()
           switch (optionIndex)
           {
           case 0:
-               // testCommandProcessor();
+               testCommandProcessor("all");
                cout << "testCommandProcessor() called\n";
                break;
           case 1:
