@@ -2,12 +2,27 @@
 #include "Map.h"
 #include "Player.h"
 #include "Cards.h"
+#include "GameEngine.h"
 
 void testOrderExecution()
 {
     // Initializing 2 players
     Player *player1 = new Player("Anas");
     Player *player2 = new Player("West");
+
+    if (GameEngine::getCardDeck() == nullptr || GameEngine::getCardDeck()->isEmpty())
+    {
+        Deck *deck = new Deck();
+        for (int i = 0; i < 50; i++)
+        {
+            shared_ptr<Card> card = GameEngine::createCard(i % 4);
+            if (card)
+            {
+                deck->add(card);
+            }
+        }
+        GameEngine::setCardDeck(deck);
+    }
 
     // Initializing 4 territories
     Territory *territory1 = new Territory("Canada", nullptr, 100);

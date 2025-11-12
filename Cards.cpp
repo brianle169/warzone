@@ -96,6 +96,11 @@ SpCard Deck::draw()
     return card;
 }
 
+bool Deck::isEmpty()
+{
+    return spCards.empty();
+}
+
 // ------------Hand -------------
 // Default constructor
 Hand::Hand()

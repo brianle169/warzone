@@ -107,12 +107,15 @@ void testMainGameLoop()
     // 5. Start the main game loop
     engine.mainGameLoop();
 
-    delete player1;
-    delete player2;
-
     cout << "=== Main Game Loop Test Ended ===" << endl;
     cout << endl
          << endl;
+
+    GameEngine::clearGame();
+    // delete player1;
+    // delete player2;
+    // delete player3;
+    // delete deck;
 }
 void testStartupPhase()
 {
@@ -126,6 +129,7 @@ void testStartupPhase()
     cout << "=== Startup Phase Test Ended ===" << endl;
     cout << endl
          << endl;
+    GameEngine::clearGame();
 }
 
 // int main()

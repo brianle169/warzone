@@ -163,6 +163,8 @@ void GameEngine::clearGame()
     // Clear players
     for (Player *player : GameEngine::getPlayers())
     {
+        if (player == nullptr)
+            continue;
         delete player;
     }
     GameEngine::getPlayers().clear();
@@ -171,7 +173,8 @@ void GameEngine::clearGame()
     GameEngine::gameMap.reset();
 
     // Clear deck
-    delete GameEngine::cardDeck;
+    if (GameEngine::cardDeck != nullptr)
+        delete GameEngine::cardDeck;
     GameEngine::cardDeck = new Deck();
 }
 
@@ -195,123 +198,6 @@ string GameEngine::getCurrentStateName() const
 {
     // Avoids null deref in odd lifecycle moments
     return currentState ? currentState->getStateName() : string("<null>");
-}
-
-void GameEngine::issueOrdersPhase()
-{
-    // Implementation of the issue orders phase
-    // The players are prompted to issue orders in a round-robin fashion
-    // until all players have finished issuing their orders.
-    cout << "=== Issue Orders Phase Started ===" << endl;
-    while (true)
-    {
-        bool allDone = true;
-        for (Player *player : GameEngine::getPlayers())
-        {
-            if (!player->isDoneIssuingOrder())
-            {
-                allDone = false;
-                player->issueOrder(); // Every player gets to issue only one order per round
-            }
-        }
-        // Once everyone is done issuing orders, we exit the loop.
-        // This condition is controlled by the isDoneIssuingOrder() method of each player.
-        if (allDone)
-        {
-            break; // Exit the loop when all players are done issuing orders
-        }
-    }
-    cout << "=== Issue Orders Phase Ended ===" << endl;
-    cout << endl;
-}
-
-void GameEngine::executeOrdersPhase()
-{
-    // Implementation of the execute orders phase
-    // The players execute their orders in a round-robin fashion
-    // until all orders from all players have been executed.
-    cout << "=== Execute Orders Phase Started ===" << endl;
-    while (true)
-    {
-        bool allDone = true;
-        for (Player *player : GameEngine::getPlayers())
-        {
-            OrdersList *ordersList = player->getOrdersList();
-            if (ordersList && static_cast<int>(ordersList->size()) != 0)
-            {
-                allDone = false;
-                Order *order = ordersList->getOrder(0);
-                if (order)
-                {
-                    cout << "Executing order for player " << player->getName() << ": " << *order << endl;
-                    order->execute();
-                    ordersList->remove(0); // Remove the executed order from the list
-                    for (Player *player : GameEngine::getPlayers())
-                    {
-                        if (player->getTerritories()->empty())
-                        {
-                            cout << "Player " << player->getName() << " has no territories left and is eliminated from the game." << endl;
-                            // Additional logic for player elimination can be added here
-                            GameEngine::removePlayer(player);
-                        }
-                    }
-                }
-                // Check for winning condition after each order execution
-                if (player->hasAllTerritories())
-                {
-                    cout << "Player " << player->getName() << " has conquered all territories and wins the game!" << endl;
-                    // cout << "=== Execute Orders Phase Ended ===" << endl;
-                    // cout << "=== Main Game Loop Ended ===" << endl;
-                    // Transition to WinState
-                    this->transitionTo(new WinState()); // Move to WinState
-                    return;
-                }
-                // And check whether any players will be eliminated
-            }
-        }
-        if (allDone)
-        {
-            break; // Exit the loop when all orders have been executed
-        }
-    }
-    cout << "=== Execute Orders Phase Ended ===" << endl;
-    cout << endl;
-}
-
-// This method will be called to start the main game loop after players have been added
-// and the game state is properly setup (distribution of territories, initial armies, play order, get cards from deck, etc.)
-// The main game loop continues until a player wins the game.
-void GameEngine::mainGameLoop()
-{
-    // Start from AssignReinforcementState
-    cout << "=== Main Game Loop Started ===" << endl;
-    while (true)
-    {
-        // an infinite loop, which will terminate whenever a player wins the game.
-        this->transitionTo(new AssignReinforcementState()); // Transition to AssignReinforcementState
-        this->reinforcementPhase();                         // Trigger reinforcement phase
-        this->transitionTo(new IssueOrderState());          // Transition to IssueOrderState
-        this->issueOrdersPhase();                           // Trigger issue orders phase
-        for (auto p : GameEngine::getPlayers())
-        {
-            p->clearState(); // Reset issue order status for the next round
-        }
-        this->transitionTo(new ExecuteOrderState()); // Transition to ExecuteOrderState
-        this->executeOrdersPhase();                  // Trigger execute orders phase
-        // Check if there's only one player left (winner)
-        if (this->currentState->getStateName() == "win")
-        {
-            cout << "=== Main Game Loop Ended ===" << endl;
-            break; // Exit the main game loop if we are already in WinState
-        }
-        if (GameEngine::getPlayers().size() == 1)
-        {
-            cout << "Player " << GameEngine::getPlayers()[0]->getName() << " is the last player remaining and wins the game!" << endl;
-            cout << "=== Main Game Loop Ended ===" << endl;
-            this->transitionTo(new WinState());
-            break; // Exit the main game loop
-        }
-    }
 }
 
 void GameEngine::startupPhase()
@@ -525,12 +411,14 @@ void GameEngine::startupPhase()
 
 void GameEngine::reinforcementPhase()
 {
+    cout << "=== Reinforcement Phase Started ===" << endl;
+    unordered_map<Player *, int> reinforcements; // accumulated control bonus by player
     // set all pools to 0, and then terr/3
     for (auto p : GameEngine::getPlayers())
     {
-        int a = 0;
-        a += static_cast<int>(p->getTerritories()->size()) / 3;
-        p->setReinforcementPool(p->getReinforcementPool() + a);
+        int base = 0;
+        base += static_cast<int>(p->getTerritories()->size()) / 3;
+        reinforcements[p] = base;
     }
     // loop each continent's territories to see if one player owns them all
     for (auto &pair : GameEngine::getGameMap()->getContinents())
@@ -547,18 +435,141 @@ void GameEngine::reinforcementPhase()
             i++;
             if (i == terrs.size())
             {
-                p->setReinforcementPool((p->getReinforcementPool()) + pair.second.get()->getBonus());
+                reinforcements[p] += pair.second.get()->getBonus();
             }
         }
     }
     // ensure minimum 3 armies per player
     for (auto p : GameEngine::getPlayers())
     {
-        if ((p->getReinforcementPool()) < 3)
+        // if ((p->getReinforcementPool()) < 3)
+        if (reinforcements[p] < 3)
         {
-            p->setReinforcementPool(3);
+            reinforcements[p] = 3;
         }
-        std::cout << *p << " has " << (p->getReinforcementPool()) << " armies in reinforcement pool." << std::endl;
+        p->setReinforcementPool(p->getReinforcementPool() + reinforcements[p]);
+        cout << *p << " has " << (p->getReinforcementPool()) << " armies in reinforcement pool." << endl;
+    }
+    cout << "=== Reinforcement Phase Ended ===" << endl;
+}
+
+void GameEngine::issueOrdersPhase()
+{
+    // Implementation of the issue orders phase
+    // The players are prompted to issue orders in a round-robin fashion
+    // until all players have finished issuing their orders.
+    cout << "\n=== Issue Orders Phase Started ===" << endl;
+    while (true)
+    {
+        bool allDone = true;
+        for (Player *player : GameEngine::getPlayers())
+        {
+            if (!player->isDoneIssuingOrder())
+            {
+                allDone = false;
+                player->issueOrder(); // Every player gets to issue only one order per round
+            }
+        }
+        // Once everyone is done issuing orders, we exit the loop.
+        // This condition is controlled by the isDoneIssuingOrder() method of each player.
+        if (allDone)
+        {
+            break; // Exit the loop when all players are done issuing orders
+        }
+    }
+    cout << "=== Issue Orders Phase Ended ===" << endl;
+    cout << endl;
+}
+
+void GameEngine::executeOrdersPhase()
+{
+    // Implementation of the execute orders phase
+    // The players execute their orders in a round-robin fashion
+    // until all orders from all players have been executed.
+    cout << "=== Execute Orders Phase Started ===\n"
+         << endl;
+    while (true)
+    {
+        bool allDone = true;
+        for (Player *player : GameEngine::getPlayers())
+        {
+            OrdersList *ordersList = player->getOrdersList();
+            if (ordersList && static_cast<int>(ordersList->size()) != 0)
+            {
+                allDone = false;
+                Order *order = ordersList->getOrder(0);
+                if (order)
+                {
+                    cout << "Executing order for player " << player->getName() << ": " << *order << endl;
+                    order->execute();
+                    ordersList->remove(0); // Remove the executed order from the list
+                    for (Player *player : GameEngine::getPlayers())
+                    {
+                        if (player->getTerritories()->empty())
+                        {
+                            cout << "Player " << player->getName() << " has no territories left and is eliminated from the game." << endl;
+                            // Additional logic for player elimination can be added here
+                            GameEngine::removePlayer(player);
+                        }
+                    }
+                }
+                // Check for winning condition after each order execution
+                if (player->hasAllTerritories())
+                {
+                    cout << "Player " << player->getName() << " has conquered all territories and wins the game!" << endl;
+                    // cout << "=== Execute Orders Phase Ended ===" << endl;
+                    // cout << "=== Main Game Loop Ended ===" << endl;
+                    // Transition to WinState
+                    this->transitionTo(new WinState()); // Move to WinState
+                    return;
+                }
+                // And check whether any players will be eliminated
+            }
+        }
+        if (allDone)
+        {
+            break; // Exit the loop when all orders have been executed
+        }
+    }
+    cout << "=== Execute Orders Phase Ended ==="
+         << endl;
+    cout << endl;
+}
+
+// This method will be called to start the main game loop after players have been added
+// and the game state is properly setup (distribution of territories, initial armies, play order, get cards from deck, etc.)
+// The main game loop continues until a player wins the game.
+void GameEngine::mainGameLoop()
+{
+    // Start from AssignReinforcementState
+    cout << "\n=== Main Game Loop Started ===\n"
+         << endl;
+    while (true)
+    {
+        // an infinite loop, which will terminate whenever a player wins the game.
+        this->transitionTo(new AssignReinforcementState()); // Transition to AssignReinforcementState
+        this->reinforcementPhase();                         // Trigger reinforcement phase
+        this->transitionTo(new IssueOrderState());          // Transition to IssueOrderState
+        this->issueOrdersPhase();                           // Trigger issue orders phase
+        for (auto p : GameEngine::getPlayers())
+        {
+            p->clearState(); // Reset issue order status for the next round
+        }
+        this->transitionTo(new ExecuteOrderState()); // Transition to ExecuteOrderState
+        this->executeOrdersPhase();                  // Trigger execute orders phase
+        // Check if there's only one player left (winner)
+        if (this->currentState->getStateName() == "win")
+        {
+            cout << "=== Main Game Loop Ended ===" << endl;
+            break; // Exit the main game loop if we are already in WinState
+        }
+        if (GameEngine::getPlayers().size() == 1)
+        {
+            cout << "Player " << GameEngine::getPlayers()[0]->getName() << " is the last player remaining and wins the game!" << endl;
+            cout << "=== Main Game Loop Ended ===" << endl;
+            this->transitionTo(new WinState());
+            break; // Exit the main game loop
+        }
     }
 }
 

@@ -12,9 +12,9 @@ using namespace std;
 
 void game()
 {
-    GameEngine engine;
-    engine.Attach(std::make_shared<LogObserver>());
-    engine.startupPhase();
+     GameEngine engine;
+     engine.Attach(std::make_shared<LogObserver>());
+     engine.startupPhase();
 }
 
 void test()
@@ -28,7 +28,8 @@ void test()
                << "[2] testMainGameLoop()\n"
                << "[3] testOrderExecution()\n"
                << "[4] testLoggingObserver()\n"
-               << "[5] Quit\n";
+               << "[5] Quit\n"
+               << ">> ";
 
           if (!(cin >> optionIndex))
           {

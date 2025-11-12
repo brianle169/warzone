@@ -13,7 +13,8 @@
 using namespace std;
 
 // ================= Test Function =================
-void testLoggingObserver() {
+void testLoggingObserver()
+{
     // Clear log file first
     std::ofstream("gamelog.txt", std::ios::trunc).close();
 
@@ -54,7 +55,7 @@ void testLoggingObserver() {
     cout << "=== TESTING ORDERS OBSERVER PATTERN ===" << endl;
 
     auto alice = make_shared<Player>("Alice");
-    auto bob = make_shared<Player>("Bob"); 
+    auto bob = make_shared<Player>("Bob");
 
     auto t1 = make_shared<Territory>("North", nullptr, 5);
     auto t2 = make_shared<Territory>("South", nullptr, 3);
@@ -71,8 +72,8 @@ void testLoggingObserver() {
 
     // Created orders as raw pointers directly
     // OrdersList will take ownership and delete them
-    Deploy* deployOrder = new Deploy(alice.get(), t1.get(), 10);
-    Negotiate* negotiateOrder = new Negotiate(alice.get(), bob.get());
+    Deploy *deployOrder = new Deploy(alice.get(), t1.get(), 10);
+    Negotiate *negotiateOrder = new Negotiate(alice.get(), bob.get());
 
     // Attach observers BEFORE adding to list
     auto deployObs = make_shared<LogObserver>();
@@ -96,10 +97,7 @@ void testLoggingObserver() {
     negotiateOrder->execute();
 
     cout << "Testing complete. Check gamelog.txt for results." << endl;
+
+    cout << "\n=== Logging Observer Test Ended ===\n"
+         << endl;
 }
-
-
-// int main()  {
-//     testLoggingObserver();
-//     return 0;
-// }

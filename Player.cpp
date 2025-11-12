@@ -576,7 +576,7 @@ bool Player::isDoneIssuingOrder()
 void Player::issueOrder()
 {
 	// 1. Print the essential info: name, reinforcement pool, territories, hand, orders list
-	cout << "\n\n==========================" << endl;
+	cout << "\n==========================" << endl;
 	cout << "=== Player " << *(this->name) << "'s turn ===" << endl;
 	cout << *this;
 	this->displayOrdersList(this->ordersList);

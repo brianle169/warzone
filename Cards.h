@@ -132,6 +132,7 @@ public:
     SpCard draw();
     // Adds a card pointer to the deck
     void add(SpCard card);
+    bool isEmpty();
 };
 
 // Represents a player's hand of cards.
