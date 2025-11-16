@@ -1,0 +1,4 @@
+loadmap world.map
+validatemap
+addplayer Alice
+addplayer Bob
