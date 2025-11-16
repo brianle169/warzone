@@ -11,6 +11,7 @@
 #include "Cards.h"
 #include "Map.h"
 #include "GameEngine.h"
+#include "PlayerStrategies.h"
 
 using namespace std;
 
@@ -29,7 +30,8 @@ Player::Player() : name(new string("")),
 				   attacking(new vector<Territory *>()),
 				   defending(new vector<Territory *>()),
 				   reinforcementPool(new int(0)),
-				   issueOrderStatus(new array<bool, 4>())
+				   issueOrderStatus(new array<bool, 4>()),
+				   ps(new HumanPlayerStrategy(this))
 {
 }
 
@@ -44,6 +46,19 @@ Player::Player(string name) : hand(new Hand()),
 							  issueOrderStatus(new array<bool, 4>())
 {
 	this->name = new string(name); // This is a pointer assignment.
+}
+
+// Parameterized constructor:
+Player::Player(string name, PlayerStrategies *strategy) : hand(new Hand()),
+														  ordersList(new OrdersList()),
+														  territories(new vector<Territory *>()),
+														  attacking(new vector<Territory *>()),
+														  defending(new vector<Territory *>()),
+														  reinforcementPool(new int(0)),
+														  issueOrderStatus(new array<bool, 4>())
+{
+	this->name = new string(name); // This is a pointer assignment.
+	this->ps = strategy;
 }
 
 // Copy constructor: This constructor creates a new Player object as a deep copy of an existing Player object.
@@ -170,6 +185,21 @@ int Player::getReinforcementPool() const
 	return *this->reinforcementPool;
 }
 
+vector<Territory *> *Player::getAttacking() const
+{
+	return this->attacking;
+}
+
+vector<Territory *> *Player::getDefending() const
+{
+	return this->defending;
+}
+
+array<bool, 4> *Player::getIssueOrderStatus() const
+{
+	return this->issueOrderStatus;
+}
+
 // Stream insertion operator overloading: This operator prints out general information about the Player object.
 // Currently for testing, the Player's Hand object is empty, and OrdersList is also initially empty, so to check
 // if they exist, we only check whether the pointers are pointing to nullptr or not.
@@ -255,77 +285,77 @@ unordered_map<string, Territory *> Player::getDefendableTerritories()
 // In assignment 2, we will use the actual territories loaded and assigned to the player at the start of the game.
 vector<Territory *> Player::toAttack()
 {
-	cout << "Available territories to attack: " << endl;
-	unordered_map<string, Territory *> attackableTerritories = this->getAttackableTerritories();
-	for (const auto &pair : attackableTerritories)
-	{
-		cout << "- " << pair.first << " (" << pair.second->getArmies() << ")" << endl;
-	}
-	cout << endl;
+	// cout << "Available territories to attack: " << endl;
+	// unordered_map<string, Territory *> attackableTerritories = this->getAttackableTerritories();
+	// for (const auto &pair : attackableTerritories)
+	// {
+	// 	cout << "- " << pair.first << " (" << pair.second->getArmies() << ")" << endl;
+	// }
+	// cout << endl;
 
-	string input = "";
-	do
-	{
-		cout << "Select territories to attack (Enter 'x' to finish) \n>> ";
-		cin >> input;
-		if (input == "x" || input == "X")
-			break;
-		try
-		{
-			Territory *terr = attackableTerritories.at(input);
-			if (std::find(this->attacking->begin(), this->attacking->end(), terr) != this->attacking->end())
-			{
-				cout << "Territory " << terr->getName() << " has already been selected for attack." << endl;
-				continue;
-			}
-			cout << "Territory " << terr->getName() << " selected for attack." << endl;
-			this->attacking->push_back(terr); // insert the territory pointer into attacking vector
-			this->displayTerritories(*this->attacking);
-		}
-		catch (const out_of_range &)
-		{
-			cout << "Invalid territory. Please try again." << endl;
-		}
-	} while (true);
-	return *this->attacking;
+	// string input = "";
+	// do
+	// {
+	// 	cout << "Select territories to attack (Enter 'x' to finish) \n>> ";
+	// 	cin >> input;
+	// 	if (input == "x" || input == "X")
+	// 		break;
+	// 	try
+	// 	{
+	// 		Territory *terr = attackableTerritories.at(input);
+	// 		if (std::find(this->attacking->begin(), this->attacking->end(), terr) != this->attacking->end())
+	// 		{
+	// 			cout << "Territory " << terr->getName() << " has already been selected for attack." << endl;
+	// 			continue;
+	// 		}
+	// 		cout << "Territory " << terr->getName() << " selected for attack." << endl;
+	// 		this->attacking->push_back(terr); // insert the territory pointer into attacking vector
+	// 		this->displayTerritories(*this->attacking);
+	// 	}
+	// 	catch (const out_of_range &)
+	// 	{
+	// 		cout << "Invalid territory. Please try again." << endl;
+	// 	}
+	// } while (true);
+	// return *this->attacking;
 }
 
 // toDefend() method: the idea is exactly the same with toAttack() method above.
 vector<Territory *> Player::toDefend()
 {
-	cout << "Available territories to defend: " << endl;
-	unordered_map<string, Territory *> defendableTerritories = this->getDefendableTerritories();
-	for (const auto &pair : defendableTerritories)
-	{
-		cout << "- " << pair.first << " (" << pair.second->getArmies() << ")" << endl;
-	}
-	cout << endl;
+	// cout << "Available territories to defend: " << endl;
+	// unordered_map<string, Territory *> defendableTerritories = this->getDefendableTerritories();
+	// for (const auto &pair : defendableTerritories)
+	// {
+	// 	cout << "- " << pair.first << " (" << pair.second->getArmies() << ")" << endl;
+	// }
+	// cout << endl;
 
-	string input = "";
-	do
-	{
-		cout << "Select territories to defend (Enter 'x' to finish) \n>> ";
-		cin >> input;
-		if (input == "x" || input == "X")
-			break;
-		try
-		{
-			Territory *terr = defendableTerritories.at(input);
-			if (std::find(this->defending->begin(), this->defending->end(), terr) != this->defending->end())
-			{
-				cout << "Territory " << terr->getName() << " has already been selected for defend." << endl;
-				continue;
-			}
-			cout << "Territory " << terr->getName() << " selected for defend." << endl;
-			this->defending->push_back(terr); // insert the territory pointer into defending vector
-			this->displayTerritories(*this->defending);
-		}
-		catch (const out_of_range &)
-		{
-			cout << "Invalid territory. Please try again." << endl;
-		}
-	} while (true);
-	return *this->defending;
+	// string input = "";
+	// do
+	// {
+	// 	cout << "Select territories to defend (Enter 'x' to finish) \n>> ";
+	// 	cin >> input;
+	// 	if (input == "x" || input == "X")
+	// 		break;
+	// 	try
+	// 	{
+	// 		Territory *terr = defendableTerritories.at(input);
+	// 		if (std::find(this->defending->begin(), this->defending->end(), terr) != this->defending->end())
+	// 		{
+	// 			cout << "Territory " << terr->getName() << " has already been selected for defend." << endl;
+	// 			continue;
+	// 		}
+	// 		cout << "Territory " << terr->getName() << " selected for defend." << endl;
+	// 		this->defending->push_back(terr); // insert the territory pointer into defending vector
+	// 		this->displayTerritories(*this->defending);
+	// 	}
+	// 	catch (const out_of_range &)
+	// 	{
+	// 		cout << "Invalid territory. Please try again." << endl;
+	// 	}
+	// } while (true);
+	// return *this->defending;
 }
 
 void Player::displayTerritories(const std::vector<Territory *> &territories)
@@ -576,72 +606,72 @@ bool Player::isDoneIssuingOrder()
 void Player::issueOrder()
 {
 	// 1. Print the essential info: name, reinforcement pool, territories, hand, orders list
-	cout << "\n==========================" << endl;
-	cout << "=== Player " << *(this->name) << "'s turn ===" << endl;
-	cout << *this;
-	this->displayOrdersList(this->ordersList);
-	cout << "==========================" << endl;
-	cout << endl;
+	// cout << "\n==========================" << endl;
+	// cout << "=== Player " << *(this->name) << "'s turn ===" << endl;
+	// cout << *this;
+	// this->displayOrdersList(this->ordersList);
+	// cout << "==========================" << endl;
+	// cout << endl;
 
-	vector<Territory *> attackingTerritories;
-	vector<Territory *> defendingTerritories;
-	// 2. Decide territories to attack and defend.
-	if (!this->issueOrderStatus->at(static_cast<int>(IssuePhase::AttackDefendPhase)))
-	{
-		attackingTerritories = this->toAttack();
-		defendingTerritories = this->toDefend();
-		this->issueOrderStatus->at(static_cast<int>(IssuePhase::AttackDefendPhase)) = true;
-		return;
-	}
-	else
-	{
-		cout << "Choosing territories to attack and defend has been completed." << endl;
-		attackingTerritories = *(this->attacking);
-		defendingTerritories = *(this->defending);
-	}
-	// 3. After choosing the territories to attack and defend, we will issue
-	// deploy orders on the defending territories until the reinforcement pool is empty.
-	if (*(this->reinforcementPool) > 0)
-	{
-		// if the reinforcement pool is not empty, we only have one order option: Deploy
-		Order *deployOrder = this->deploy(defendingTerritories);
-		deployOrder->Attach(std::make_shared<LogObserver>());
-		this->ordersList->addOrder(deployOrder);
-		return;
-	}
-	else
-	{
-		cout << "Reinforcement pool is empty. No deploy orders can be issued." << endl;
-		this->issueOrderStatus->at(static_cast<int>(IssuePhase::DeployPhase)) = true;
-	}
-	// 4. After deploying all reinforcements, we can issue other types of orders.
-	// *Note: the following orders are optional depending on what the player wants to do.
-	// That means they can skip issuing these orders if they want to
-	if (!this->issueOrderStatus->at(static_cast<int>(IssuePhase::AdvancePhase)))
-	{
-		// If advance phase orders have not been issued, we can issue them now.
-		Order *advanceOrder = this->advance(attackingTerritories, defendingTerritories);
-		if (advanceOrder != nullptr)
-		{
-			advanceOrder->Attach(std::make_shared<LogObserver>());
-			this->ordersList->addOrder(advanceOrder);
-		}
-		return;
-	}
-	else
-	{
-		cout << "Advance orders are finalized. Now you can issue other types using corresponding cards." << endl;
-	}
+	// vector<Territory *> attackingTerritories;
+	// vector<Territory *> defendingTerritories;
+	// // 2. Decide territories to attack and defend.
+	// if (!this->issueOrderStatus->at(static_cast<int>(IssuePhase::AttackDefendPhase)))
+	// {
+	// 	attackingTerritories = this->toAttack();
+	// 	defendingTerritories = this->toDefend();
+	// 	this->issueOrderStatus->at(static_cast<int>(IssuePhase::AttackDefendPhase)) = true;
+	// 	return;
+	// }
+	// else
+	// {
+	// 	cout << "Choosing territories to attack and defend has been completed." << endl;
+	// 	attackingTerritories = *(this->attacking);
+	// 	defendingTerritories = *(this->defending);
+	// }
+	// // 3. After choosing the territories to attack and defend, we will issue
+	// // deploy orders on the defending territories until the reinforcement pool is empty.
+	// if (*(this->reinforcementPool) > 0)
+	// {
+	// 	// if the reinforcement pool is not empty, we only have one order option: Deploy
+	// 	Order *deployOrder = this->deploy(defendingTerritories);
+	// 	deployOrder->Attach(std::make_shared<LogObserver>());
+	// 	this->ordersList->addOrder(deployOrder);
+	// 	return;
+	// }
+	// else
+	// {
+	// 	cout << "Reinforcement pool is empty. No deploy orders can be issued." << endl;
+	// 	this->issueOrderStatus->at(static_cast<int>(IssuePhase::DeployPhase)) = true;
+	// }
+	// // 4. After deploying all reinforcements, we can issue other types of orders.
+	// // *Note: the following orders are optional depending on what the player wants to do.
+	// // That means they can skip issuing these orders if they want to
+	// if (!this->issueOrderStatus->at(static_cast<int>(IssuePhase::AdvancePhase)))
+	// {
+	// 	// If advance phase orders have not been issued, we can issue them now.
+	// 	Order *advanceOrder = this->advance(attackingTerritories, defendingTerritories);
+	// 	if (advanceOrder != nullptr)
+	// 	{
+	// 		advanceOrder->Attach(std::make_shared<LogObserver>());
+	// 		this->ordersList->addOrder(advanceOrder);
+	// 	}
+	// 	return;
+	// }
+	// else
+	// {
+	// 	cout << "Advance orders are finalized. Now you can issue other types using corresponding cards." << endl;
+	// }
 
-	// 5. Finally, we can issue other types of orders based on the cards in hand.
-	if (!this->issueOrderStatus->at(static_cast<int>(IssuePhase::OtherPhase)))
-	{
-		this->cardOrder();
-	}
-	else
-	{
-		cout << "All possible orders have been issued for this turn." << endl;
-	}
+	// // 5. Finally, we can issue other types of orders based on the cards in hand.
+	// if (!this->issueOrderStatus->at(static_cast<int>(IssuePhase::OtherPhase)))
+	// {
+	// 	this->cardOrder();
+	// }
+	// else
+	// {
+	// 	cout << "All possible orders have been issued for this turn." << endl;
+	// }
 }
 
 bool Player::hasAllTerritories()

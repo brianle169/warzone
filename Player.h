@@ -20,6 +20,7 @@ class Deck;
 class Continent;
 class Deploy;
 class Advance;
+class PlayerStrategies;
 
 typedef shared_ptr<Card> SpCard;   // Type alias
 typedef shared_ptr<Hand> SpHand;   // Type alias
@@ -41,9 +42,10 @@ class Player
 {
 public:
 	// Constructors
-	Player();				 // default
-	Player(string name);	 // parameterized (name of player)
-	Player(const Player &p); // copy constructor
+	Player();										 // default
+	Player(string name);							 // parameterized (name of player)
+	Player(string name, PlayerStrategies *strategy); // parameterized with strategy
+	Player(const Player &p);						 // copy constructor
 	~Player();
 
 	// stream insertion operators
@@ -76,15 +78,18 @@ public:
 	void setReinforcementPool(int num);
 	int getReinforcementPool() const;
 
-	// Delete after testing
-	vector<Territory *> *getAttacking() const { return this->attacking; }
-	vector<Territory *> *getDefending() const { return this->defending; }
+	vector<Territory *> *getAttacking() const;
+	vector<Territory *> *getDefending() const;
+
+	unordered_map<string, Territory *> getAttackableTerritories();
+	unordered_map<string, Territory *> getDefendableTerritories();
+
+	array<bool, 4> *getIssueOrderStatus() const;
 
 	void displayTerritories(const std::vector<Territory *> &territories);
 	void displayOrdersList(const OrdersList *ordersList);
 	void displayHand(const Hand *hand);
-	unordered_map<string, Territory *> getAttackableTerritories();
-	unordered_map<string, Territory *> getDefendableTerritories();
+
 	std::vector<Player *> negotiatedPlayers;
 	void addNegotiatedPlayers(Player *p);
 	bool isNegotiatedWith(Player *p) const;
@@ -92,6 +97,10 @@ public:
 	bool hasAllTerritories();
 	void clearState();
 	void removeTerritory(Territory *t);
+
+	Deploy *deploy(vector<Territory *> &defendingTerritories);
+	Advance *advance(vector<Territory *> &attackingTerritories, vector<Territory *> &defendingTerritories);
+	void cardOrder();
 
 	static Player *getNeutralPlayer();
 	static Player *neutralPlayer;
@@ -106,10 +115,7 @@ private:
 	vector<Territory *> *defending;	  // Collection of pointers to territories the player is defending
 	int *reinforcementPool;			  // Number of armies available to the player for deployment
 	array<bool, 4> *issueOrderStatus; // Status of issued orders
-	// Helper methods to get attackable and defendable territories (move back to private after testing)
-	Deploy *deploy(vector<Territory *> &defendingTerritories);
-	Advance *advance(vector<Territory *> &attackingTerritories, vector<Territory *> &defendingTerritories);
-	void cardOrder();
+	PlayerStrategies *ps;
 };
 
 void testPlayers();
