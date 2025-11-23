@@ -17,6 +17,8 @@ void game()
      engine.startupPhase();
 }
 
+void testTournament(); // Forward declaration
+
 void test()
 {
      int optionIndex = -1;
@@ -28,7 +30,8 @@ void test()
                << "[2] testMainGameLoop()\n"
                << "[3] testOrderExecution()\n"
                << "[4] testLoggingObserver()\n"
-               << "[5] Quit\n"
+               << "[5] testTournament()\n"
+               << "[6] Quit\n"
                << ">> ";
 
           if (!(cin >> optionIndex))
@@ -58,6 +61,9 @@ void test()
                testLoggingObserver();
                break;
           case 5:
+               testTournament();
+               break;
+          case 6:
                cout << "Exiting test menu.\n";
                return;
           default:

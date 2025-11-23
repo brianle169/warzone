@@ -1,6 +1,9 @@
 #include "CommandProcessing.h"
 #include "GameEngine.h"
 #include "LoggingObserver.h"
+#include <sstream>
+#include <set>
+#include <algorithm>
 
 /*
     === Command Class Implementation ===
@@ -212,6 +215,130 @@ bool CommandProcessor::validate(const string &command, GameEngine *engine)
         return (cmd == "play" || cmd == "end");
     }
     return false;
+}
+
+// Validate tournament command
+bool CommandProcessor::validateTournamentCommand(const std::string &commandStr, TournamentConfig &config)
+{
+    std::stringstream ss(commandStr);
+    std::string token;
+    std::vector<std::string> tokens;
+
+    // Tokenize the command string
+    while (ss >> token)
+    {
+        tokens.push_back(token);
+    }
+
+    // Check if command starts with "tournament"
+    if (tokens.empty() || tokens[0] != "tournament")
+    {
+        return false;
+    }
+
+    // Parse flags and their values
+    for (size_t i = 1; i < tokens.size(); ++i)
+    {
+        if (tokens[i] == "-M")
+        {
+            // Collect all map files until next flag
+            i++;
+            while (i < tokens.size() && tokens[i][0] != '-')
+            {
+                config.mapFiles.push_back(tokens[i]);
+                i++;
+            }
+            i--; // Adjust for outer loop increment
+        }
+        else if (tokens[i] == "-P")
+        {
+            // Collect all player strategies until next flag
+            i++;
+            while (i < tokens.size() && tokens[i][0] != '-')
+            {
+                config.playerStrategies.push_back(tokens[i]);
+                i++;
+            }
+            i--;
+        }
+        else if (tokens[i] == "-G")
+        {
+            if (i + 1 < tokens.size())
+            {
+                try
+                {
+                    config.numberOfGames = std::stoi(tokens[i + 1]);
+                }
+                catch (...)
+                {
+                    return false;
+                }
+                i++;
+            }
+        }
+        else if (tokens[i] == "-D")
+        {
+            if (i + 1 < tokens.size())
+            {
+                try
+                {
+                    config.maxTurns = std::stoi(tokens[i + 1]);
+                }
+                catch (...)
+                {
+                    return false;
+                }
+                i++;
+            }
+        }
+    }
+
+    // Validation Rules
+
+    // 1. Maps: 1-5 distinct map files
+    std::set<std::string> uniqueMaps(config.mapFiles.begin(), config.mapFiles.end());
+    if (uniqueMaps.size() < 1 || uniqueMaps.size() > 5)
+    {
+        std::cout << "Error: Must have 1-5 distinct map files" << std::endl;
+        return false;
+    }
+
+    // 2. Strategies: 2-4 distinct player strategies
+    std::set<std::string> uniqueStrats(config.playerStrategies.begin(), config.playerStrategies.end());
+    if (uniqueStrats.size() < 2 || uniqueStrats.size() > 4)
+    {
+        std::cout << "Error: Must have 2-4 distinct player strategies" << std::endl;
+        return false;
+    }
+
+    // Validate strategy names against existing classes
+    for (const auto &stratName : uniqueStrats)
+    {
+        if (stratName != "Aggressive" &&
+            stratName != "Benevolent" &&
+            stratName != "Neutral" &&
+            stratName != "Cheater")
+        {
+            std::cout << "Error: Invalid strategy name: " << stratName << std::endl;
+            return false;
+        }
+    }
+
+    // 3. Games: 1-5
+    if (config.numberOfGames < 1 || config.numberOfGames > 5)
+    {
+        std::cout << "Error: Number of games must be between 1 and 5" << std::endl;
+        return false;
+    }
+
+    // 4. Max Turns: 10-50
+    if (config.maxTurns < 10 || config.maxTurns > 50)
+    {
+        std::cout << "Error: Max turns must be between 10 and 50" << std::endl;
+        return false;
+    }
+
+    return true;
 }
 
 // Get command list

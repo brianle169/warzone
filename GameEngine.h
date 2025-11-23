@@ -8,6 +8,7 @@
 #include "Map.h"
 #include "Cards.h"
 #include "LoggingObserver.h"
+#include "CommandProcessing.h" // For TournamentConfig
 
 using namespace std;
 
@@ -61,6 +62,9 @@ public:
     void issueOrdersPhase();
     void executeOrdersPhase();
     void mainGameLoop();
+
+    // Tournament mode
+    void runTournament(const TournamentConfig& config);
 
 private:
     GameState *currentState;
