@@ -6,7 +6,16 @@
     It tests console input, file input, and command validation
     @param mode is either: "all", "console", "file"
 */
-void testCommandProcessor(const string& mode = "all") {
+
+// Helper function to extract the command word from full command string
+string extractCommandWord(const string& fullCommand) {
+    stringstream ss(fullCommand);
+    string cmd;
+    ss >> cmd;
+    return cmd;
+}
+
+void testCommandProcessor(const string& mode) {
     cout << endl << " === Testing Command Processor System === " << endl;
 
     // Creating a Game Engine obj for validation testing
@@ -24,7 +33,9 @@ void testCommandProcessor(const string& mode = "all") {
             if (consoleCP->validate(cmd->getCommandText(), engine)) {
                 cout << "Valid -> Executing..." << endl;
                 cmd->saveEffect("Valid -> executed successfully");
-                engine->executeCommand(cmd->getCommandText());
+
+                string commandWord = extractCommandWord(cmd->getCommandText());
+                engine->executeCommand(commandWord);
             } else {
                 cout << "Invalid for current state" << endl;
                 cmd->saveEffect("Invalid -> rejected");
@@ -55,9 +66,8 @@ void testCommandProcessor(const string& mode = "all") {
         file << "validatemap\n";
         file << "addplayer Alice\n";
         file << "addplayer Bob\n";
-        file << "assigncountries\n";
         file.close();
-        cout << "Created 'commands.txt' with 5 commands\n" << endl;
+        cout << "Created 'commands.txt' with 4 commands\n" << endl;
 
         // Reset the game engine to the start state
         delete engine;
@@ -74,7 +84,8 @@ void testCommandProcessor(const string& mode = "all") {
             if (fileCP->validate(cmd->getCommandText(), engine)) {
                 cout << "Valid -> Executing..." << endl;
                 cmd->saveEffect("Valid -> executed successfully");
-                engine->executeCommand(cmd->getCommandText());
+                string commandWord = extractCommandWord(cmd->getCommandText());
+                engine->executeCommand(commandWord);
             } else {
                 cout << "Invalid for current state" << endl;
                 cmd->saveEffect("Invalid -> rejected");
@@ -110,7 +121,8 @@ void testCommandProcessor(const string& mode = "all") {
         string testCommand1 = "validatemap";
         if (testCP->validate(testCommand1, engine)) {
             cout << "Valid" << endl;
-            engine->executeCommand(testCommand1);
+            string commandWord = extractCommandWord(testCommand1);
+            engine->executeCommand(commandWord);
         } else {
             cout << "Invalid (expected -> map not loaded)" << endl;
         }
@@ -120,7 +132,8 @@ void testCommandProcessor(const string& mode = "all") {
         string testCommand2 = "loadmap test.map";
         if (testCP->validate(testCommand2, engine)) {
             cout << "Valid" << endl;
-            engine->executeCommand(testCommand2);
+            string commandWord = extractCommandWord(testCommand2);
+            engine->executeCommand(commandWord);
         } else {
             cout << "Invalid" << endl;
         }
@@ -133,27 +146,27 @@ void testCommandProcessor(const string& mode = "all") {
 
 
 // The following is the driver program that accepts command-line arguments to specify the test mode
-int main (int argc, char* argv[]) {
-    // No command-line arguments: run all tests
-    if (argc < 2) {
-        testCommandProcessor("all");
-        return 0;
-    }
-    string mode = argv[1];
+// int main (int argc, char* argv[]) {
+//     // No command-line arguments: run all tests
+//     if (argc < 2) {
+//         testCommandProcessor("all");
+//         return 0;
+//     }
+//     string mode = argv[1];
 
-    // Console mode: run only Test 1 (console input reading)
-    if (mode == "-console") {
-        testCommandProcessor("console");
-    } 
-    // File mode: run only Test 2 (file reading)
-    else if (mode == "-file") {
-        testCommandProcessor("file");
-    } 
-    // Invalid command-line option
-    else {
-        cout << "Usage: ./CommandProcessingDriver [-console | -file]" << endl;
-        cout << "No arguments runs all tests." << endl;
-        return 1;
-    }
-    return 0;
-}
+//     // Console mode: run only Test 1 (console input reading)
+//     if (mode == "-console") {
+//         testCommandProcessor("console");
+//     } 
+//     // File mode: run only Test 2 (file reading)
+//     else if (mode == "-file") {
+//         testCommandProcessor("file");
+//     } 
+//     // Invalid command-line option
+//     else {
+//         cout << "Usage: ./CommandProcessingDriver [-console | -file]" << endl;
+//         cout << "No arguments runs all tests." << endl;
+//         return 1;
+//     }
+//     return 0;
+// }

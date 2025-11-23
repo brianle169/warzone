@@ -10,6 +10,7 @@
 // Interface for any class whose state/actions should be logged
 class ILoggable {
 public:
+    // Constructor/destructor
     ILoggable();
     virtual ~ILoggable();
 
@@ -30,6 +31,7 @@ public:
 // Abstract class that wants to be notified by a Subject
 class Observer {
 public:
+    // Constructor/destructor
     Observer();
     virtual ~Observer();
 
@@ -53,6 +55,7 @@ private:
     std::list<std::shared_ptr<Observer>> observers;
 
 public:
+    // Constructor/destructor
     Subject();
     virtual ~Subject();
 
@@ -75,6 +78,7 @@ public:
 // Concrete Observer that writes log messages to a file
 class LogObserver : public Observer {
 public:
+    // Constructor/destructor
     LogObserver();
     ~LogObserver() override;
 

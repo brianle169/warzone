@@ -1,0 +1,5 @@
+loadmap<Australia.map>
+validatemap
+addplayer<owen>
+addplayer<minh>
+gamestart
