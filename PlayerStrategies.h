@@ -67,3 +67,5 @@ public:
     vector<Territory *> toAttack() override;
     vector<Territory *> toDefend() override;
 };
+
+void testPlayerStrategies();
