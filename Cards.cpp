@@ -425,46 +425,49 @@ void AirliftCard::play(Deck &deck, Player &player)
     int numArmies = 0;
     Territory *fromTerritory = nullptr;
     Territory *toTerritory = nullptr;
-    while (true)
+    if (player.getStrategyName() == "HumanPlayerStrategy")
     {
-        cout << "Enter the name of the territory to airlift from >> ";
-        cin >> fromTerritoryName;
-        fromTerritory = GameEngine::getGameMap()->getTerritory(fromTerritoryName);
-        // Note that the validation step that checks if the player owns the territory is done in the Airlift order's validate() method
-        // Here, we just need to ensure the territory exists
-        if (fromTerritory)
-            break;
-        else
-            cout << "Invalid territory name. Please try again." << endl;
-    }
-    while (true)
-    {
-        cout << "Enter the number of armies to airlift >> ";
-        cin >> numArmies;
-        if (cin.fail())
+        while (true)
         {
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "Invalid number of armies. Please try again." << endl;
-            continue;
+            cout << "Enter the name of the territory to airlift from >> ";
+            cin >> fromTerritoryName;
+            fromTerritory = GameEngine::getGameMap()->getTerritory(fromTerritoryName);
+            // Note that the validation step that checks if the player owns the territory is done in the Airlift order's validate() method
+            // Here, we just need to ensure the territory exists
+            if (fromTerritory)
+                break;
+            else
+                cout << "Invalid territory name. Please try again." << endl;
         }
-        break;
-    }
-    while (true)
-    {
-        cout << "Enter the name of the territory to airlift to >> ";
-        cin >> toTerritoryName;
-        toTerritory = GameEngine::getGameMap()->getTerritory(toTerritoryName);
-        // Note that the validation step that checks if the player owns the territory is done in the Airlift order's validate() method
-        // Here, we just need to ensure the territory exists
-        if (toTerritory)
+        while (true)
+        {
+            cout << "Enter the number of armies to airlift >> ";
+            cin >> numArmies;
+            if (cin.fail())
+            {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "Invalid number of armies. Please try again." << endl;
+                continue;
+            }
             break;
-        else
-            cout << "Invalid territory name. Please try again." << endl;
+        }
+        while (true)
+        {
+            cout << "Enter the name of the territory to airlift to >> ";
+            cin >> toTerritoryName;
+            toTerritory = GameEngine::getGameMap()->getTerritory(toTerritoryName);
+            // Note that the validation step that checks if the player owns the territory is done in the Airlift order's validate() method
+            // Here, we just need to ensure the territory exists
+            if (toTerritory)
+                break;
+            else
+                cout << "Invalid territory name. Please try again." << endl;
+        }
+        Airlift *airliftOrder = new Airlift(&player, numArmies, fromTerritory, toTerritory);
+        airliftOrder->Attach(std::make_shared<LogObserver>());
+        player.getOrdersList()->addOrder(airliftOrder); // Number of armies will be set in Airlift order execution
     }
-    Airlift *airliftOrder = new Airlift(&player, numArmies, fromTerritory, toTerritory);
-    airliftOrder->Attach(std::make_shared<LogObserver>());
-    player.getOrdersList()->addOrder(airliftOrder); // Number of armies will be set in Airlift order execution
 }
 
 //------------DiplomacyCard----------------
