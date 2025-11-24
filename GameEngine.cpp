@@ -581,13 +581,13 @@ void GameEngine::runTournament(const TournamentConfig& config) {
     
     // 2D result matrix: [MapIndex][GameIndex]
     std::vector<std::vector<std::string>> results(
-        config.mapFiles.size(), 
+        config.mapFiles->size(), 
         std::vector<std::string>(config.numberOfGames)
     );
 
     // Outer loop: For each map
-    for (size_t mapIdx = 0; mapIdx < config.mapFiles.size(); ++mapIdx) {
-        const std::string& mapFile = config.mapFiles[mapIdx];
+    for (size_t mapIdx = 0; mapIdx < config.mapFiles->size(); ++mapIdx) {
+        const std::string& mapFile = (*config.mapFiles)[mapIdx];
         
         // Inner loop: For each game on this map
         for (int gameNum = 0; gameNum < config.numberOfGames; ++gameNum) {
@@ -612,7 +612,7 @@ void GameEngine::runTournament(const TournamentConfig& config) {
             std::cout << "Map loaded and validated successfully." << std::endl;
             
             // Step 3: Create players with their strategies
-            for (const auto& strategyName : config.playerStrategies) {
+            for (const auto& strategyName : *config.playerStrategies) {
                 Player* player = new Player(strategyName);
                 
                 // Assign the appropriate strategy based on name
@@ -630,6 +630,15 @@ void GameEngine::runTournament(const TournamentConfig& config) {
                 }
                 
                 GameEngine::addPlayer(player);
+            }
+
+            // Validation that ensures no human strategies present in tournament mode
+            for (Player* player : GameEngine::getPlayers()) {
+                if (dynamic_cast<HumanPlayerStrategy*>(player->getStrategy()) != nullptr) {
+                    cout << "ERROR: Human strategy detected in tournament mode!" << endl;
+                    GameEngine::clearGame();
+                    return;
+                }
             }
             
             std::cout << "Players created with strategies." << std::endl;
@@ -715,16 +724,16 @@ void GameEngine::runTournament(const TournamentConfig& config) {
     logFile << "======================================" << std::endl;
     
     logFile << "M: ";
-    for (size_t i = 0; i < config.mapFiles.size(); ++i) {
-        logFile << config.mapFiles[i];
-        if (i < config.mapFiles.size() - 1) logFile << ", ";
+    for (size_t i = 0; i < config.mapFiles->size(); ++i) {
+        logFile << (*config.mapFiles)[i];
+        if (i < config.mapFiles->size() - 1) logFile << ", ";
     }
     logFile << std::endl;
     
     logFile << "P: ";
-    for (size_t i = 0; i < config.playerStrategies.size(); ++i) {
-        logFile << config.playerStrategies[i];
-        if (i < config.playerStrategies.size() - 1) logFile << ", ";
+    for (size_t i = 0; i < config.playerStrategies->size(); ++i) {
+        logFile << (*config.playerStrategies)[i];
+        if (i < config.playerStrategies->size() - 1) logFile << ", ";
     }
     logFile << std::endl;
     
@@ -747,8 +756,8 @@ void GameEngine::runTournament(const TournamentConfig& config) {
     logFile << "|" << std::endl;
     
     // Print results for each map
-    for (size_t m = 0; m < config.mapFiles.size(); ++m) {
-        logFile << "| " << config.mapFiles[m] << " ";
+    for (size_t m = 0; m < config.mapFiles->size(); ++m) {
+        logFile << "| " << (*config.mapFiles)[m] << " ";
         for (int g = 0; g < config.numberOfGames; ++g) {
             logFile << "| " << results[m][g] << " ";
         }

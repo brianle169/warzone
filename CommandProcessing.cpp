@@ -5,6 +5,37 @@
 #include <set>
 #include <algorithm>
 
+
+/*
+    === Tournament Config Struct Implementations ===
+*/
+
+// Constructor
+TournamentConfig::TournamentConfig() : mapFiles(new vector<string>()), playerStrategies(new vector<string>()), numberOfGames(0), maxTurns(0) {}
+
+// Copy Constructor
+TournamentConfig::TournamentConfig(const TournamentConfig& other) : mapFiles(new vector<string>(*other.mapFiles)), playerStrategies(new vector<string>(*other.playerStrategies)), numberOfGames(other.numberOfGames), maxTurns(other.maxTurns) {}
+
+// Assignment Operator
+TournamentConfig& TournamentConfig::operator=(const TournamentConfig& other) {
+    if (this != &other) {
+        delete mapFiles;
+        delete playerStrategies;
+        mapFiles = new vector<string>(*other.mapFiles);
+        playerStrategies = new vector<string>(*other.playerStrategies);
+        numberOfGames = other.numberOfGames;
+        maxTurns = other.maxTurns;
+    }
+    return *this;
+}
+
+// Destructor
+TournamentConfig::~TournamentConfig() {
+    delete mapFiles;
+    delete playerStrategies;
+}
+
+
 /*
     === Command Class Implementation ===
     It manages individual commands with their text and effects
@@ -245,7 +276,7 @@ bool CommandProcessor::validateTournamentCommand(const std::string &commandStr, 
             i++;
             while (i < tokens.size() && tokens[i][0] != '-')
             {
-                config.mapFiles.push_back(tokens[i]);
+                config.mapFiles->push_back(tokens[i]);
                 i++;
             }
             i--; // Adjust for outer loop increment
@@ -256,7 +287,7 @@ bool CommandProcessor::validateTournamentCommand(const std::string &commandStr, 
             i++;
             while (i < tokens.size() && tokens[i][0] != '-')
             {
-                config.playerStrategies.push_back(tokens[i]);
+                config.playerStrategies->push_back(tokens[i]);
                 i++;
             }
             i--;
@@ -296,7 +327,7 @@ bool CommandProcessor::validateTournamentCommand(const std::string &commandStr, 
     // Validation Rules
 
     // 1. Maps: 1-5 distinct map files
-    std::set<std::string> uniqueMaps(config.mapFiles.begin(), config.mapFiles.end());
+    std::set<std::string> uniqueMaps(config.mapFiles->begin(), config.mapFiles->end());
     if (uniqueMaps.size() < 1 || uniqueMaps.size() > 5)
     {
         std::cout << "Error: Must have 1-5 distinct map files" << std::endl;
@@ -304,7 +335,7 @@ bool CommandProcessor::validateTournamentCommand(const std::string &commandStr, 
     }
 
     // 2. Strategies: 2-4 distinct player strategies
-    std::set<std::string> uniqueStrats(config.playerStrategies.begin(), config.playerStrategies.end());
+    std::set<std::string> uniqueStrats(config.playerStrategies->begin(), config.playerStrategies->end());
     if (uniqueStrats.size() < 2 || uniqueStrats.size() > 4)
     {
         std::cout << "Error: Must have 2-4 distinct player strategies" << std::endl;

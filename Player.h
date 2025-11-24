@@ -103,6 +103,7 @@ public:
 	void cardOrder();
 
 	void setStrategy(PlayerStrategies* newStrategy);
+	PlayerStrategies* getStrategy() const;
 
 	static Player *getNeutralPlayer();
 	static Player *neutralPlayer;
