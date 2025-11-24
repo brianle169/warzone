@@ -182,3 +182,23 @@ void NeutralPlayerStrategy::issueOrder() {
     // Neutral player does nothing
     cout << "Neutral player " << p->getName() << " does not issue orders.\n";
 }
+
+string HumanPlayerStrategy::getStrategyName() const {
+    return "HumanPlayerStrategy";
+}
+
+string AggressivePlayerStrategy::getStrategyName() const {
+    return "AggressivePlayerStrategy";
+}
+
+string BenevolentPlayerStrategy::getStrategyName() const {
+    return "BenevolentPlayerStrategy";
+}
+
+string NeutralPlayerStrategy::getStrategyName() const {
+    return "NeutralPlayerStrategy";
+}
+
+string CheaterPlayerStrategy::getStrategyName() const {
+    return "CheaterPlayerStrategy";
+}

@@ -25,16 +25,20 @@ void testPlayerStrategies()
 
     // ----- Create Players -----
     Player* human = new Player("Human");
-    PlayerStrategies* human = new HumanPlayerStrategy(human);
+    PlayerStrategies* humanStrategy = new HumanPlayerStrategy(human);
+    human->setPlayerStrategy(humanStrategy);
 
     Player* neutral1 = new Player("Neutral1");
-    PlayerStrategies* neutral1 = new AggressivePlayerStrategy(neutral1);
+    PlayerStrategies* neutral1Strategy = new AggressivePlayerStrategy(neutral1);
+    neutral1->setPlayerStrategy(neutral1Strategy);
 
     Player* neutral2 = new Player("Neutral2");
-    PlayerStrategies* neutral2 = new NeutralPlayerStrategy(neutral2);
+    PlayerStrategies* neutral2Strategy = new NeutralPlayerStrategy(neutral2);
+    neutral2->setPlayerStrategy(neutral2Strategy);
 
     Player* neutral3 = new Player("Neutral3");
-    PlayerStrategies* neutral3 = new NeutralPlayerStrategy(neutral3);
+    PlayerStrategies* neutral3Strategy = new NeutralPlayerStrategy(neutral3);
+    neutral3->setPlayerStrategy(neutral3Strategy);
 
     // Give each player territories to make decisions on
     human->addTerritory(t1);
@@ -78,5 +82,6 @@ void testPlayerStrategies()
 
     delete t1;
     delete t2;
+    delete t3;
 
 }

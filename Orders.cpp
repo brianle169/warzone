@@ -207,7 +207,7 @@ void Advance::execute()
         { // the player successfully conquered the territory
 
             // If the target belongs to the Neutral player, convert it to Aggressive
-            if (targetTerritory->getPlayer() == Player::getNeutralPlayer()) {
+            if (targetTerritory->getPlayer()->getPlayerStrategy()->getStrategyName() == "NeutralPlayerStrategy") {
                 Player* neutral = targetTerritory->getPlayer();
                 neutral->setPlayerStrategy(new AggressivePlayerStrategy(neutral));
 

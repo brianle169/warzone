@@ -106,7 +106,7 @@ public:
 	static Player *neutralPlayer;
 
 	void setPlayerStrategy(PlayerStrategies* strategy);
-	PlayerStrategies* getPlayerStrategy() const { return ps; }
+	PlayerStrategies* getPlayerStrategy() const;
 
 private:
 	// Attributes

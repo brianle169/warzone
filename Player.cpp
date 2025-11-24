@@ -722,3 +722,7 @@ void Player::setPlayerStrategy(PlayerStrategies* strategy)
         ps = strategy; // assign new strategy
     }
 }
+
+PlayerStrategies* Player::getPlayerStrategy() const {
+    return ps;
+}

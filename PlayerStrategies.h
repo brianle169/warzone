@@ -13,6 +13,7 @@ public:
     virtual void issueOrder() = 0;
     virtual vector<Territory *> toAttack() = 0;
     virtual vector<Territory *> toDefend() = 0;
+    virtual string getStrategyName() const = 0;
 
 protected:
     Player *p;
@@ -26,6 +27,7 @@ public:
     void issueOrder() override;
     vector<Territory *> toAttack() override;
     vector<Territory *> toDefend() override;
+    string getStrategyName() const override;
 };
 
 class BenevolentPlayerStrategy : public PlayerStrategies
@@ -36,6 +38,8 @@ public:
     void issueOrder() override;
     vector<Territory *> toAttack() override;
     vector<Territory *> toDefend() override;
+    string getStrategyName() const override;
+
 };
 
 class NeutralPlayerStrategy : public PlayerStrategies
@@ -46,6 +50,7 @@ public:
     void issueOrder() override;
     vector<Territory *> toAttack() override;
     vector<Territory *> toDefend() override;
+    string getStrategyName() const override;
 };
 
 class CheaterPlayerStrategy : public PlayerStrategies
@@ -56,6 +61,8 @@ public:
     void issueOrder() override;
     vector<Territory *> toAttack() override;
     vector<Territory *> toDefend() override;
+    string getStrategyName() const override;
+
 };
 
 class HumanPlayerStrategy : public PlayerStrategies
@@ -66,6 +73,8 @@ public:
     void issueOrder() override;
     vector<Territory *> toAttack() override;
     vector<Territory *> toDefend() override;
+    string getStrategyName() const override;
+
 };
 
 void testPlayerStrategies();
