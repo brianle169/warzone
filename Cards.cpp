@@ -218,6 +218,17 @@ int Hand::getCardIndex(string name){
     }
 }
 
+int Hand::getFirstIndexOf(string name) {
+    for (int i = 0; i < spCards.size(); i++) {
+        if (spCards[i]->getName() == name) {
+            return i;   // return the index
+        }
+    }
+    return -1;  // not found
+}
+
+
+
 // Definitions for all child Card classes
 
 // ------------BombCard-------------

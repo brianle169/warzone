@@ -161,6 +161,7 @@ public:
     SpCard getCardAt(int index);
     SpCard getCard(string name);
     int getCardIndex(string name);
+    int getFirstIndexOf(string name);
 };
 
 void testCards();
