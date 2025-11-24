@@ -159,6 +159,7 @@ public:
     // Newly added helper methods
     int getNumCards();
     SpCard getCardAt(int index);
+    int getFirstIndexOf(string name);
 };
 
 void testCards();

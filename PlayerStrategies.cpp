@@ -5,6 +5,8 @@
 #include "Orders.h"
 #include "Player.h"
 #include "PlayerStrategies.h"
+#include "Cards.h"
+#include "GameEngine.h"
 
 PlayerStrategies::PlayerStrategies(Player *player) : p(player) {}
 
@@ -165,6 +167,160 @@ void HumanPlayerStrategy::issueOrder()
     }
 }
 
+// Aggressive player wants to attack all attackable territories
+vector<Territory*> AggressivePlayerStrategy::toAttack(){
+    // Get adjacent territories
+    unordered_map<string, Territory *> attackableTerritoriesMap = this->p->getAttackableTerritories();
+    
+    // List them in console 
+    cout << "Available territories to attack: " << endl;
+    for (const auto &pair : attackableTerritoriesMap)
+    {
+        cout << "- " << pair.first << " (" << pair.second->getArmies() << ")" << endl;
+    }
+    cout << endl;
+
+
+    vector<Territory*> attackingTerritories;
+
+    // Extract territories into vector 
+    for (auto& pair : attackableTerritoriesMap) {
+        attackingTerritories.push_back(pair.second);
+    }
+
+    cout << "Choosing all territories." << endl;
+
+    // Return vector of countries to attack 
+    return attackingTerritories;
+}
+
+// Aggressive player only defends its strongest territory
+vector<Territory*> AggressivePlayerStrategy::toDefend(){
+
+    // Get defendable territories 
+    cout << "Available territories to defend: " << endl;
+    unordered_map<string, Territory *> defendableTerritories = this->p->getDefendableTerritories();
+
+    // List them in console
+    for (const auto &pair : defendableTerritories)
+    {
+        cout << "- " << pair.first << " (" << pair.second->getArmies() << ")" << endl;
+    }
+    cout << endl;
+
+    vector<Territory*> territories = *(this->p->getTerritories());
+
+    int strongestTerritoryIndex = 0;
+
+    cout << "Choosing strongest territory." << endl;
+    // Find territory with the most armies
+    for (int i = 0; i < territories.size(); i++){
+        if (territories[i]->getArmies() > territories[strongestTerritoryIndex]->getArmies()){
+            strongestTerritoryIndex = i;
+        }
+    }
+    
+    vector<Territory*> defendingTerritories;
+
+    defendingTerritories.push_back(territories[strongestTerritoryIndex]);
+
+    cout << "The strongest (and thus only defendable) territory is at index " << strongestTerritoryIndex << endl;
+
+
+    return defendingTerritories;
+}
+
+// The aggressive player only plays airlift and bomb cards 
+void AggressivePlayerStrategy::issueOrder(){
+    
+    vector<Territory *> attackingTerritories;
+    vector<Territory *> defendingTerritories;
+    Territory* strongestTerritory;
+
+    // Attack/Defend phase
+     if (!this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::AttackDefendPhase)))
+    {
+        cout << "Choosing territories to attack and defend." << endl;
+        attackingTerritories = this->toAttack();
+        defendingTerritories = this->toDefend();
+        this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::AttackDefendPhase)) = true;
+        return;
+    }
+    else
+    {
+        cout << "Choosing territories to attack and defend has been completed." << endl;
+        attackingTerritories = *(this->p->getAttacking());
+        defendingTerritories = *(this->p->getDefending());
+
+        strongestTerritory = defendingTerritories[0];
+    }
+
+    // Deploy armies
+    if ((this->p->getReinforcementPool()) > 0)
+    {
+        // Deploy all of the reinforcement pool to the strongest territory
+        cout << "Deploying all reinforcement pool to the strongest territory" << endl;
+        Order *deployOrder = new Deploy(this->p, strongestTerritory, this->p->getReinforcementPool());
+        deployOrder->Attach(std::make_shared<LogObserver>());
+        this->p->getOrdersList()->addOrder(deployOrder);
+        return;
+    }
+    else
+    {
+        cout << "Reinforcement pool is empty. No deploy orders can be issued." << endl;
+        this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::DeployPhase)) = true;
+    }
+    // Advance armies
+    if (!this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::AdvancePhase)))
+    {
+        // Select a random attackable territory to attack
+        int randomIndex = rand() % attackingTerritories.size();
+        auto* targetTerritory = attackingTerritories[randomIndex];
+
+        Order *advanceOrder = new Advance(this->p, strongestTerritory->getArmies(), strongestTerritory, targetTerritory);
+        if (advanceOrder != nullptr)
+        {
+            advanceOrder->Attach(std::make_shared<LogObserver>());
+            this->p->getOrdersList()->addOrder(advanceOrder);
+        }
+        return;
+    }
+    else
+    {
+        cout << "Advance orders are finalized. Issuing other order types using cards." << endl;
+    }
+
+    // Play cards in hand
+    if (!this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::OtherPhase)))
+    {
+        Hand* hand = this->p->getHand();
+
+        // If there are no bomb cards or airlift cards, the player does not use those cards
+        if (!hand->includes("BombCard") && !hand->includes("AirliftCard")){
+			this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::OtherPhase)) = true;
+            cout << "All aggressive orders have been issued for this turn." << endl;
+            return;
+        } 
+
+       Hand* hand = this->p->getHand();
+       int cardToPlayIndex;
+
+       // Plays all bombcards and then airlift cards
+        if (hand->includes("BombCard")) {
+            cardToPlayIndex = hand->getFirstIndexOf("BombCard");
+        } else if (hand->includes("AirliftCard")) {
+            cardToPlayIndex = hand->getFirstIndexOf("AirliftCard");
+        }
+
+        SpCard cardToPlay = hand->getCardAt(cardToPlayIndex);
+
+		cardToPlay->play(*GameEngine::getCardDeck(), *(this->p));
+
+        hand->remove(cardToPlayIndex); // Remove the card from hand after playing
+
+		// Add the card back to the deck
+		GameEngine::getCardDeck()->add(cardToPlay);
+    }
 //Neutral Player implementation
 
 
