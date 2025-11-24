@@ -714,3 +714,15 @@ Player *Player::getNeutralPlayer()
 {
 	return neutralPlayer;
 }
+
+void Player::setPlayerStrategy(PlayerStrategies* strategy)
+{
+    if (ps != strategy) {
+        delete ps;     // delete old strategy
+        ps = strategy; // assign new strategy
+    }
+}
+
+PlayerStrategies* Player::getPlayerStrategy() const {
+    return ps;
+}
