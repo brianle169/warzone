@@ -5,10 +5,173 @@
 #include "Orders.h"
 #include "Player.h"
 #include "PlayerStrategies.h"
+#include "Cards.h"
+#include "GameEngine.h"
 
 PlayerStrategies::PlayerStrategies(Player *player) : p(player) {}
 
 AggressivePlayerStrategy::AggressivePlayerStrategy(Player *player) : PlayerStrategies(player) {}
+
+// BenevolentPlayerStrategy class implementation
+vector<Territory*> BenevolentPlayerStrategy::toAttack(){
+    cout << "Available territories to attack: " << endl;
+    unordered_map<string, Territory*> attackableTerritories = this->p->getAttackableTerritories();
+    for (const auto& pair : attackableTerritories)
+    {
+        cout << "- " << pair.first << " (" << pair.second->getArmies() << ")" << endl;
+    }
+    cout << endl;
+
+	cout << "Benevolent player does not attack any territories." << endl;
+
+    return vector<Territory*>();
+}
+vector<Territory*> BenevolentPlayerStrategy::toDefend(){
+    cout << "Available territories to defend: " << endl;
+    unordered_map<string, Territory*> defendableTerritories = this->p->getDefendableTerritories();
+    for (const auto& pair : defendableTerritories)
+    {
+        cout << "- " << pair.first << " (" << pair.second->getArmies() << ")" << endl;
+    }
+    cout << endl;
+
+    std::vector<Territory*> sortTer = *this->p->getTerritories();
+
+    //sort terr vector from least to most armies 
+    std::sort(sortTer.begin(), sortTer.end(),
+    [](Territory* a, Territory* b) {
+        return a->getArmies() < b->getArmies();
+        }
+    );
+    //defend the weakest terr
+    this->p->getDefending()->clear();
+    this->p->getDefending()->push_back(sortTer[0]);
+
+    cout << "Benevolent player defends its weakest territory" << endl;
+    return *this->p->getDefending(); 
+}
+void BenevolentPlayerStrategy::issueOrder() {  
+    // Implementation for Benevolent player issuing an order
+    cout << "\n==========================" << endl;
+    cout << "===== BENEVOLENT PLAYER ===== ";
+    cout << "=== Player " << (this->p->getName()) << "'s turn ===" << endl;
+    cout << *this->p;
+    this->p->displayOrdersList(this->p->getOrdersList());
+    cout << "==========================" << endl;
+    cout << endl;
+
+    vector<Territory*> attackingTerritories;
+    vector<Territory*> defendingTerritories;
+    // 2. Decide territories to attack and defend.
+    if (!this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::AttackDefendPhase)))
+    {
+        attackingTerritories = this->toAttack();
+        defendingTerritories = this->toDefend();
+        this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::AttackDefendPhase)) = true;
+
+        return;
+    }
+    else
+    {
+        cout << "Choosing territories to attack and defend has been completed." << endl;
+        attackingTerritories = *(this->p->getAttacking());
+        defendingTerritories = *(this->p->getDefending());
+    }
+
+    // 3. After choosing the territories to attack and defend, we will issue
+    // deploy orders on the defending territories until the reinforcement pool is empty.
+    if ((this->p->getReinforcementPool()) > 0){
+        // if the reinforcement pool is not empty, we only have one order option: Deploy
+
+        //deploy all armies to weakest terretory 
+        Order* deployOrder = new Deploy(this->p, defendingTerritories[0], this->p->getReinforcementPool());
+        this->p->setReinforcementPool(0);
+
+        deployOrder->Attach(std::make_shared<LogObserver>());
+        this->p->getOrdersList()->addOrder(deployOrder);
+        return;
+    }else{
+        cout << "Reinforcement pool is empty. No deploy orders can be issued." << endl;
+        this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::DeployPhase)) = true;
+    }
+
+    // 4. After deploying all reinforcements, we can issue other types of orders.
+    if (!this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::AdvancePhase)))
+    {
+        std::vector<Territory*> sortTer = *this->p->getTerritories();
+
+        //sort terr vector from least to most armies 
+        std::sort(sortTer.begin(), sortTer.end(),
+        [](Territory* a, Territory* b) {
+            return a->getArmies() < b->getArmies();
+        });
+
+
+        Order* advanceOrder;
+
+        //find highest differences of armies in adjacent terrotories and equalize armies
+        int s = sortTer.size();
+        for (auto weak : sortTer){
+            for (s; s > 0; s--){
+                if (sortTer[s]->isEdge(weak)){
+                    int numStrong = sortTer[s]->getArmies();
+                    int numWeak = weak->getArmies();
+                    advanceOrder = new Advance(this->p, numStrong-((numWeak+numStrong)/2), sortTer[s], weak);
+                }
+            }
+        }
+        
+        if (advanceOrder != nullptr)
+        {
+            this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::AdvancePhase)) = true;
+            advanceOrder->Attach(std::make_shared<LogObserver>());
+            this->p->getOrdersList()->addOrder(advanceOrder);
+        }
+        return;
+    }
+    else
+    {
+        cout << "Advance orders are finalized. Now you can issue other types using corresponding cards." << endl;
+    }
+
+    // 5. Finally, we can issue other types of orders based on the cards in hand.
+    if (!this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::OtherPhase))){
+        //resort terrs
+        std::vector<Territory*> sortTer = *this->p->getTerritories();
+
+        std::sort(sortTer.begin(), sortTer.end(),
+        [](Territory* a, Territory* b) {
+            return a->getArmies() < b->getArmies();
+        });
+
+        SpCard cardToPlay;
+        string name;
+        if (this->p->getHand()->includes("Airlift")){
+            
+            name = "Airlift";
+            //equalize strongest and weakest territories
+            int numStrong = sortTer.back()->getArmies();
+            int numWeak = sortTer[0]->getArmies();
+            Airlift *airliftOrder = new Airlift(this->p, numStrong-((numWeak+numStrong)/2), sortTer.back(), sortTer[0]);
+
+            airliftOrder->Attach(std::make_shared<LogObserver>());
+            this->p->getOrdersList()->addOrder(airliftOrder);
+            this->p->getHand()->remove(this->p->getHand()->getCardIndex(name)); // Remove the card from hand after playing
+            GameEngine::getCardDeck()->add(this->p->getHand()->getCard("Airlift")); //Add card back to deck
+        }
+		
+		this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::OtherPhase)) = true;
+		// Add the card back to the deck
+		
+		return;
+    }
+    else
+    {
+        cout << "All possible orders have been issued for this turn." << endl;
+    }
+}
+
+
 
 BenevolentPlayerStrategy::BenevolentPlayerStrategy(Player *player) : PlayerStrategies(player) {}
 

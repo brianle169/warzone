@@ -197,6 +197,27 @@ SpCard Hand::getCardAt(int index)
     return SpCard(); // Return null shared_ptr if index is out of bounds
 }
 
+SpCard Hand::getCard(string name){
+    for (auto c : spCards){
+        if (name == c.get()->getName()){
+            return c;
+        }
+    }
+    return SpCard();
+}
+int Hand::getCardIndex(string name){
+    if (!this->includes(name)){
+        return -1;
+    }
+    int i = 0;
+    for (auto c : spCards){
+        if (name == c.get()->getName()){
+            return i;
+        }
+        i++;
+    }
+}
+
 // Definitions for all child Card classes
 
 // ------------BombCard-------------
