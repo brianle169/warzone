@@ -3,6 +3,7 @@
 #include "Player.h"
 #include "Cards.h"
 #include "GameEngine.h"
+#include "PlayerStrategies.h"
 #include <iostream>
 #include <algorithm>
 using namespace std;
@@ -204,6 +205,15 @@ void Advance::execute()
 
         if (player != targetTerritory->getPlayer())
         { // the player successfully conquered the territory
+
+            // If the target belongs to the Neutral player, convert it to Aggressive
+            if (targetTerritory->getPlayer()->getPlayerStrategy()->getStrategyName() == "NeutralPlayerStrategy") {
+                Player* neutral = targetTerritory->getPlayer();
+                neutral->setPlayerStrategy(new AggressivePlayerStrategy(neutral));
+
+                cout << neutral->getName() << " has been attacked and becomes Aggressive!\n";
+            }
+            
             if (targetTerritory->getArmies() == 0)
             {
                 sourceTerritory->setArmies(sourceTerritory->getArmies() - numArmies);

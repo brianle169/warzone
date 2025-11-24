@@ -321,4 +321,40 @@ void AggressivePlayerStrategy::issueOrder(){
 		// Add the card back to the deck
 		GameEngine::getCardDeck()->add(cardToPlay);
     }
+//Neutral Player implementation
+
+
+vector <Territory*> NeutralPlayerStrategy::toAttack() {
+    // Neutral player never attacks
+    return vector<Territory*>();
+}
+
+vector <Territory*> NeutralPlayerStrategy::toDefend() {
+    // Neutral player never defends 
+    return vector<Territory*>();
+}
+
+void NeutralPlayerStrategy::issueOrder() {
+    // Neutral player does nothing
+    cout << "Neutral player " << p->getName() << " does not issue orders.\n";
+}
+
+string HumanPlayerStrategy::getStrategyName() const {
+    return "HumanPlayerStrategy";
+}
+
+string AggressivePlayerStrategy::getStrategyName() const {
+    return "AggressivePlayerStrategy";
+}
+
+string BenevolentPlayerStrategy::getStrategyName() const {
+    return "BenevolentPlayerStrategy";
+}
+
+string NeutralPlayerStrategy::getStrategyName() const {
+    return "NeutralPlayerStrategy";
+}
+
+string CheaterPlayerStrategy::getStrategyName() const {
+    return "CheaterPlayerStrategy";
 }
