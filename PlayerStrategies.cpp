@@ -321,6 +321,7 @@ void AggressivePlayerStrategy::issueOrder(){
 		// Add the card back to the deck
 		GameEngine::getCardDeck()->add(cardToPlay);
     }
+}
 //Neutral Player implementation
 
 
