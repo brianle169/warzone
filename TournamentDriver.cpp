@@ -18,16 +18,16 @@ void testTournament() {
     CommandProcessor cp1;
     TournamentConfig config1;
 
-    std::string validCmd = "tournament -M world.map Australia.map -P Aggressive Benevolent Neutral -G 2 -D 15";
+    std::string validCmd = "tournament -M Australia.map -P Aggressive Benevolent Neutral -G 2 -D 15";
     std::cout << "Command: " << validCmd << std::endl;
     
     if (cp1.validateTournamentCommand(validCmd, config1)) {
-        std::cout << "✓ Command validated successfully!" << std::endl;
+        std::cout << " Command validated successfully!" << std::endl;
         std::cout << "\nStarting tournament..." << std::endl;
         engine1.runTournament(config1);
-        std::cout << "✓ Tournament completed!" << std::endl;
+        std::cout << " Tournament completed!" << std::endl;
     } else {
-        std::cout << "✗ Validation failed (unexpected)!" << std::endl;
+        std::cout << " Validation failed (unexpected)!" << std::endl;
     }
     
     // TEST 2: Invalid Commands
@@ -46,9 +46,9 @@ void testTournament() {
         TournamentConfig config;
         std::cout << "\nTesting: " << cmd << std::endl;
         if (cp.validateTournamentCommand(cmd, config)) {
-            std::cout << "✗ FAILED: Invalid command was accepted!" << std::endl;
+            std::cout << " FAILED: Invalid command was accepted!" << std::endl;
         } else {
-            std::cout << "✓ PASSED: Invalid command was rejected" << std::endl;
+            std::cout << " PASSED: Invalid command was rejected" << std::endl;
         }
     }
     

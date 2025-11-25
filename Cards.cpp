@@ -206,6 +206,7 @@ SpCard Hand::getCard(string name){
     }
     return SpCard();
 }
+
 int Hand::getCardIndex(string name){
     if (!this->includes(name)){
         return -1;
@@ -217,6 +218,7 @@ int Hand::getCardIndex(string name){
         }
         i++;
     }
+    return -1;
 }
 
 int Hand::getFirstIndexOf(string name) {
@@ -532,9 +534,9 @@ void AirliftCard::play(Deck &deck, Player &player)
         airliftOrder->Attach(std::make_shared<LogObserver>());
         player.getOrdersList()->addOrder(airliftOrder); // Number of armies will be set in Airlift order execution
     }
-    Airlift *airliftOrder = new Airlift(&player, numArmies, fromTerritory, toTerritory);
-    airliftOrder->Attach(std::make_shared<LogObserver>());
-    player.getOrdersList()->addOrder(airliftOrder); // Number of armies will be set in Airlift order execution
+    // Airlift *airliftOrder = new Airlift(&player, numArmies, fromTerritory, toTerritory);
+    // airliftOrder->Attach(std::make_shared<LogObserver>());
+    // player.getOrdersList()->addOrder(airliftOrder); // Number of armies will be set in Airlift order execution
 
     // PlayerStrategies* strat = player.getPlayerStrategy();
 

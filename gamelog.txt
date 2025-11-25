@@ -1,11 +1,12 @@
-New state: map loaded
-New state: map validated
-New state: players added
-Command saved: map
-Command saved: gamestart
-Command executed: map | Effect: Deployed 5 armies
-Command executed: gamestart | Effect: Advanced to territory X
-Order added: Deploy
-Order added: Negotiate
-Order Effect: Successfully deployed 10 armies to North; North has now 15 troops
-Order Effect: Successfully negotiate with Bob. You cannot call the advance order for the next round
+Order Effect: Successfully deployed 60 armies to 26; 26 has now 63 troops
+Order Effect: Successfully deployed 59 armies to 83; 83 has now 62 troops
+Order Effect: Successfully deployed 10 armies to 26; 26 has now 73 troops
+Order Effect: Successfully deployed 9 armies to 56; 56 has now 12 troops
+Order Effect: Successfully deployed 10 armies to 26; 26 has now 83 troops
+Order Effect: Successfully deployed 9 armies to 17; 17 has now 12 troops
+Order Effect: Successfully advanced 5 troops from 56 to 61; 61 has now 8 troops
+Order Effect: Successfully deployed 10 armies to 26; 26 has now 93 troops
+Order Effect: Successfully deployed 9 armies to 55; 55 has now 12 troops
+Order Effect: Successfully advanced 2 troops from 56 to 55; 55 has now 14 troops
+Order Effect: Successfully deployed 10 armies to 26; 26 has now 103 troops
+Order Effect: Successfully deployed 9 armies to 76; 76 has now 12 troops
