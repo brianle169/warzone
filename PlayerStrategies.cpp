@@ -518,21 +518,14 @@ void AggressivePlayerStrategy::issueOrder(){
         Hand* hand = this->p->getHand();
 
         // If there are no bomb cards or airlift cards, the player does not use those cards
-        if (!hand->includes("BombCard") && !hand->includes("AirliftCard")){
+        if (!hand->includes("BombCard")){
 			this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::OtherPhase)) = true;
             cout << "All aggressive orders have been issued for this turn." << endl;
             return;
         } 
 
        Hand* hand = this->p->getHand();
-       int cardToPlayIndex;
-
-       // Plays all bombcards and then airlift cards
-        if (hand->includes("BombCard")) {
-            cardToPlayIndex = hand->getFirstIndexOf("BombCard");
-        } else if (hand->includes("AirliftCard")) {
-            cardToPlayIndex = hand->getFirstIndexOf("AirliftCard");
-        }
+       int cardToPlayIndex = hand->getFirstIndexOf("BombCard");
 
         SpCard cardToPlay = hand->getCardAt(cardToPlayIndex);
 
