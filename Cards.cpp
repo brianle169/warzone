@@ -8,6 +8,7 @@
 #include "Cards.h"
 #include "Player.h"
 #include "GameEngine.h"
+#include "PlayerStrategies.h"
 
 using namespace std;
 
@@ -197,6 +198,38 @@ SpCard Hand::getCardAt(int index)
     return SpCard(); // Return null shared_ptr if index is out of bounds
 }
 
+SpCard Hand::getCard(string name){
+    for (auto c : spCards){
+        if (name == c.get()->getName()){
+            return c;
+        }
+    }
+    return SpCard();
+}
+int Hand::getCardIndex(string name){
+    if (!this->includes(name)){
+        return -1;
+    }
+    int i = 0;
+    for (auto c : spCards){
+        if (name == c.get()->getName()){
+            return i;
+        }
+        i++;
+    }
+}
+
+int Hand::getFirstIndexOf(string name) {
+    for (int i = 0; i < spCards.size(); i++) {
+        if (spCards[i]->getName() == name) {
+            return i;   // return the index
+        }
+    }
+    return -1;  // not found
+}
+
+
+
 // Definitions for all child Card classes
 
 // ------------BombCard-------------
@@ -249,16 +282,47 @@ void BombCard::play(Deck &deck, Player &player)
     cout << *GameEngine::getGameMap() << endl;
     string territoryName;
     Territory *targetTerritory = nullptr;
-    while (true)
-    {
-        cout << "Enter the name of the territory to bomb >> ";
-        cin >> territoryName;
+    PlayerStrategies* strat = player.getPlayerStrategy();
+
+    if (dynamic_cast<AggressivePlayerStrategy*>(strat)) {
+
+        vector<Territory*> territories;
+
+        // Select adjacent territories to bomb 
+        for (Territory* t : *(player.getTerritories()))
+        {
+            for (Territory *neighbor : t->getEdges())
+            {
+                if (neighbor->getPlayer() != &player)
+                {
+                    territories.push_back(neighbor);
+                }
+            }
+        }
+
+        if (territories.empty()) {
+            return;
+        }
+        
+        // Select a random attackable territory to attack
+        int randomIndex = rand() % territories.size();
+        string territoryName = territories[randomIndex]->getName();
+
         targetTerritory = GameEngine::getGameMap()->getTerritory(territoryName);
-        if (targetTerritory)
-            break;
-        else
-            cout << "Invalid territory name. Please try again." << endl;
     }
+    else {
+        while (true)
+        {
+            cout << "Enter the name of the territory to bomb >> ";
+            cin >> territoryName;
+            targetTerritory = GameEngine::getGameMap()->getTerritory(territoryName);
+            if (targetTerritory)
+                break;
+            else
+                cout << "Invalid territory name. Please try again." << endl;
+        }
+    }
+
     Bomb *bombOrder = new Bomb(&player, targetTerritory, nullptr);
     bombOrder->Attach(std::make_shared<LogObserver>());
     player.getOrdersList()->addOrder(bombOrder);
@@ -468,6 +532,30 @@ void AirliftCard::play(Deck &deck, Player &player)
         airliftOrder->Attach(std::make_shared<LogObserver>());
         player.getOrdersList()->addOrder(airliftOrder); // Number of armies will be set in Airlift order execution
     }
+    Airlift *airliftOrder = new Airlift(&player, numArmies, fromTerritory, toTerritory);
+    airliftOrder->Attach(std::make_shared<LogObserver>());
+    player.getOrdersList()->addOrder(airliftOrder); // Number of armies will be set in Airlift order execution
+
+    // PlayerStrategies* strat = player.getPlayerStrategy();
+
+    // if (dynamic_cast<AggressivePlayerStrategy*>(strat)) {
+
+    //     vector<Territory*> territories = *(player.getTerritories());
+    //     Territory* strongestTerritory = territories[0];
+
+    //     for (auto& terr: territories){
+    //         if (terr->getArmies() > strongestTerritory->getArmies()){
+    //             strongestTerritory = terr;
+    //         }
+    //     }
+
+    //     fromTerritory = strongestTerritory;
+
+    //     // numArmies = 
+    //     Airlift *airliftOrder = new Airlift(&player, fromTerritory->getArmies(), fromTerritory, toTerritory);
+    //     cout << "Player has the Aggressive strategy!" << endl;
+    // }
+
 }
 
 //------------DiplomacyCard----------------
