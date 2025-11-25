@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <random>
 #include <limits>
+#include "PlayerStrategies.h"
 
 using namespace std;
 /*
@@ -571,6 +572,204 @@ void GameEngine::mainGameLoop()
             break; // Exit the main game loop
         }
     }
+}
+
+void GameEngine::runTournament(const TournamentConfig& config) {
+    std::cout << "\n======================================" << std::endl;
+    std::cout << "    TOURNAMENT MODE STARTED" << std::endl;
+    std::cout << "======================================\n" << std::endl;
+    
+    // 2D result matrix: [MapIndex][GameIndex]
+    std::vector<std::vector<std::string>> results(
+        config.mapFiles->size(), 
+        std::vector<std::string>(config.numberOfGames)
+    );
+
+    // Outer loop: For each map
+    for (size_t mapIdx = 0; mapIdx < config.mapFiles->size(); ++mapIdx) {
+        const std::string& mapFile = (*config.mapFiles)[mapIdx];
+        
+        // Inner loop: For each game on this map
+        for (int gameNum = 0; gameNum < config.numberOfGames; ++gameNum) {
+            
+            std::cout << "\n--- Map: " << mapFile 
+                      << " | Game: " << (gameNum + 1) << "/" << config.numberOfGames 
+                      << " ---" << std::endl;
+            
+            // Step 1: Clear previous game state
+            GameEngine::clearGame();
+            
+            // Step 2: Load and validate the map
+            MapLoader loader;
+            GameEngine::setGameMap(loader.load(mapFile));
+            
+            if (!GameEngine::getGameMap() || !GameEngine::getGameMap()->validate()) {
+                std::cout << "ERROR: Map " << mapFile << " is invalid!" << std::endl;
+                results[mapIdx][gameNum] = "Invalid Map";
+                continue; // Skip to next game
+            }
+            
+            std::cout << "Map loaded and validated successfully." << std::endl;
+            
+            // Step 3: Create players with their strategies
+            for (const auto& strategyName : *config.playerStrategies) {
+                Player* player = new Player(strategyName);
+                
+                // Assign the appropriate strategy based on name
+                if (strategyName == "Aggressive") {
+                    player->setStrategy(new AggressivePlayerStrategy(player));
+                }
+                else if (strategyName == "Benevolent") {
+                    player->setStrategy(new BenevolentPlayerStrategy(player));
+                }
+                else if (strategyName == "Neutral") {
+                    player->setStrategy(new NeutralPlayerStrategy(player));
+                }
+                else if (strategyName == "Cheater") {
+                    player->setStrategy(new CheaterPlayerStrategy(player));
+                }
+                
+                GameEngine::addPlayer(player);
+            }
+
+            // Validation that ensures no human strategies present in tournament mode
+            for (Player* player : GameEngine::getPlayers()) {
+                if (dynamic_cast<HumanPlayerStrategy*>(player->getStrategy()) != nullptr) {
+                    cout << "ERROR: Human strategy detected in tournament mode!" << endl;
+                    GameEngine::clearGame();
+                    return;
+                }
+            }
+            
+            std::cout << "Players created with strategies." << std::endl;
+            
+            // Step 4: Distribute territories fairly
+            std::vector<Territory*> allTerritories;
+            for (const auto& pair : GameEngine::getGameMap()->getTerritories()) {
+                allTerritories.push_back(pair.second.get());
+            }
+            
+            // Shuffle and distribute
+            std::random_device rd;
+            std::mt19937 g(rd());
+            std::shuffle(allTerritories.begin(), allTerritories.end(), g);
+            
+            size_t playerCount = GameEngine::getPlayers().size();
+            for (size_t i = 0; i < allTerritories.size(); ++i) {
+                Player* assignedPlayer = GameEngine::getPlayers()[i % playerCount];
+                allTerritories[i]->setPlayer(assignedPlayer);
+                assignedPlayer->addTerritory(allTerritories[i]);
+                allTerritories[i]->setArmies(3); // Initial armies
+            }
+            
+            // Give each player initial reinforcements
+            for (Player* player : GameEngine::getPlayers()) {
+                player->setReinforcementPool(50);
+            }
+            
+            std::cout << "Territories distributed." << std::endl;
+            
+            // Step 5: Run the game loop with turn limit
+            int currentTurn = 0;
+            std::string winner = "Draw";
+            
+            while (currentTurn < config.maxTurns) {
+                // Check for winner (only one player left)
+                if (GameEngine::getPlayers().size() == 1) {
+                    winner = GameEngine::getPlayers()[0]->getName();
+                    std::cout << "Winner: " << winner << " (Turn " << currentTurn << ")" << std::endl;
+                    break;
+                }
+                
+                // Execute game phases
+                this->reinforcementPhase();
+                this->issueOrdersPhase();
+                this->executeOrdersPhase();
+                
+                // Remove eliminated players (those with no territories)
+                auto& playerList = GameEngine::getPlayers();
+                for (auto it = playerList.begin(); it != playerList.end(); ) {
+                    if ((*it)->getTerritories()->empty()) {
+                        std::cout << "Player " << (*it)->getName() << " eliminated!" << std::endl;
+                        delete *it;
+                        it = playerList.erase(it);
+                    } else {
+                        ++it;
+                    }
+                }
+                
+                // Clear negotiation state for next turn
+                for (Player* player : GameEngine::getPlayers()) {
+                    player->clearState();
+                }
+                
+                currentTurn++;
+            }
+            
+            // If we exited due to turn limit
+            if (currentTurn >= config.maxTurns && GameEngine::getPlayers().size() > 1) {
+                std::cout << "Turn limit reached. Game is a Draw." << std::endl;
+                winner = "Draw";
+            }
+            
+            results[mapIdx][gameNum] = winner;
+        }
+    }
+    
+    // Step 6: Log Results to File
+    std::ofstream logFile("gamelog.txt", std::ios::app);
+    
+    logFile << "\n\n======================================" << std::endl;
+    logFile << "       TOURNAMENT RESULTS" << std::endl;
+    logFile << "======================================" << std::endl;
+    
+    logFile << "M: ";
+    for (size_t i = 0; i < config.mapFiles->size(); ++i) {
+        logFile << (*config.mapFiles)[i];
+        if (i < config.mapFiles->size() - 1) logFile << ", ";
+    }
+    logFile << std::endl;
+    
+    logFile << "P: ";
+    for (size_t i = 0; i < config.playerStrategies->size(); ++i) {
+        logFile << (*config.playerStrategies)[i];
+        if (i < config.playerStrategies->size() - 1) logFile << ", ";
+    }
+    logFile << std::endl;
+    
+    logFile << "G: " << config.numberOfGames << std::endl;
+    logFile << "D: " << config.maxTurns << std::endl;
+    logFile << std::endl;
+    
+    // Print table header
+    logFile << "| Map ";
+    for (int g = 0; g < config.numberOfGames; ++g) {
+        logFile << "| Game " << (g + 1) << " ";
+    }
+    logFile << "|" << std::endl;
+    
+    // Print separator
+    logFile << "|-----";
+    for (int g = 0; g < config.numberOfGames; ++g) {
+        logFile << "|--------";
+    }
+    logFile << "|" << std::endl;
+    
+    // Print results for each map
+    for (size_t m = 0; m < config.mapFiles->size(); ++m) {
+        logFile << "| " << (*config.mapFiles)[m] << " ";
+        for (int g = 0; g < config.numberOfGames; ++g) {
+            logFile << "| " << results[m][g] << " ";
+        }
+        logFile << "|" << std::endl;
+    }
+    
+    logFile.close();
+    
+    std::cout << "\n======================================" << std::endl;
+    std::cout << "  TOURNAMENT COMPLETE" << std::endl;
+    std::cout << "  Results saved to gamelog.txt" << std::endl;
+    std::cout << "======================================\n" << std::endl;
 }
 
 /*
