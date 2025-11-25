@@ -617,16 +617,16 @@ void GameEngine::runTournament(const TournamentConfig& config) {
                 
                 // Assign the appropriate strategy based on name
                 if (strategyName == "Aggressive") {
-                    player->setStrategy(new AggressivePlayerStrategy(player));
+                    player->setPlayerStrategy(new AggressivePlayerStrategy(player));
                 }
                 else if (strategyName == "Benevolent") {
-                    player->setStrategy(new BenevolentPlayerStrategy(player));
+                    player->setPlayerStrategy(new BenevolentPlayerStrategy(player));
                 }
                 else if (strategyName == "Neutral") {
-                    player->setStrategy(new NeutralPlayerStrategy(player));
+                    player->setPlayerStrategy(new NeutralPlayerStrategy(player));
                 }
                 else if (strategyName == "Cheater") {
-                    player->setStrategy(new CheaterPlayerStrategy(player));
+                    player->setPlayerStrategy(new CheaterPlayerStrategy(player));
                 }
                 
                 GameEngine::addPlayer(player);

@@ -18,7 +18,7 @@ void testTournament() {
     CommandProcessor cp1;
     TournamentConfig config1;
 
-    std::string validCmd = "tournament -M world.map Australia.map -P Aggressive Benevolent Neutral -G 2 -D 15";
+    std::string validCmd = "tournament -M Australia.map -P Aggressive Benevolent Neutral -G 2 -D 15";
     std::cout << "Command: " << validCmd << std::endl;
     
     if (cp1.validateTournamentCommand(validCmd, config1)) {

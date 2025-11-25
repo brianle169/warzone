@@ -102,15 +102,13 @@ public:
 	Advance *advance(vector<Territory *> &attackingTerritories, vector<Territory *> &defendingTerritories);
 	void cardOrder();
 
-	void setStrategy(PlayerStrategies* newStrategy);
+	void setPlayerStrategy(PlayerStrategies* newStrategy);
 	PlayerStrategies* getPlayerStrategy() const;
 
 	static Player *getNeutralPlayer();
 	static Player *neutralPlayer;
 
 	string getStrategyName() const;
-	void setPlayerStrategy(PlayerStrategies* strategy);
-	PlayerStrategies* getPlayerStrategy() const;
 
 private:
 	// Attributes
