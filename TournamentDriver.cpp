@@ -18,7 +18,7 @@ void testTournament() {
     CommandProcessor cp1;
     TournamentConfig config1;
 
-    std::string validCmd = "tournament -M Australia.map -P Aggressive Benevolent Neutral -G 2 -D 15";
+    std::string validCmd = "tournament -M Australia.map -P Aggressive Benevolent Neutral Cheater -G 2 -D 15";
     std::cout << "Command: " << validCmd << std::endl;
     
     if (cp1.validateTournamentCommand(validCmd, config1)) {
@@ -61,7 +61,6 @@ void testTournament() {
     testFile.close();
     
     std::cout << "Created tournament_test.txt" << std::endl;
-    std::cout << "To test file input, modify startupPhase to accept this command" << std::endl;
     
     std::cout << "\n========================================" << std::endl;
     std::cout << "  TOURNAMENT TEST COMPLETE" << std::endl;
