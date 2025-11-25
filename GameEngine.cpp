@@ -634,7 +634,7 @@ void GameEngine::runTournament(const TournamentConfig& config) {
 
             // Validation that ensures no human strategies present in tournament mode
             for (Player* player : GameEngine::getPlayers()) {
-                if (dynamic_cast<HumanPlayerStrategy*>(player->getStrategy()) != nullptr) {
+                if (dynamic_cast<HumanPlayerStrategy*>(player->getPlayerStrategy()) != nullptr) {
                     cout << "ERROR: Human strategy detected in tournament mode!" << endl;
                     GameEngine::clearGame();
                     return;
