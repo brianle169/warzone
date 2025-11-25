@@ -8,6 +8,7 @@
 #include "Cards.h"
 #include "Player.h"
 #include "GameEngine.h"
+#include "PlayerStrategies.h"
 
 using namespace std;
 
@@ -197,6 +198,40 @@ SpCard Hand::getCardAt(int index)
     return SpCard(); // Return null shared_ptr if index is out of bounds
 }
 
+SpCard Hand::getCard(string name){
+    for (auto c : spCards){
+        if (name == c.get()->getName()){
+            return c;
+        }
+    }
+    return SpCard();
+}
+
+int Hand::getCardIndex(string name){
+    if (!this->includes(name)){
+        return -1;
+    }
+    int i = 0;
+    for (auto c : spCards){
+        if (name == c.get()->getName()){
+            return i;
+        }
+        i++;
+    }
+    return -1;
+}
+
+int Hand::getFirstIndexOf(string name) {
+    for (int i = 0; i < spCards.size(); i++) {
+        if (spCards[i]->getName() == name) {
+            return i;   // return the index
+        }
+    }
+    return -1;  // not found
+}
+
+
+
 // Definitions for all child Card classes
 
 // ------------BombCard-------------
@@ -249,16 +284,47 @@ void BombCard::play(Deck &deck, Player &player)
     cout << *GameEngine::getGameMap() << endl;
     string territoryName;
     Territory *targetTerritory = nullptr;
-    while (true)
-    {
-        cout << "Enter the name of the territory to bomb >> ";
-        cin >> territoryName;
+    PlayerStrategies* strat = player.getPlayerStrategy();
+
+    if (dynamic_cast<AggressivePlayerStrategy*>(strat)) {
+
+        vector<Territory*> territories;
+
+        // Select adjacent territories to bomb 
+        for (Territory* t : *(player.getTerritories()))
+        {
+            for (Territory *neighbor : t->getEdges())
+            {
+                if (neighbor->getPlayer() != &player)
+                {
+                    territories.push_back(neighbor);
+                }
+            }
+        }
+
+        if (territories.empty()) {
+            return;
+        }
+        
+        // Select a random attackable territory to attack
+        int randomIndex = rand() % territories.size();
+        string territoryName = territories[randomIndex]->getName();
+
         targetTerritory = GameEngine::getGameMap()->getTerritory(territoryName);
-        if (targetTerritory)
-            break;
-        else
-            cout << "Invalid territory name. Please try again." << endl;
     }
+    else {
+        while (true)
+        {
+            cout << "Enter the name of the territory to bomb >> ";
+            cin >> territoryName;
+            targetTerritory = GameEngine::getGameMap()->getTerritory(territoryName);
+            if (targetTerritory)
+                break;
+            else
+                cout << "Invalid territory name. Please try again." << endl;
+        }
+    }
+
     Bomb *bombOrder = new Bomb(&player, targetTerritory, nullptr);
     bombOrder->Attach(std::make_shared<LogObserver>());
     player.getOrdersList()->addOrder(bombOrder);
@@ -425,46 +491,73 @@ void AirliftCard::play(Deck &deck, Player &player)
     int numArmies = 0;
     Territory *fromTerritory = nullptr;
     Territory *toTerritory = nullptr;
-    while (true)
+    if (player.getStrategyName() == "HumanPlayerStrategy")
     {
-        cout << "Enter the name of the territory to airlift from >> ";
-        cin >> fromTerritoryName;
-        fromTerritory = GameEngine::getGameMap()->getTerritory(fromTerritoryName);
-        // Note that the validation step that checks if the player owns the territory is done in the Airlift order's validate() method
-        // Here, we just need to ensure the territory exists
-        if (fromTerritory)
-            break;
-        else
-            cout << "Invalid territory name. Please try again." << endl;
-    }
-    while (true)
-    {
-        cout << "Enter the number of armies to airlift >> ";
-        cin >> numArmies;
-        if (cin.fail())
+        while (true)
         {
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            cout << "Invalid number of armies. Please try again." << endl;
-            continue;
+            cout << "Enter the name of the territory to airlift from >> ";
+            cin >> fromTerritoryName;
+            fromTerritory = GameEngine::getGameMap()->getTerritory(fromTerritoryName);
+            // Note that the validation step that checks if the player owns the territory is done in the Airlift order's validate() method
+            // Here, we just need to ensure the territory exists
+            if (fromTerritory)
+                break;
+            else
+                cout << "Invalid territory name. Please try again." << endl;
         }
-        break;
-    }
-    while (true)
-    {
-        cout << "Enter the name of the territory to airlift to >> ";
-        cin >> toTerritoryName;
-        toTerritory = GameEngine::getGameMap()->getTerritory(toTerritoryName);
-        // Note that the validation step that checks if the player owns the territory is done in the Airlift order's validate() method
-        // Here, we just need to ensure the territory exists
-        if (toTerritory)
+        while (true)
+        {
+            cout << "Enter the number of armies to airlift >> ";
+            cin >> numArmies;
+            if (cin.fail())
+            {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "Invalid number of armies. Please try again." << endl;
+                continue;
+            }
             break;
-        else
-            cout << "Invalid territory name. Please try again." << endl;
+        }
+        while (true)
+        {
+            cout << "Enter the name of the territory to airlift to >> ";
+            cin >> toTerritoryName;
+            toTerritory = GameEngine::getGameMap()->getTerritory(toTerritoryName);
+            // Note that the validation step that checks if the player owns the territory is done in the Airlift order's validate() method
+            // Here, we just need to ensure the territory exists
+            if (toTerritory)
+                break;
+            else
+                cout << "Invalid territory name. Please try again." << endl;
+        }
+        Airlift *airliftOrder = new Airlift(&player, numArmies, fromTerritory, toTerritory);
+        airliftOrder->Attach(std::make_shared<LogObserver>());
+        player.getOrdersList()->addOrder(airliftOrder); // Number of armies will be set in Airlift order execution
     }
-    Airlift *airliftOrder = new Airlift(&player, numArmies, fromTerritory, toTerritory);
-    airliftOrder->Attach(std::make_shared<LogObserver>());
-    player.getOrdersList()->addOrder(airliftOrder); // Number of armies will be set in Airlift order execution
+    // Airlift *airliftOrder = new Airlift(&player, numArmies, fromTerritory, toTerritory);
+    // airliftOrder->Attach(std::make_shared<LogObserver>());
+    // player.getOrdersList()->addOrder(airliftOrder); // Number of armies will be set in Airlift order execution
+
+    // PlayerStrategies* strat = player.getPlayerStrategy();
+
+    // if (dynamic_cast<AggressivePlayerStrategy*>(strat)) {
+
+    //     vector<Territory*> territories = *(player.getTerritories());
+    //     Territory* strongestTerritory = territories[0];
+
+    //     for (auto& terr: territories){
+    //         if (terr->getArmies() > strongestTerritory->getArmies()){
+    //             strongestTerritory = terr;
+    //         }
+    //     }
+
+    //     fromTerritory = strongestTerritory;
+
+    //     // numArmies = 
+    //     Airlift *airliftOrder = new Airlift(&player, fromTerritory->getArmies(), fromTerritory, toTerritory);
+    //     cout << "Player has the Aggressive strategy!" << endl;
+    // }
+
 }
 
 //------------DiplomacyCard----------------

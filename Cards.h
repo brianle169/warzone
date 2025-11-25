@@ -62,7 +62,7 @@ public:
     // Prints the ReinforcementCard name
     virtual void print(ostream &os) const override;
     std::string getName() const override;
-    // void play(Deck &deck, Player &player) override;
+    //void play(Deck &deck, Player &player) override;
 };
 
 // A child of Card that can be played by the player
@@ -159,6 +159,9 @@ public:
     // Newly added helper methods
     int getNumCards();
     SpCard getCardAt(int index);
+    SpCard getCard(string name);
+    int getCardIndex(string name);
+    int getFirstIndexOf(string name);
 };
 
 void testCards();

@@ -13,6 +13,26 @@ using namespace std;
 
 class GameEngine; 
 
+// Tournament configuration structure
+struct TournamentConfig {
+    std::vector<std::string>* mapFiles;        // 1-5 map files
+    std::vector<std::string>* playerStrategies; // 2-4 strategy names
+    int numberOfGames = 0;                     // 1-5 games
+    int maxTurns = 0;                          // 10-50 turns
+
+    // Constructor
+    TournamentConfig();
+
+    // Copy Constructor
+    TournamentConfig(const TournamentConfig& other);
+
+    // Assignment Operator
+    TournamentConfig& operator=(const TournamentConfig& other);
+
+    // Destructor
+    ~TournamentConfig();
+};
+
 // Represents a game command with its text and execution effect
 class Command : public Subject, public ILoggable {
     private:
@@ -60,6 +80,8 @@ class CommandProcessor : public Subject, public ILoggable {
         Command* getCommand();
         // Validate command
         bool validate(const string& command, GameEngine* engine);
+        // Validate tournament command
+        bool validateTournamentCommand(const std::string& commandStr, TournamentConfig& config);
         // Get the list of all the commands
         const vector<Command*>* getCommandList() const;
     protected:
