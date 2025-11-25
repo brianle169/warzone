@@ -620,3 +620,26 @@ BenevolentPlayerStrategy::~BenevolentPlayerStrategy() {}
 NeutralPlayerStrategy::~NeutralPlayerStrategy() {}
 CheaterPlayerStrategy::~CheaterPlayerStrategy() {}
 HumanPlayerStrategy::~HumanPlayerStrategy() {}
+
+
+//clone method
+
+PlayerStrategies* AggressivePlayerStrategy::clone(Player* newOwner) const {
+    return new AggressivePlayerStrategy(newOwner);
+}
+
+PlayerStrategies* BenevolentPlayerStrategy::clone(Player* newOwner) const {
+    return new BenevolentPlayerStrategy(newOwner);
+}
+
+PlayerStrategies* NeutralPlayerStrategy::clone(Player* newOwner) const {
+    return new NeutralPlayerStrategy(newOwner);
+}
+
+PlayerStrategies* CheaterPlayerStrategy::clone(Player* newOwner) const {
+    return new CheaterPlayerStrategy(newOwner);
+}
+
+PlayerStrategies* HumanPlayerStrategy::clone(Player* newOwner) const {
+    return new HumanPlayerStrategy(newOwner);
+}

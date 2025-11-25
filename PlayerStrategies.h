@@ -14,6 +14,7 @@ public:
     virtual vector<Territory *> toAttack() = 0;
     virtual vector<Territory *> toDefend() = 0;
     virtual string getStrategyName() const = 0;
+    virtual PlayerStrategies* clone(Player* newOwner) const = 0;
 
 protected:
     Player *p;
@@ -28,6 +29,8 @@ public:
     vector<Territory *> toAttack() override;
     vector<Territory *> toDefend() override;
     string getStrategyName() const override;
+    virtual PlayerStrategies* clone(Player* newOwner) const override;
+
 };
 
 class BenevolentPlayerStrategy : public PlayerStrategies
@@ -39,6 +42,7 @@ public:
     vector<Territory *> toAttack() override;
     vector<Territory *> toDefend() override;
     string getStrategyName() const override;
+    virtual PlayerStrategies* clone(Player* newOwner) const override;
 
 };
 
@@ -51,6 +55,8 @@ public:
     vector<Territory *> toAttack() override;
     vector<Territory *> toDefend() override;
     string getStrategyName() const override;
+    virtual PlayerStrategies* clone(Player* newOwner) const override;
+
 };
 
 class CheaterPlayerStrategy : public PlayerStrategies
@@ -62,6 +68,8 @@ public:
     vector<Territory *> toAttack() override;
     vector<Territory *> toDefend() override;
     string getStrategyName() const override;
+    virtual PlayerStrategies* clone(Player* newOwner) const override;
+
 
 };
 
@@ -74,6 +82,7 @@ public:
     vector<Territory *> toAttack() override;
     vector<Territory *> toDefend() override;
     string getStrategyName() const override;
+    virtual PlayerStrategies* clone(Player* newOwner) const override;
 
 };
 

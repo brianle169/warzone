@@ -46,6 +46,13 @@ Player::Player(string name) : hand(new Hand()),
 							  issueOrderStatus(new array<bool, 4>())
 {
 	this->name = new string(name); // This is a pointer assignment.
+	// Initialize issueOrderStatus flags to false
+    for (size_t i = 0; i < this->issueOrderStatus->size(); ++i) {
+        this->issueOrderStatus->at(i) = false;
+    }
+
+    // Ensure the player strategy pointer is initialized
+    this->ps = new HumanPlayerStrategy(this);
 }
 
 // Parameterized constructor:
@@ -58,7 +65,17 @@ Player::Player(string name, PlayerStrategies *strategy) : hand(new Hand()),
 														  issueOrderStatus(new array<bool, 4>())
 {
 	this->name = new string(name); // This is a pointer assignment.
-	this->ps = strategy;
+	// Initialize issueOrderStatus flags to false
+    for (size_t i = 0; i < this->issueOrderStatus->size(); ++i) {
+        this->issueOrderStatus->at(i) = false;
+    }
+
+    // Assign provided strategy (clone it to own an independent instance)
+    if (strategy != nullptr) {
+        this->ps = strategy->clone(this);
+    } else {
+        this->ps = new HumanPlayerStrategy(this);
+    }
 }
 
 // Copy constructor: This constructor creates a new Player object as a deep copy of an existing Player object.
@@ -85,6 +102,10 @@ Player::Player(const Player &p)
 	else
 		this->defending = new vector<Territory *>();
 	this->issueOrderStatus = new array<bool, 4>(*(p.issueOrderStatus)); // Deep copy of array
+	if (p.ps != nullptr)
+    	this->ps = p.ps->clone(this); // You MUST implement clone() for strategies
+	else
+    	this->ps = new HumanPlayerStrategy(this);
 }
 
 // Destructor: This destructor releases the memory allocated for the name, hand, ordersList, and territories.
@@ -101,14 +122,15 @@ Player::~Player()
 	delete this->attacking;
 	delete this->defending;
 	delete this->issueOrderStatus;
+	delete this->ps;
 }
 
 // Below are the getters and setters for each attribute of the Player class.
 // Setters ensure that the existing memory is deallocated before assigning new values.
 void Player::setTerritories(vector<Territory *> *terrs)
 {
-	for (Territory *t : *this->territories)
-		delete t; // Free each Territory pointer
+	//for (Territory *t : *this->territories)
+	//	delete t; // Free each Territory pointer
 	this->territories = terrs;
 }
 
@@ -229,12 +251,27 @@ Player &Player::operator=(const Player &p)
 		delete this->name;
 		delete this->hand;
 		delete this->ordersList;
-		for (Territory *t : *this->territories)
-			delete t;										// Free each Territory pointer
+		delete this->attacking;
+        delete this->defending;
+        delete this->reinforcementPool;
+        delete this->issueOrderStatus;
+
+		//for (Territory *t : *this->territories)
+		//	delete t;										// Free each Territory pointer
 		this->name = new string(*(p.name));					// Deep copy
 		this->hand = new Hand(*(p.hand));					// use Hand's copy constructor
 		this->ordersList = new OrdersList(*(p.ordersList)); // use OrdersList's copy constructor
-		this->territories = p.getTerritories();
+		this->territories = new vector<Territory *>(*(p.territories));
+		this->attacking = new vector<Territory *>(*(p.attacking));
+        this->defending = new vector<Territory *>(*(p.defending));
+        this->reinforcementPool = new int(*(p.reinforcementPool));
+        this->issueOrderStatus = new array<bool,4>(*(p.issueOrderStatus));
+
+		delete this->ps;
+		if (p.ps != nullptr)
+            this->ps = p.ps->clone(this);
+        else
+            this->ps = new HumanPlayerStrategy(this);
 	}
 
 	return *this;
