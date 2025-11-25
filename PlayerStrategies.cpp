@@ -8,6 +8,8 @@
 #include "Cards.h"
 #include "GameEngine.h"
 
+using namespace std;
+
 PlayerStrategies::PlayerStrategies(Player *player) : p(player) {}
 
 AggressivePlayerStrategy::AggressivePlayerStrategy(Player *player) : PlayerStrategies(player) {}
@@ -177,7 +179,66 @@ BenevolentPlayerStrategy::BenevolentPlayerStrategy(Player *player) : PlayerStrat
 
 NeutralPlayerStrategy::NeutralPlayerStrategy(Player *player) : PlayerStrategies(player) {}
 
+// CheaterPlayerStrategy class implementation
+
 CheaterPlayerStrategy::CheaterPlayerStrategy(Player *player) : PlayerStrategies(player) {}
+
+// CheaterPlayerStrategy::toAttack(): returns all adjacent enemy territories, allowing the cheater player to attack all of them.
+vector<Territory *> CheaterPlayerStrategy::toAttack()
+{
+    vector<Territory *> attackableTerritories;
+    for (Territory *t : *(this->p->getTerritories()))
+    {
+        for (Territory *neighbor : t->getEdges())
+        {
+            if (neighbor->getPlayer() != this->p)
+            {
+                attackableTerritories.push_back(neighbor);
+            }
+        }
+    }
+    return attackableTerritories;
+}
+
+// CheaterPlayerStrategy::toDefend(): even though the cheater player doesn't defend, we will return the list of it's own territories for consistency.
+vector<Territory *> CheaterPlayerStrategy::toDefend()
+{
+    // Cheater player does not defend any territories.
+    vector<Territory *> defendableTerritories = *(this->p->getTerritories());
+    return defendableTerritories;
+}
+
+// CheaterPlayerStrategy::issueOrder(): automatically conquers all adjacent enemy territories without issuing traditional orders. This is all the cheater player does during its turn.
+void CheaterPlayerStrategy::issueOrder()
+{
+    cout << "\n==========================" << endl;
+    cout << "=== Cheater Player " << (this->p->getName()) << "'s turn ===" << endl;
+    cout << *this->p;
+    cout << "==========================" << endl;
+    cout << endl;
+
+    if (!this->p->isDoneIssuingOrder())
+    {
+        // Cheater player automatically conquers all adjacent enemy territories. It will only do this once.
+        cout << "Cheater Player " << this->p->getName() << " is conquering all adjacent enemy territories!" << endl;
+        vector<Territory *> territoriesToConquer = this->p->toAttack();
+        for (Territory *t : territoriesToConquer)
+        {
+            cout << "Cheater Player " << this->p->getName() << " conquers territory " << t->getName() << "!" << endl;
+            t->getPlayer()->removeTerritory(t); // remove territory from current owner
+            t->setPlayer(this->p);              // set new owner to cheater player
+            this->p->addTerritory(t);           // add territory to cheater player's list
+        }
+        // Mark all phases as completed since the cheater player does not issue traditional orders.
+        // This ensures that the cheat player will not attempt to issue any further orders in this turn.
+        // And also prevent the cheater from conquering all the territories again in the next call.
+        this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::AttackDefendPhase)) = true;
+        this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::DeployPhase)) = true;
+        this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::AdvancePhase)) = true;
+        this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::OtherPhase)) = true;
+    }
+    cout << "Cheater Player " << this->p->getName() << " has completed its turn." << endl;
+}
 
 // HumanPlayerStrategy class implementation
 
