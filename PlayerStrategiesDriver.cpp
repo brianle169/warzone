@@ -2,86 +2,130 @@
 #include "Player.h"
 #include "Map.h"
 #include "Orders.h"
+#include "GameEngine.h"
 #include <iostream>
 
 using namespace std;
+Card *createCard(const int typeID)
+{
+    switch (typeID)
+    {
+    case 0:
+        return new BombCard();
+    case 1:
+        return new AirliftCard();
+    case 2:
+        return new BlockadeCard();
+    case 3:
+        return new DiplomacyCard();
+    default:
+        return nullptr;
+    }
+}
 
-void testPlayerStrategies() 
+void testPlayerStrategies()
 {
     cout << "\n===== Testing PlayerStrategies =====\n\n";
 
-    Territory *t1 = new Territory("Canada", nullptr, 100);
-    Territory *t2 = new Territory("USA", nullptr, 50);
-    Territory *t3 = new Territory("Mexico", nullptr, 70);
+    GameEngine engine;
 
-    // Making some territories adjacent to eachother
-    t1->addEdge(t2);
-    t1->addEdge(t3);
-    t2->addEdge(t1);
-    t2->addEdge(t3);
-    t3->addEdge(t1);
-    t3->addEdge(t2);
-    
+    // 1. Load and validate a map
+    std::string file = R"(_62_ small - CASTLE MOONBAT.map)";
 
-    // ----- Create Players -----
-    Player* human = new Player("Human");
-    PlayerStrategies* humanStrategy = new HumanPlayerStrategy(human);
-    human->setPlayerStrategy(humanStrategy);
+    MapLoader loader;
 
-    Player* neutral1 = new Player("Neutral1");
-    PlayerStrategies* neutral1Strategy = new AggressivePlayerStrategy(neutral1);
-    neutral1->setPlayerStrategy(neutral1Strategy);
+    GameEngine::setGameMap(loader.load(file));
 
-    Player* neutral2 = new Player("Neutral2");
-    PlayerStrategies* neutral2Strategy = new NeutralPlayerStrategy(neutral2);
-    neutral2->setPlayerStrategy(neutral2Strategy);
+    // 2. Create a deck of cards
+    Deck *deck = new Deck();
+    // Create random 50 cards and add to deck
+    for (int i = 0; i < 50; i++)
+    {
+        Card *card = createCard(i % 4);
+        if (card)
+        {
+            deck->add(std::shared_ptr<Card>(card));
+        }
+    }
 
-    Player* neutral3 = new Player("Neutral3");
-    PlayerStrategies* neutral3Strategy = new NeutralPlayerStrategy(neutral3);
-    neutral3->setPlayerStrategy(neutral3Strategy);
+    deck->shuffle();
+    GameEngine::setCardDeck(deck);
 
-    // Give each player territories to make decisions on
-    human->addTerritory(t1);
-    neutral1->addTerritory(t2);
-    neutral2->addTerritory(t3);
+    // 3. Add players, each of them will be given 5 territories, 10 armies to begin with, and draw 2 cards from the deck
+    std::vector<Player *> players;
+    Player *player1 = new Player("Neutral");
+    player1->setPlayerStrategy(new NeutralPlayerStrategy(player1));
+    player1->setReinforcementPool(10);
+    player1->getHand()->add(GameEngine::getCardDeck()->draw());
+    player1->getHand()->add(GameEngine::getCardDeck()->draw());
 
-    //Requirement 1: Different strategies behave differently 
-    cout << "---- Human Strategy (Requires Input) ----\n";
-    vector<Territory*> hAtk = human->toAttack();
-    vector<Territory*> hDef = human->toDefend();
+    Player *player2 = new Player("Benevolent");
+    player2->setPlayerStrategy(new BenevolentPlayerStrategy(player2));
+    player2->setReinforcementPool(10);
+    player2->getHand()->add(GameEngine::getCardDeck()->draw());
+    player2->getHand()->add(GameEngine::getCardDeck()->draw());
 
-    cout << "\n---- Neutral Strategy (Does Nothing) ----\n";
-    vector<Territory*> nAtk = neutral1->toAttack(); // should return empty
-    vector<Territory*> nDef = neutral1->toDefend(); // should return empty
+    Player *player3 = new Player("Aggressive");
+    player3->setPlayerStrategy(new AggressivePlayerStrategy(player3));
+    player3->setReinforcementPool(10);
+    player3->getHand()->add(GameEngine::getCardDeck()->draw());
+    player3->getHand()->add(GameEngine::getCardDeck()->draw());
 
-    // Requirement 2: Strategy can change dynamically
-    cout << "\n---- Neutral Player Attacked → Becomes Aggressive ----\n";
-    cout << "Switching Neutral to Aggressive...\n";
-    neutral1->setPlayerStrategy(new AggressivePlayerStrategy(neutral1));
+    Player *player4 = new Player("Cheater");
+    player4->setPlayerStrategy(new CheaterPlayerStrategy(player4));
+    player3->setReinforcementPool(10);
+    player3->getHand()->add(GameEngine::getCardDeck()->draw());
+    player3->getHand()->add(GameEngine::getCardDeck()->draw());
 
-    // Now testing new behavior
-    vector<Territory*> newAtk = neutral1->toAttack();
-    vector<Territory*> newDef = neutral1->toDefend();
+    players.push_back(player1);
+    players.push_back(player2);
+    players.push_back(player3);
+    players.push_back(player4);
+    GameEngine::setPlayers(players);
 
-    //Now testing attacking a neutral player and how it changes the neutral player to an aggressive
-    Advance* adv = new Advance(human,100,t1,t3);
-    adv->execute();
+    int count = 0;
+    // 4. Assign territories to players.
+    // - Cheater has only one territory to begin with to demonstrate cheating behavior
+    // - The rest has equal number of territories
+    for (const auto &pair : GameEngine::getGameMap()->getTerritories())
+    {
+        if (count % 4 == 0)
+        {
+            player1->getTerritories()->push_back(pair.second.get());
+            pair.second.get()->setPlayer(player1);
+        }
+        else if (count % 4 == 1)
+        {
+            player2->getTerritories()->push_back(pair.second.get());
+            pair.second.get()->setPlayer(player2);
+        }
+        else if (count % 4 == 2)
+        {
+            player3->getTerritories()->push_back(pair.second.get());
+            pair.second.get()->setPlayer(player3);
+        }
+        else
+        {
+            // Give only one territory to the cheater at the start
+            if (player4->getTerritories()->size() == 0)
+            {
+                player4->getTerritories()->push_back(pair.second.get());
+                pair.second.get()->setPlayer(player4);
+            }
+            else
+            {
+                player1->getTerritories()->push_back(pair.second.get());
+                pair.second.get()->setPlayer(player1);
+            }
+        }
+        count++;
+    }
+    // 5. Start the main game loop
+    engine.mainGameLoop();
 
+    cout << "=== Player Strategies Test Ended ===" << endl;
+    cout << endl
+         << endl;
 
-    // Requirement 3: Issue Orders 
-    cout << "\n---- Issue Orders (Human asks for input) ----\n";
-    human->issueOrder();
-
-    cout << "\n---- Issue Orders (Neutral does nothing) ----\n";
-    neutral3->issueOrder();
-
-    // Cleanup
-    delete human;
-    delete neutral1;
-    delete neutral2;
-
-    delete t1;
-    delete t2;
-    delete t3;
-
+    GameEngine::clearGame();
 }

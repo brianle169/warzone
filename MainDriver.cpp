@@ -7,6 +7,7 @@
 #include "Orders.h"
 #include "LoggingObserver.h"
 #include "CommandProcessing.h"
+#include "PlayerStrategies.h"
 
 using namespace std;
 
@@ -25,13 +26,9 @@ void test()
      while (true)
      {
           cout << "Enter the index of the driver you would like to test: \n"
-               << "[0] testCommandProcessor() \n"
-               << "[1] testStartupPhase() \n"
-               << "[2] testMainGameLoop()\n"
-               << "[3] testOrderExecution()\n"
-               << "[4] testLoggingObserver()\n"
-               << "[5] testTournament()\n"
-               << "[6] Quit\n"
+               << "[1] testPlayerStrategies()\n"
+               << "[2] testTournament()\n"
+               << "[3] Quit\n"
                << ">> ";
 
           if (!(cin >> optionIndex))
@@ -44,26 +41,13 @@ void test()
 
           switch (optionIndex)
           {
-          case 0:
-               testCommandProcessor("all");
-               cout << "testCommandProcessor() called\n";
-               break;
           case 1:
-               testStartupPhase();
+               testPlayerStrategies();
                break;
           case 2:
-               testMainGameLoop();
-               break;
-          case 3:
-               testOrderExecution();
-               break;
-          case 4:
-               testLoggingObserver();
-               break;
-          case 5:
                testTournament();
                break;
-          case 6:
+          case 3:
                cout << "Exiting test menu.\n";
                return;
           default:

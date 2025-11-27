@@ -11,22 +11,22 @@
 #include "Cards.h"
 #include "Orders.h"
 
-Card *createCard(const int typeID)
-{
-    switch (typeID)
-    {
-    case 0:
-        return new BombCard();
-    case 1:
-        return new AirliftCard();
-    case 2:
-        return new BlockadeCard();
-    case 3:
-        return new DiplomacyCard();
-    default:
-        return nullptr;
-    }
-}
+// Card *createCard(const int typeID)
+// {
+//     switch (typeID)
+//     {
+//     case 0:
+//         return new BombCard();
+//     case 1:
+//         return new AirliftCard();
+//     case 2:
+//         return new BlockadeCard();
+//     case 3:
+//         return new DiplomacyCard();
+//     default:
+//         return nullptr;
+//     }
+// }
 
 void testMainGameLoop()
 {
@@ -45,18 +45,18 @@ void testMainGameLoop()
     GameEngine::setGameMap(loader.load(file));
 
     // 2. Create a deck of cards
-    Deck *deck = new Deck();
-    // Create random 50 cards and add to deck
-    for (int i = 0; i < 50; i++)
-    {
-        Card *card = createCard(i % 4);
-        if (card)
-        {
-            deck->add(std::shared_ptr<Card>(card));
-        }
-    }
+    // Deck *deck = new Deck();
+    // // Create random 50 cards and add to deck
+    // for (int i = 0; i < 50; i++)
+    // {
+    //     Card *card = createCard(i % 4);
+    //     if (card)
+    //     {
+    //         deck->add(std::shared_ptr<Card>(card));
+    //     }
+    // }
 
-    GameEngine::setCardDeck(deck);
+    // GameEngine::setCardDeck(deck);
 
     // 3. Add players, each of them will be given 5 territories, 10 armies to begin with, and draw 2 cards from the deck
     std::vector<Player *> players;
