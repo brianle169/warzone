@@ -46,6 +46,7 @@ Player::Player(string name) : hand(new Hand()),
 							  issueOrderStatus(new array<bool, 4>())
 {
 	this->name = new string(name); // This is a pointer assignment.
+	this->ps = nullptr;
 }
 
 // Parameterized constructor:
@@ -546,6 +547,7 @@ bool Player::isDoneIssuingOrder()
 // Note that the issueOrder() will be called repeatedly in each round robin turn of the players until all players are done issuing orders.
 void Player::issueOrder()
 {
+	cout << "\nPlayer " << this->getName() << " is issuing an order." << endl;
 	this->ps->issueOrder();
 }
 
@@ -590,14 +592,19 @@ Player *Player::getNeutralPlayer()
 	return neutralPlayer;
 }
 
-void Player::setPlayerStrategy(PlayerStrategies* strategy)
+void Player::setPlayerStrategy(PlayerStrategies *strategy)
 {
-    if (ps != strategy) {
-        delete ps;     // delete old strategy
-        ps = strategy; // assign new strategy
-    }
+	if (ps != nullptr)
+	{
+		if (ps != strategy)
+		{
+			delete ps;
+		}
+	}
+	ps = strategy; // assign new strategy
 }
 
-PlayerStrategies* Player::getPlayerStrategy() const {
-    return ps;
+PlayerStrategies *Player::getPlayerStrategy() const
+{
+	return ps;
 }

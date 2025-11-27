@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <limits>
+#include <random>
 #include <algorithm>
 #include <unordered_map>
 
@@ -102,6 +103,15 @@ bool Deck::isEmpty()
     return spCards.empty();
 }
 
+void Deck::shuffle()
+{
+    if (spCards.size() <= 1)
+        return;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::shuffle(spCards.begin(), spCards.end(), gen);
+}
+
 // ------------Hand -------------
 // Default constructor
 Hand::Hand()
@@ -198,22 +208,29 @@ SpCard Hand::getCardAt(int index)
     return SpCard(); // Return null shared_ptr if index is out of bounds
 }
 
-SpCard Hand::getCard(string name){
-    for (auto c : spCards){
-        if (name == c.get()->getName()){
+SpCard Hand::getCard(string name)
+{
+    for (auto c : spCards)
+    {
+        if (name == c.get()->getName())
+        {
             return c;
         }
     }
     return SpCard();
 }
 
-int Hand::getCardIndex(string name){
-    if (!this->includes(name)){
+int Hand::getCardIndex(string name)
+{
+    if (!this->includes(name))
+    {
         return -1;
     }
     int i = 0;
-    for (auto c : spCards){
-        if (name == c.get()->getName()){
+    for (auto c : spCards)
+    {
+        if (name == c.get()->getName())
+        {
             return i;
         }
         i++;
@@ -221,16 +238,17 @@ int Hand::getCardIndex(string name){
     return -1;
 }
 
-int Hand::getFirstIndexOf(string name) {
-    for (int i = 0; i < spCards.size(); i++) {
-        if (spCards[i]->getName() == name) {
-            return i;   // return the index
+int Hand::getFirstIndexOf(string name)
+{
+    for (int i = 0; i < spCards.size(); i++)
+    {
+        if (spCards[i]->getName() == name)
+        {
+            return i; // return the index
         }
     }
-    return -1;  // not found
+    return -1; // not found
 }
-
-
 
 // Definitions for all child Card classes
 
@@ -284,14 +302,15 @@ void BombCard::play(Deck &deck, Player &player)
     cout << *GameEngine::getGameMap() << endl;
     string territoryName;
     Territory *targetTerritory = nullptr;
-    PlayerStrategies* strat = player.getPlayerStrategy();
+    PlayerStrategies *strat = player.getPlayerStrategy();
 
-    if (dynamic_cast<AggressivePlayerStrategy*>(strat)) {
+    if (dynamic_cast<AggressivePlayerStrategy *>(strat))
+    {
 
-        vector<Territory*> territories;
+        vector<Territory *> territories;
 
-        // Select adjacent territories to bomb 
-        for (Territory* t : *(player.getTerritories()))
+        // Select adjacent territories to bomb
+        for (Territory *t : *(player.getTerritories()))
         {
             for (Territory *neighbor : t->getEdges())
             {
@@ -302,17 +321,19 @@ void BombCard::play(Deck &deck, Player &player)
             }
         }
 
-        if (territories.empty()) {
+        if (territories.empty())
+        {
             return;
         }
-        
+
         // Select a random attackable territory to attack
         int randomIndex = rand() % territories.size();
         string territoryName = territories[randomIndex]->getName();
 
         targetTerritory = GameEngine::getGameMap()->getTerritory(territoryName);
     }
-    else {
+    else
+    {
         while (true)
         {
             cout << "Enter the name of the territory to bomb >> ";
@@ -553,11 +574,10 @@ void AirliftCard::play(Deck &deck, Player &player)
 
     //     fromTerritory = strongestTerritory;
 
-    //     // numArmies = 
+    //     // numArmies =
     //     Airlift *airliftOrder = new Airlift(&player, fromTerritory->getArmies(), fromTerritory, toTerritory);
     //     cout << "Player has the Aggressive strategy!" << endl;
     // }
-
 }
 
 //------------DiplomacyCard----------------

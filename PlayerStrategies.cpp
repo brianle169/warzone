@@ -15,44 +15,47 @@ PlayerStrategies::PlayerStrategies(Player *player) : p(player) {}
 AggressivePlayerStrategy::AggressivePlayerStrategy(Player *player) : PlayerStrategies(player) {}
 
 // BenevolentPlayerStrategy class implementation
-vector<Territory*> BenevolentPlayerStrategy::toAttack(){
+vector<Territory *> BenevolentPlayerStrategy::toAttack()
+{
     cout << "Available territories to attack: " << endl;
-    unordered_map<string, Territory*> attackableTerritories = this->p->getAttackableTerritories();
-    for (const auto& pair : attackableTerritories)
+    unordered_map<string, Territory *> attackableTerritories = this->p->getAttackableTerritories();
+    for (const auto &pair : attackableTerritories)
     {
         cout << "- " << pair.first << " (" << pair.second->getArmies() << ")" << endl;
     }
     cout << endl;
 
-	cout << "Benevolent player does not attack any territories." << endl;
+    cout << "Benevolent player does not attack any territories." << endl;
 
-    return vector<Territory*>();
+    return vector<Territory *>();
 }
-vector<Territory*> BenevolentPlayerStrategy::toDefend(){
+vector<Territory *> BenevolentPlayerStrategy::toDefend()
+{
     cout << "Available territories to defend: " << endl;
-    unordered_map<string, Territory*> defendableTerritories = this->p->getDefendableTerritories();
-    for (const auto& pair : defendableTerritories)
+    unordered_map<string, Territory *> defendableTerritories = this->p->getDefendableTerritories();
+    for (const auto &pair : defendableTerritories)
     {
         cout << "- " << pair.first << " (" << pair.second->getArmies() << ")" << endl;
     }
     cout << endl;
 
-    std::vector<Territory*> sortTer = *this->p->getTerritories();
+    std::vector<Territory *> sortTer = *this->p->getTerritories();
 
-    //sort terr vector from least to most armies 
+    // sort terr vector from least to most armies
     std::sort(sortTer.begin(), sortTer.end(),
-    [](Territory* a, Territory* b) {
-        return a->getArmies() < b->getArmies();
-        }
-    );
-    //defend the weakest terr
+              [](Territory *a, Territory *b)
+              {
+                  return a->getArmies() < b->getArmies();
+              });
+    // defend the weakest terr
     this->p->getDefending()->clear();
     this->p->getDefending()->push_back(sortTer[0]);
 
     cout << "Benevolent player defends its weakest territory" << endl;
-    return *this->p->getDefending(); 
+    return *this->p->getDefending();
 }
-void BenevolentPlayerStrategy::issueOrder() {  
+void BenevolentPlayerStrategy::issueOrder()
+{
     // Implementation for Benevolent player issuing an order
     cout << "\n==========================" << endl;
     cout << "===== BENEVOLENT PLAYER ===== ";
@@ -62,8 +65,8 @@ void BenevolentPlayerStrategy::issueOrder() {
     cout << "==========================" << endl;
     cout << endl;
 
-    vector<Territory*> attackingTerritories;
-    vector<Territory*> defendingTerritories;
+    vector<Territory *> attackingTerritories;
+    vector<Territory *> defendingTerritories;
     // 2. Decide territories to attack and defend.
     if (!this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::AttackDefendPhase)))
     {
@@ -82,17 +85,20 @@ void BenevolentPlayerStrategy::issueOrder() {
 
     // 3. After choosing the territories to attack and defend, we will issue
     // deploy orders on the defending territories until the reinforcement pool is empty.
-    if ((this->p->getReinforcementPool()) > 0){
+    if ((this->p->getReinforcementPool()) > 0)
+    {
         // if the reinforcement pool is not empty, we only have one order option: Deploy
 
-        //deploy all armies to weakest terretory 
-        Order* deployOrder = new Deploy(this->p, defendingTerritories[0], this->p->getReinforcementPool());
+        // deploy all armies to weakest terretory
+        Order *deployOrder = new Deploy(this->p, defendingTerritories[0], this->p->getReinforcementPool());
         this->p->setReinforcementPool(0);
 
         deployOrder->Attach(std::make_shared<LogObserver>());
         this->p->getOrdersList()->addOrder(deployOrder);
         return;
-    }else{
+    }
+    else
+    {
         cout << "Reinforcement pool is empty. No deploy orders can be issued." << endl;
         this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::DeployPhase)) = true;
     }
@@ -100,33 +106,38 @@ void BenevolentPlayerStrategy::issueOrder() {
     // 4. After deploying all reinforcements, we can issue other types of orders.
     if (!this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::AdvancePhase)))
     {
-        std::vector<Territory*> sortTer = *this->p->getTerritories();
+        std::vector<Territory *> sortTer = *this->p->getTerritories();
 
-        //sort terr vector from least to most armies 
+        // sort terr vector from least to most armies
         std::sort(sortTer.begin(), sortTer.end(),
-        [](Territory* a, Territory* b) {
-            return a->getArmies() < b->getArmies();
-        });
+                  [](Territory *a, Territory *b)
+                  {
+                      return a->getArmies() < b->getArmies();
+                  });
 
+        Order *advanceOrder = nullptr;
 
-        Order* advanceOrder = nullptr;
-
-        //find highest differences of armies in adjacent terrotories and equalize armies
+        // find highest differences of armies in adjacent terrotories and equalize armies
         int s = sortTer.size();
-        for (size_t weakIdx = 0; weakIdx < sortTer.size(); weakIdx++){
-            Territory* weak = sortTer[weakIdx];
-            for (int j = s - 1; j > (int)weakIdx; j--){      // Start at last valid index (s-1)
-                if (sortTer[j]->isEdge(weak)){               // Now j is always valid (0 to s-1)
+        for (size_t weakIdx = 0; weakIdx < sortTer.size(); weakIdx++)
+        {
+            Territory *weak = sortTer[weakIdx];
+            for (int j = s - 1; j > (int)weakIdx; j--)
+            { // Start at last valid index (s-1)
+                if (sortTer[j]->isEdge(weak))
+                { // Now j is always valid (0 to s-1)
                     int numStrong = sortTer[j]->getArmies();
                     int numWeak = weak->getArmies();
                     int armiesToMove = numStrong - ((numWeak + numStrong) / 2);
-                    if (armiesToMove > 0) {
+                    if (armiesToMove > 0)
+                    {
                         advanceOrder = new Advance(this->p, armiesToMove, sortTer[j], weak);
                         break;
                     }
                 }
             }
-            if (advanceOrder != nullptr) break;
+            if (advanceOrder != nullptr)
+                break;
         }
         // for (auto weak : sortTer){
         //     for (s; s > 0; s--){
@@ -151,35 +162,38 @@ void BenevolentPlayerStrategy::issueOrder() {
     }
 
     // 5. Finally, we can issue other types of orders based on the cards in hand.
-    if (!this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::OtherPhase))){
-        //resort terrs
-        std::vector<Territory*> sortTer = *this->p->getTerritories();
+    if (!this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::OtherPhase)))
+    {
+        // resort terrs
+        std::vector<Territory *> sortTer = *this->p->getTerritories();
 
         std::sort(sortTer.begin(), sortTer.end(),
-        [](Territory* a, Territory* b) {
-            return a->getArmies() < b->getArmies();
-        });
+                  [](Territory *a, Territory *b)
+                  {
+                      return a->getArmies() < b->getArmies();
+                  });
 
         SpCard cardToPlay;
         string name;
-        if (this->p->getHand()->includes("Airlift")){
-            
+        if (this->p->getHand()->includes("Airlift"))
+        {
+
             name = "Airlift";
-            //equalize strongest and weakest territories
+            // equalize strongest and weakest territories
             int numStrong = sortTer.back()->getArmies();
             int numWeak = sortTer[0]->getArmies();
-            Airlift *airliftOrder = new Airlift(this->p, numStrong-((numWeak+numStrong)/2), sortTer.back(), sortTer[0]);
+            Airlift *airliftOrder = new Airlift(this->p, numStrong - ((numWeak + numStrong) / 2), sortTer.back(), sortTer[0]);
 
             airliftOrder->Attach(std::make_shared<LogObserver>());
             this->p->getOrdersList()->addOrder(airliftOrder);
-            this->p->getHand()->remove(this->p->getHand()->getCardIndex(name)); // Remove the card from hand after playing
-            GameEngine::getCardDeck()->add(this->p->getHand()->getCard("Airlift")); //Add card back to deck
+            GameEngine::getCardDeck()->add(this->p->getHand()->getCard("Airlift")); // Add card back to deck
+            this->p->getHand()->remove(this->p->getHand()->getCardIndex(name));     // Remove the card from hand after playing
         }
-		
-		this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::OtherPhase)) = true;
-		// Add the card back to the deck
-		
-		return;
+
+        this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::OtherPhase)) = true;
+        // Add the card back to the deck
+
+        return;
     }
     else
     {
@@ -203,7 +217,9 @@ vector<Territory *> CheaterPlayerStrategy::toAttack()
     {
         for (Territory *neighbor : t->getEdges())
         {
-            if (neighbor->getPlayer() != this->p)
+            // If the neighboring territory is owned by another player, and not already in the list, add it to the attackable territories.
+            if (neighbor->getPlayer() != this->p &&
+                std::find(attackableTerritories.begin(), attackableTerritories.end(), neighbor) == attackableTerritories.end())
             {
                 attackableTerritories.push_back(neighbor);
             }
@@ -402,11 +418,12 @@ void HumanPlayerStrategy::issueOrder()
 }
 
 // Aggressive player wants to attack all attackable territories
-vector<Territory*> AggressivePlayerStrategy::toAttack(){
+vector<Territory *> AggressivePlayerStrategy::toAttack()
+{
     // Get adjacent territories
     unordered_map<string, Territory *> attackableTerritoriesMap = this->p->getAttackableTerritories();
-    
-    // List them in console 
+
+    // List them in console
     cout << "Available territories to attack: " << endl;
     for (const auto &pair : attackableTerritoriesMap)
     {
@@ -414,26 +431,24 @@ vector<Territory*> AggressivePlayerStrategy::toAttack(){
     }
     cout << endl;
 
-
-    //vector<Territory*> attackingTerritories;
     this->p->getAttacking()->clear();
-    // Extract territories into vector 
-    for (auto& pair : attackableTerritoriesMap) {
+    // Extract territories into vector
+    for (auto &pair : attackableTerritoriesMap)
+    {
         this->p->getAttacking()->push_back(pair.second);
-        //attackingTerritories.push_back(pair.second);
     }
 
     cout << "Choosing all territories." << endl;
 
-    // Return vector of countries to attack 
-    //return attackingTerritories;
+    // Return vector of countries to attack
     return *(this->p->getAttacking());
 }
 
 // Aggressive player only defends its strongest territory
-vector<Territory*> AggressivePlayerStrategy::toDefend(){
+vector<Territory *> AggressivePlayerStrategy::toDefend()
+{
 
-    // Get defendable territories 
+    // Get defendable territories
     cout << "Available territories to defend: " << endl;
     unordered_map<string, Territory *> defendableTerritories = this->p->getDefendableTerritories();
 
@@ -444,37 +459,40 @@ vector<Territory*> AggressivePlayerStrategy::toDefend(){
     }
     cout << endl;
 
-    vector<Territory*> territories = *(this->p->getTerritories());
+    vector<Territory *> territories = *(this->p->getTerritories());
 
     int strongestTerritoryIndex = 0;
 
     cout << "Choosing strongest territory." << endl;
     // Find territory with the most armies
-    for (int i = 0; i < territories.size(); i++){
-        if (territories[i]->getArmies() > territories[strongestTerritoryIndex]->getArmies()){
+    for (int i = 0; i < territories.size(); i++)
+    {
+        if (territories[i]->getArmies() > territories[strongestTerritoryIndex]->getArmies())
+        {
             strongestTerritoryIndex = i;
         }
     }
-    
-    //vector<Territory*> defendingTerritories;
 
-    //defendingTerritories.push_back(territories[strongestTerritoryIndex]);
+    // vector<Territory*> defendingTerritories;
+
+    // defendingTerritories.push_back(territories[strongestTerritoryIndex]);
     this->p->getDefending()->clear();
     this->p->getDefending()->push_back(territories[strongestTerritoryIndex]);
     cout << "The strongest (and thus only defendable) territory is at index " << strongestTerritoryIndex << endl;
     return *(this->p->getDefending());
-    //return defendingTerritories;
+    // return defendingTerritories;
 }
 
-// The aggressive player only plays airlift and bomb cards 
-void AggressivePlayerStrategy::issueOrder(){
-    
+// The aggressive player only plays airlift and bomb cards
+void AggressivePlayerStrategy::issueOrder()
+{
+
     vector<Territory *> attackingTerritories;
     vector<Territory *> defendingTerritories;
-    Territory* strongestTerritory;
+    Territory *strongestTerritory;
 
     // Attack/Defend phase
-     if (!this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::AttackDefendPhase)))
+    if (!this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::AttackDefendPhase)))
     {
         cout << "Choosing territories to attack and defend." << endl;
         attackingTerritories = this->toAttack();
@@ -489,7 +507,8 @@ void AggressivePlayerStrategy::issueOrder(){
         defendingTerritories = *(this->p->getDefending());
 
         // Protection against empty vector access crash
-        if (defendingTerritories.empty()) {
+        if (defendingTerritories.empty())
+        {
             cout << "No territories to defend. Skipping turn." << endl;
             this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::DeployPhase)) = true;
             this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::AdvancePhase)) = true;
@@ -520,15 +539,16 @@ void AggressivePlayerStrategy::issueOrder(){
     if (!this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::AdvancePhase)))
     {
         // Protection against empty attacking vector crash
-        if (attackingTerritories.empty()) {
+        if (attackingTerritories.empty())
+        {
             cout << "No territories to attack. Skipping advance phase." << endl;
             this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::AdvancePhase)) = true;
-        return;
+            return;
         }
 
         // Select a random attackable territory to attack
         int randomIndex = rand() % attackingTerritories.size();
-        auto* targetTerritory = attackingTerritories[randomIndex];
+        auto *targetTerritory = attackingTerritories[randomIndex];
 
         Order *advanceOrder = new Advance(this->p, strongestTerritory->getArmies(), strongestTerritory, targetTerritory);
         if (advanceOrder != nullptr)
@@ -547,42 +567,45 @@ void AggressivePlayerStrategy::issueOrder(){
     // Play cards in hand
     if (!this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::OtherPhase)))
     {
-        Hand* hand = this->p->getHand();
+        Hand *hand = this->p->getHand();
 
         // If there are no bomb cards or airlift cards, the player does not use those cards
-        if (!hand->includes("BombCard")){
-			this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::OtherPhase)) = true;
+        if (!hand->includes("BombCard"))
+        {
+            this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::OtherPhase)) = true;
             cout << "All aggressive orders have been issued for this turn." << endl;
             return;
-        } 
-       int cardToPlayIndex = hand->getFirstIndexOf("BombCard");
+        }
+        int cardToPlayIndex = hand->getFirstIndexOf("BombCard");
 
         SpCard cardToPlay = hand->getCardAt(cardToPlayIndex);
 
-		cardToPlay->play(*GameEngine::getCardDeck(), *(this->p));
+        cardToPlay->play(*GameEngine::getCardDeck(), *(this->p));
 
         hand->remove(cardToPlayIndex); // Remove the card from hand after playing
 
-		// Add the card back to the deck
-		GameEngine::getCardDeck()->add(cardToPlay);
+        // Add the card back to the deck
+        GameEngine::getCardDeck()->add(cardToPlay);
         this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::OtherPhase)) = true;
         return;
     }
 }
-//Neutral Player implementation
+// Neutral Player implementation
 
-
-vector <Territory*> NeutralPlayerStrategy::toAttack() {
+vector<Territory *> NeutralPlayerStrategy::toAttack()
+{
     // Neutral player never attacks
-    return vector<Territory*>();
+    return vector<Territory *>();
 }
 
-vector <Territory*> NeutralPlayerStrategy::toDefend() {
-    // Neutral player never defends 
-    return vector<Territory*>();
+vector<Territory *> NeutralPlayerStrategy::toDefend()
+{
+    // Neutral player never defends
+    return vector<Territory *>();
 }
 
-void NeutralPlayerStrategy::issueOrder() {
+void NeutralPlayerStrategy::issueOrder()
+{
     // Neutral player does nothing
     cout << "Neutral player " << p->getName() << " does not issue orders.\n";
 
@@ -593,23 +616,28 @@ void NeutralPlayerStrategy::issueOrder() {
     this->p->getIssueOrderStatus()->at(static_cast<int>(IssuePhase::OtherPhase)) = true;
 }
 
-string HumanPlayerStrategy::getStrategyName() const {
+string HumanPlayerStrategy::getStrategyName() const
+{
     return "HumanPlayerStrategy";
 }
 
-string AggressivePlayerStrategy::getStrategyName() const {
+string AggressivePlayerStrategy::getStrategyName() const
+{
     return "AggressivePlayerStrategy";
 }
 
-string BenevolentPlayerStrategy::getStrategyName() const {
+string BenevolentPlayerStrategy::getStrategyName() const
+{
     return "BenevolentPlayerStrategy";
 }
 
-string NeutralPlayerStrategy::getStrategyName() const {
+string NeutralPlayerStrategy::getStrategyName() const
+{
     return "NeutralPlayerStrategy";
 }
 
-string CheaterPlayerStrategy::getStrategyName() const {
+string CheaterPlayerStrategy::getStrategyName() const
+{
     return "CheaterPlayerStrategy";
 }
 

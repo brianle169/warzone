@@ -1,0 +1,14 @@
+Order Effect: Successfully deployed 57 armies to 63; 63 has now 57 troops
+
+
+======================================
+       TOURNAMENT RESULTS
+======================================
+M: Australia.map
+P: Aggressive, Benevolent, Neutral, Cheater
+G: 2
+D: 15
+
+| Map | Game 1 | Game 2 |
+|-----|--------|--------|
+| Australia.map | Cheater | Draw |
